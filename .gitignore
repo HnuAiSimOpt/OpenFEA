@@ -1,0 +1,4 @@
+AutoBuild/*
+build/*
+buildDebug/*
+.vscode/*
