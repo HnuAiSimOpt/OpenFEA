@@ -5,7 +5,7 @@
 using namespace std;
 using namespace Eigen;
 
-int main()
+bool sample_eigen()
 {
      MatrixXd d_(3, 3);
      MatrixXd m_(3, 3);
@@ -24,7 +24,11 @@ int main()
      cout << endl;
      cout << "d_+m_:" << endl
           << d_ + m_ << endl;
+     return true;
+}
 
+bool sample_superlu()
+{
      /*
       * Purpose
       * =======

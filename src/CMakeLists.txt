@@ -9,7 +9,7 @@ set(PROJECT_NAME CAE)
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/bin")
 
 # 编译
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} Sample_Eigen_Superlu.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/externals/eigen-3.4.0)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/externals/superlu-6.0.1)
 target_link_libraries(${PROJECT_NAME} PUBLIC superlu)
