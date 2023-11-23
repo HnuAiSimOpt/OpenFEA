@@ -36,6 +36,8 @@ namespace CAE
         infile.close();
         data_cae.ne_ = ne;
         data_cae.nd_ = nd;
+        cout << "the number of element is: " << data_cae.ne_ << endl
+             << "the number of node is: " << data_cae.nd_ << endl;
     }
 
     // 基于指定符号划分字符串
@@ -69,12 +71,13 @@ namespace CAE
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
-        // 开始数据
+        int id_node = 0, id_ele = 0;
         while (getline(infile, line))
         {
+            // 读取节点坐标
+
             if (line.find("*Node") != string::npos)
             {
-                int id_node = 0;
                 while (getline(infile, line))
                 {
                     if (line.find("*") != string::npos)
@@ -85,8 +88,8 @@ namespace CAE
                         double x_, y_, z_;
                         std::istringstream iss(line);
                         iss >> id >> x >> y >> z;
-                        x.erase(x.end() - 1);  // 删除字符串最后的符号
-                        x_ = stod(x);          // 转换字符串为double
+                        x.erase(x.end() - 1); // 删除字符串最后的符号
+                        x_ = stod(x);         // 转换字符串为double
                         y.erase(y.end() - 1);
                         y_ = stod(y);
                         z_ = stod(z);
@@ -97,94 +100,85 @@ namespace CAE
                     }
                 }
             }
+
+            // 读取单元类型及节点拓扑关系
+
+            std::vector<string> type_temp;
+            if (line.find("*Element") != string::npos)
+            {
+                type_temp = split_str(line, "=");
+                while (getline(infile, line))
+                {
+                    bool flag = true;
+                    if (line.find("*Element") != string::npos)
+                    {
+                        type_temp = split_str(line, "=");
+                        flag = false;
+                        getline(infile, line);
+                    }
+                    if (line.find("*") != string::npos && flag)
+                    {
+                        break;
+                    }
+                    if (type_temp[1] == "C3D4")
+                    {
+                        string id, node1, node2, node3, node4;
+                        int id_, node1_, node2_, node3_, node4_;
+                        std::istringstream iss(line);
+                        iss >> id >> node1 >> node2 >> node3 >> node4;
+                        id.erase(id.end() - 1);               // 删除字符串最后的符号
+                        id_ = atoi(id.c_str());               // 转换字符串为int
+                        data_cae.ele_type_[id_ - 1] = "C3D4"; // 记录单元类型
+                        node1.erase(node1.end() - 1);
+                        node1_ = atoi(node1.c_str());
+                        node2.erase(node2.end() - 1);
+                        node2_ = atoi(node2.c_str());
+                        node3.erase(node3.end() - 1);
+                        node3_ = atoi(node3.c_str());
+                        node4_ = atoi(node4.c_str());
+                        data_cae.node_topos_[id_ - 1][0] = node1_;
+                        data_cae.node_topos_[id_ - 1][1] = node2_;
+                        data_cae.node_topos_[id_ - 1][2] = node3_;
+                        data_cae.node_topos_[id_ - 1][3] = node4_;
+                    }
+                    else if (type_temp[1] == "C3D8R")
+                    {
+                        string id, node1, node2, node3, node4, node5, node6, node7, node8;
+                        int id_, node1_, node2_, node3_, node4_, node5_, node6_, node7_, node8_;
+                        std::istringstream iss(line);
+                        iss >> id >> node1 >> node2 >> node3 >> node4 >> node5 >> node6 >> node7 >> node8;
+                        id.erase(id.end() - 1);
+                        id_ = atoi(id.c_str());
+                        data_cae.ele_type_[id_ - 1] = "C3D8R";
+                        node1.erase(node1.end() - 1);
+                        node1_ = atoi(node1.c_str());
+                        node2.erase(node2.end() - 1);
+                        node2_ = atoi(node2.c_str());
+                        node3.erase(node3.end() - 1);
+                        node3_ = atoi(node3.c_str());
+                        node4.erase(node4.end() - 1);
+                        node4_ = atoi(node4.c_str());
+                        node5.erase(node5.end() - 1);
+                        node5_ = atoi(node5.c_str());
+                        node6.erase(node6.end() - 1);
+                        node6_ = atoi(node6.c_str());
+                        node7.erase(node7.end() - 1);
+                        node7_ = atoi(node7.c_str());
+                        node8_ = atoi(node8.c_str());
+                        data_cae.node_topos_[id_ - 1][0] = node1_;
+                        data_cae.node_topos_[id_ - 1][1] = node2_;
+                        data_cae.node_topos_[id_ - 1][2] = node3_;
+                        data_cae.node_topos_[id_ - 1][3] = node4_;
+                        data_cae.node_topos_[id_ - 1][4] = node5_;
+                        data_cae.node_topos_[id_ - 1][5] = node6_;
+                        data_cae.node_topos_[id_ - 1][6] = node7_;
+                        data_cae.node_topos_[id_ - 1][7] = node8_;
+                        id_ele = id_;
+                    }
+                }
+            }
         }
+        cout << "a total of " << id_node << " nodal coordinates have been readed." << endl;
+        cout << "a total of " << id_ele << " nodal connectivities have been readed." << endl;
     }
 }
-
-// // read node coordinates, node connections, and elemental type
-// void CAE::ReadInfo::read_inp(string path, vector<vector<double>> &coordinates,
-//                              vector<vector<int>> &connections, vector<string> &ele_type)
-// {
-//     // read inp file
-//     std::ifstream infile(path.c_str(), std::ios::in);
-//     string line;
-//     // record data
-//     while (getline(infile, line))
-//     {
-
-//         std::vector<string> type_temp;
-//         if (line.find("*Element") != string::npos)
-//         {
-//             type_temp = splitWithStl(line, "=");
-//             while (getline(infile, line))
-//             {
-//                 bool flag = true;
-//                 if (line.find("*Element") != string::npos)
-//                 {
-//                     type_temp = splitWithStl(line, "=");
-//                     flag = false;
-//                     getline(infile, line);
-//                 }
-//                 if (line.find("*") != string::npos && flag)
-//                 {
-//                     break;
-//                 }
-//                 if (type_temp[1] == "C3D4")
-//                 {
-//                     string id, node1, node2, node3, node4;
-//                     int id_, node1_, node2_, node3_, node4_;
-//                     std::istringstream iss(line);
-//                     iss >> id >> node1 >> node2 >> node3 >> node4;
-//                     id.erase(id.end() - 1);       // delete the last symbol in the string of index
-//                     id_ = atoi(id.c_str());       // convert to int type
-//                     ele_type[id_ - 1] = "C3D4";   // record type of element
-//                     node1.erase(node1.end() - 1); // delete the last symbol in the string of connect node
-//                     node1_ = atoi(node1.c_str()); // convert to int type
-//                     node2.erase(node2.end() - 1);
-//                     node2_ = atoi(node2.c_str());
-//                     node3.erase(node3.end() - 1);
-//                     node3_ = atoi(node3.c_str());
-//                     node4_ = atoi(node4.c_str());
-//                     connections.SetValues(id_, 1, node1_);
-//                     connections.SetValues(id_, 2, node2_);
-//                     connections.SetValues(id_, 3, node3_);
-//                     connections.SetValues(id_, 4, node4_);
-//                 }
-//                 else if (type_temp[1] == "C3D8R")
-//                 {
-//                     string id, node1, node2, node3, node4, node5, node6, node7, node8;
-//                     int id_, node1_, node2_, node3_, node4_, node5_, node6_, node7_, node8_;
-//                     std::istringstream iss(line);
-//                     iss >> id >> node1 >> node2 >> node3 >> node4 >> node5 >> node6 >> node7 >> node8;
-//                     id.erase(id.end() - 1);       // delete the last symbol in the string of index
-//                     id_ = atoi(id.c_str());       // convert to int type
-//                     ele_type[id_ - 1] = "C3D8R";  // record type of element
-//                     node1.erase(node1.end() - 1); // delete the last symbol in the string of connect node
-//                     node1_ = atoi(node1.c_str()); // convert to int type
-//                     node2.erase(node2.end() - 1);
-//                     node2_ = atoi(node2.c_str());
-//                     node3.erase(node3.end() - 1);
-//                     node3_ = atoi(node3.c_str());
-//                     node4.erase(node4.end() - 1);
-//                     node4_ = atoi(node4.c_str());
-//                     node5.erase(node5.end() - 1);
-//                     node5_ = atoi(node5.c_str());
-//                     node6.erase(node6.end() - 1);
-//                     node6_ = atoi(node6.c_str());
-//                     node7.erase(node7.end() - 1);
-//                     node7_ = atoi(node7.c_str());
-//                     node8_ = atoi(node8.c_str());
-//                     connections.SetValues(id_, 1, node1_);
-//                     connections.SetValues(id_, 2, node2_);
-//                     connections.SetValues(id_, 3, node3_);
-//                     connections.SetValues(id_, 4, node4_);
-//                     connections.SetValues(id_, 5, node5_);
-//                     connections.SetValues(id_, 6, node6_);
-//                     connections.SetValues(id_, 7, node7_);
-//                     connections.SetValues(id_, 8, node8_);
-//                 }
-//             }
-//         }
-//     }
-//     infile.close();
-// }
