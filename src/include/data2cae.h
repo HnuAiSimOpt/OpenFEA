@@ -33,7 +33,7 @@ namespace CAE
 
     public:
         // 构造函数，析构函数
-        ReadInfo();
+        ReadInfo(){};
         ReadInfo(string path) : path_(path){};
         // ~ReadInfo();
 

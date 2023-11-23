@@ -237,7 +237,7 @@ namespace CAE
             string load_name, dof_id, value_str;
             int dof_id_;
             double value_;
-            if (line.find(load_set_keyword) != string::npos)
+            if (line.find(load_value_keyword) != string::npos)
             {
                 getline(infile, line);
                 std::istringstream iss(line);
@@ -247,12 +247,12 @@ namespace CAE
                 value_ = stod(value_str);       // 转换字符串为double
                 data_cae.load_dof_ = dof_id_;
                 data_cae.load_value_ = value_;
+                break;
             }
-
-            break;
         }
         infile.close();
         cout << "the information of load boundary (" << data_cae.load_set_.size() << ") have been readed." << endl;
+        cout << "the fixed DOF is " << data_cae.load_dof_ << ", and the value is " << data_cae.load_value_ << endl;
     }
 
     // 读取约束信息

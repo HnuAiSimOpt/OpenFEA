@@ -14,8 +14,9 @@ Description: XXX
 
 #include <iostream>
 #include "include/mat.h"
-#include "include/data2cae.h"
 #include "include/data_management.h"
+#include "include/data2cae.h"
+#include "include/set_bcs.h"
 
 using namespace std;
 namespace CAE
@@ -29,7 +30,7 @@ namespace CAE
 
     public:
         // 构造函数，析构函数
-        CAE_process();
+        CAE_process(){};
         CAE_process(string path, elastic_mat mat) : path_(path), mat_(mat){};
         // ~CAE_process();
 

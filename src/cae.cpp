@@ -34,7 +34,12 @@ namespace CAE
     // 执行结构响应分析
     void CAE_process::implict_analysis()
     {
+        set_BCs item_bcs;
+
         // 设置边界条件
-        
+        item_bcs.build_free_index(data_cae_);
+
+        // 建立单载荷向量
+        item_bcs.build_single_load(data_cae_);
     }
 }
