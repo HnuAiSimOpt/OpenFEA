@@ -1,3 +1,15 @@
+/**************************************************************************
+
+Copyright:  WH team
+
+Author: YinJichao <jichaoyinyjc@163.com>
+
+Completion date:  2023/11/23
+
+Description: read a calculation file
+
+**************************************************************************/
+
 #include "include/data2cae.h"
 
 namespace CAE
@@ -180,5 +192,107 @@ namespace CAE
         }
         cout << "a total of " << id_node << " nodal coordinates have been readed." << endl;
         cout << "a total of " << id_ele << " nodal connectivities have been readed." << endl;
+    }
+
+    // 读取载荷信息
+    void ReadInfo::read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae)
+    {
+        // 读取计算文件
+        std::ifstream infile(path_.c_str(), std::ios::in);
+        string line;
+        // 读取载荷节点集合
+        while (getline(infile, line))
+        {
+            string node_id;
+            int node_id_;
+            if (line.find(load_set_keyword) != string::npos)
+            {
+                while (getline(infile, line))
+                {
+                    if (line.find("*") != string::npos)
+                        break;
+                    else
+                    {
+                        std::istringstream iss(line);
+                        while (iss >> node_id)
+                        {
+                            if (node_id.find(",") != string::npos)
+                            {
+                                node_id.erase(node_id.end() - 1); // 删除字符串最后的符号
+                            }
+                            node_id_ = atoi(node_id.c_str()); // 转换字符串为int
+                            data_cae.load_set_.push_back(node_id_);
+                        }
+                    }
+                }
+            }
+            if (line.find("*End Assembly") != string::npos)
+            {
+                break;
+            }
+        }
+        // 读取载荷自由度和幅值
+        while (getline(infile, line))
+        {
+            string load_name, dof_id, value_str;
+            int dof_id_;
+            double value_;
+            if (line.find(load_set_keyword) != string::npos)
+            {
+                getline(infile, line);
+                std::istringstream iss(line);
+                iss >> load_name >> dof_id >> value_str;
+                dof_id.erase(dof_id.end() - 1); // 删除字符串最后的符号
+                dof_id_ = atoi(dof_id.c_str()); // 转换字符串为int
+                value_ = stod(value_str);       // 转换字符串为double
+                data_cae.load_dof_ = dof_id_;
+                data_cae.load_value_ = value_;
+            }
+
+            break;
+        }
+        infile.close();
+        cout << "the information of load boundary (" << data_cae.load_set_.size() << ") have been readed." << endl;
+    }
+
+    // 读取约束信息
+    void ReadInfo::read_dis_bcs(string dis_set_keyword, data_management &data_cae)
+    {
+        // 读取计算文件
+        std::ifstream infile(path_.c_str(), std::ios::in);
+        string line;
+        // 读取载荷节点集合
+        while (getline(infile, line))
+        {
+            string node_id;
+            int node_id_;
+            if (line.find(dis_set_keyword) != string::npos)
+            {
+                while (getline(infile, line))
+                {
+                    if (line.find("*") != string::npos)
+                        break;
+                    else
+                    {
+                        std::istringstream iss(line);
+                        while (iss >> node_id)
+                        {
+                            if (node_id.find(",") != string::npos)
+                            {
+                                node_id.erase(node_id.end() - 1); // 删除字符串最后的符号
+                            }
+                            node_id_ = atoi(node_id.c_str()); // 转换字符串为int
+                            data_cae.dis_bc_set_.push_back(node_id_);
+                        }
+                    }
+                }
+            }
+            if (line.find("*End Assembly") != string::npos)
+            {
+                break;
+            }
+        }
+        infile.close();
+        cout << "the information of displacement boundary (" << data_cae.dis_bc_set_.size() << ")  have been readed." << endl;
     }
 }

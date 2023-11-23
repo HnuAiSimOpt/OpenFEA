@@ -1,3 +1,14 @@
+/**************************************************************************
+
+Copyright:  WH team
+
+Author: YinJichao <jichaoyinyjc@163.com>
+
+Completion date:  XXX
+
+Description: XXX
+
+**************************************************************************/
 
 #pragma once
 
@@ -23,6 +34,9 @@ namespace CAE
         // ~CAE_process();
 
         // 读取计算文件
-        void pre_info();
+        void pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword);
+
+        // 执行结构响应分析
+        void implict_analysis();
     };
 }

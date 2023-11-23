@@ -1,3 +1,15 @@
+/**************************************************************************
+
+Copyright:  WH team
+
+Author: YinJichao <jichaoyinyjc@163.com>
+
+Completion date:  2023/11/23
+
+Description: read a calculation file
+
+**************************************************************************/
+
 #pragma once
 
 #include <fstream>
@@ -33,12 +45,12 @@ namespace CAE
 
         // 读取节点坐标，节点拓扑关系，单元类型
         void read_geo_mesh(data_management &data_cae);
+
+        // 读取载荷信息 
+        void read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae);
+
+        // 读取约束信息
+        void read_dis_bcs(string dis_set_keyword, data_management &data_cae);
     };
-
-    // // read boundary and load  (data: 2023 / 5 / 11)
-    // void ReadBoundaryLoad(string path, IntArray& constrain, IntArray& load);
-
-    // // read Abaqus VM_s and displacement (data: 2023 / 6 / 30)
-    // void ReadAbaqus(DoubleMatrix& dis, DoubleMatrix& VM_s, string path);
 
 }

@@ -1,4 +1,17 @@
+/**************************************************************************
+
+Copyright:  WH team
+
+Author: YinJichao <jichaoyinyjc@163.com>
+
+Completion date:  XXX
+
+Description: XXX
+
+**************************************************************************/
+
 #pragma once
+
 #include "include/sample_eigen_superlu.h"
 
 bool sample_eigen()

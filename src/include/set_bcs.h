@@ -12,12 +12,10 @@ Description: XXX
 
 #pragma once
 
+#include <iostream>
+#include "include/data_management.h"
+
 namespace CAE
 {
-    struct elastic_mat
-    {
-        double young_modulus;
-        double poisson_ratio;
-        double density;
-    };
+    
 }
