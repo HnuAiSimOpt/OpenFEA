@@ -28,7 +28,7 @@ namespace CAE
         {
             if (i == data_cae.dis_bc_set_[id_constraint] - 1) // 因为 .inp文件 从 1 开始编号， 故 -1
             {
-                data_cae.resort_free_nodes.push_back(-1);
+                data_cae.resort_free_nodes_.push_back(-1);
                 if (id_constraint < data_cae.dis_bc_set_.size() - 1)
                 {
                     id_constraint++;
@@ -36,7 +36,7 @@ namespace CAE
             }
             else
             {
-                data_cae.resort_free_nodes.push_back(id_resort_idx);
+                data_cae.resort_free_nodes_.push_back(id_resort_idx);
                 id_resort_idx++;
             }
         }
@@ -47,15 +47,15 @@ namespace CAE
     {
         // 初始化载荷向量
         int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
-        data_cae.single_load_vec.resize(3 * num_free_node);
-        std::fill(data_cae.single_load_vec.begin(), data_cae.single_load_vec.end(), 0.0);
+        data_cae.single_load_vec_.resize(3 * num_free_node);
+        std::fill(data_cae.single_load_vec_.begin(), data_cae.single_load_vec_.end(), 0.0);
 
         // 建立载荷向量
         int num_load = data_cae.load_set_.size();
         int load_node_idx, load_dof_idx;
         for (int i = 0; i < num_load; i++)
         {
-            load_node_idx = data_cae.resort_free_nodes[data_cae.load_set_[i] - 1];
+            load_node_idx = data_cae.resort_free_nodes_[data_cae.load_set_[i] - 1];
             if (data_cae.load_dof_ == 1)
             {
                 load_dof_idx = 3 * load_node_idx;
@@ -72,7 +72,7 @@ namespace CAE
             {
                 cout << "the DOF of load node is error !!!";
             }
-            data_cae.single_load_vec[load_dof_idx] = data_cae.load_value_;
+            data_cae.single_load_vec_[load_dof_idx] = data_cae.load_value_;
         }
     }
 }

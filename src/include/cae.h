@@ -17,6 +17,7 @@ Description: XXX
 #include "include/data_management.h"
 #include "include/data2cae.h"
 #include "include/set_bcs.h"
+#include "include/assemble.h"
 
 using namespace std;
 namespace CAE

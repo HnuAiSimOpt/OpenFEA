@@ -12,11 +12,11 @@ Description: read a calculation file
 
 #pragma once
 
+#include <sstream>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <sstream>
 #include "include/data_management.h"
 
 using std::string;

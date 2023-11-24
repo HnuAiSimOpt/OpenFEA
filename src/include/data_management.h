@@ -30,7 +30,7 @@ namespace CAE
         int load_dof_;                       // 载荷自由度，1:X   2:Y   3:Z
         double load_value_;                  // 承载幅值
         vector<int> dis_bc_set_;             // 约束节点集合
-        vector<int> resort_free_nodes;       // 重排无约束自由度索引
-        vector<double> single_load_vec;      // 基于重排自由度的单载荷向量
+        vector<int> resort_free_nodes_;       // 重排无约束自由度索引
+        vector<double> single_load_vec_;      // 基于重排自由度的单载荷向量
     };
 }

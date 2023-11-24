@@ -41,5 +41,9 @@ namespace CAE
 
         // 建立单载荷向量
         item_bcs.build_single_load(data_cae_);
+
+        // 组装刚度矩阵
+        assamble_stiffness item_assam;
+        item_assam.build_CSR(data_cae_);
     }
 }
