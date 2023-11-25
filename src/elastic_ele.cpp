@@ -70,16 +70,16 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void tetra_ele_elastic::build_ele_stiff_mat(Matrix4d3 &node_coords)
+    void tetra_ele_elastic::build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &ele_stiff)
     {
         // 基于 单点Hammer积分 计算四面体单元
-        ele_stiff_.setZero();
+        ele_stiff.setZero();
         double weight = 1. / 6.; // Hammer积分 权重
         Matrix6d12 strain_mat;
         build_strain_mat(node_coords, strain_mat);
         Matrix12d6 item_temp = strain_mat.transpose() * C_matrix_; // 12 x 6
-        ele_stiff_ = item_temp * strain_mat;                        // 12 x 12
-        ele_stiff_ = weight * det_jacobi_ * ele_stiff_;
+        ele_stiff = item_temp * strain_mat;                        // 12 x 12
+        ele_stiff = weight * det_jacobi_ * ele_stiff;
     }
 
     //****************************************************************************//
@@ -158,7 +158,7 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void hex_ele_elastic::build_ele_stiff_mat(Matrix8d3 &node_coords)
+    void hex_ele_elastic::build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &ele_stiff)
     {
         // 初始化等参坐标
         double gp_values = 1. / sqrt(3.);
@@ -173,7 +173,7 @@ namespace CAE
             -gp_values, gp_values, gp_values;
         //
         double weight = 1.; // 两点高斯积分 权重
-        ele_stiff_.setZero();
+        ele_stiff.setZero();
         Matrix6d24 strain_mat;
         Matrix24d6 item_temp_1;
         Matrix24d24 item_temp_2;
@@ -184,7 +184,7 @@ namespace CAE
             build_strain_mat(node_coords, strain_mat, gp_points, &det_jacobi_point);
             item_temp_1 = strain_mat.transpose() * C_matrix_; // 24 x 6
             item_temp_2 = item_temp_1 * strain_mat;           // 24 x 24
-            ele_stiff_ = ele_stiff_ + weight * det_jacobi_ * item_temp_2;
+            ele_stiff = ele_stiff + weight * det_jacobi_point * item_temp_2;
         }
     }
 }

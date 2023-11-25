@@ -46,5 +46,16 @@ namespace CAE
         assamble_stiffness item_assam;
         item_assam.build_CSR(data_cae_);
         item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
+
+        // 求解
+        int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
+        vector<double> x(3 * num_free_nodes);
+        superlu_solver(item_assam, data_cae_.single_load_vec_, x);
+
+        // 输出物理场
+        for(int i=0;i<3 * num_free_nodes;i++)
+        {
+            cout<<x[i]<<endl;
+        }
     }
 }

@@ -54,8 +54,8 @@ namespace CAE
 
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度和节点坐标
         void build_tetra_dofs_coors(vector<int> &item_ele_dofs, Matrix4d3 &item_ele_coors,
-                                    data_management &data_cae, int ele_id, string ele_type);
+                                    data_management &data_cae, int ele_id);
         void build_hex_dofs_coors(vector<int> &item_ele_dofs, Matrix8d3 &item_ele_coors,
-                                  data_management &data_cae, int ele_id, string ele_type);
+                                  data_management &data_cae, int ele_id);
     };
 }

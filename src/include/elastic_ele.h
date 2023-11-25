@@ -46,7 +46,6 @@ namespace CAE
         double det_jacobi_; // 雅可比矩阵行列式(中心积分点)
         elastic_mat matrial_struc_;
         Matrix6d6 C_matrix_;
-        Matrix12d12 ele_stiff_;
 
     public:
         // 构造函数，析构函数
@@ -63,7 +62,7 @@ namespace CAE
         virtual void build_strain_mat(Matrix4d3 &node_coords, Matrix6d12 &strain_mat);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Matrix4d3 &node_coords);
+        void build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &ele_stiff);
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();
@@ -78,7 +77,6 @@ namespace CAE
         double det_jacobi_; // 雅可比矩阵行列式（中心积分点）
         elastic_mat matrial_struc_;
         Matrix6d6 C_matrix_;
-        Matrix24d24 ele_stiff_;
 
     public:
         // 构造函数，析构函数
@@ -95,7 +93,7 @@ namespace CAE
         virtual void build_strain_mat(Matrix8d3 &node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Matrix8d3 &node_coords);
+        void build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &ele_stiff);
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();

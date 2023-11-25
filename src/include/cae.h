@@ -18,6 +18,7 @@ Description: XXX
 #include "include/data2cae.h"
 #include "include/set_bcs.h"
 #include "include/assemble.h"
+#include "include/solver_linear.h"
 
 using namespace std;
 namespace CAE

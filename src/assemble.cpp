@@ -108,13 +108,19 @@ namespace CAE
     }
 
     // 基于CSR索引格式填充稀疏矩阵
-    void assamble_stiffness::fill_CSR_sparse_mat(data_management &data_cae, elastic_mat& data_mat)
+    void assamble_stiffness::fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat)
     {
+        // 声明内存
+        nz_val.resize(num_nz_val);
+        // 初始化
         int num_nodes;
         vector<int> item_ele_dofs;
         Matrix4d3 item_tetra_coors;
         Matrix8d3 item_hex_coors;
-        ele_base* item_stiff_mat;
+        tetra_ele_elastic item_tetra_stiff(data_mat);
+        item_tetra_stiff.build_cons_mat();
+        hex_ele_elastic item_hex_stiff(data_mat);
+        item_hex_stiff.build_cons_mat();
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
@@ -124,18 +130,60 @@ namespace CAE
             {
             case 1:
             {
-                build_tetra_dofs_coors(item_ele_dofs, item_tetra_coors, data_cae, id_ele, item_ele_type);
-                tetra_ele_elastic item_tetra_stiff(data_mat);
-                item_stiff_mat = &item_tetra_stiff;
-                // 加入宏判定是否建立本构
-                
+                build_tetra_dofs_coors(item_ele_dofs, item_tetra_coors, data_cae, id_ele);
                 Matrix12d12 ele_stiff;
-                item_stiff_mat->build_ele_stiff_mat(item_tetra_coors);
+                item_tetra_stiff.build_ele_stiff_mat(item_tetra_coors, ele_stiff);
+                // 组装
+                int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
+                for (int mm = 0; mm < loop_size; mm++)
+                {
+                    jj_dof = item_ele_dofs[mm];
+                    if (jj_dof >= 0)
+                    {
+                        int start = col_idx[jj_dof];
+                        for (int nn = 0; nn < loop_size; nn++)
+                        {
+                            int t = start;
+                            ii_dof = item_ele_dofs[nn];
+                            if (ii_dof >= 0)
+                            {
+                                for (; row_idx[t] < ii_dof; t++)
+                                {
+                                } // 使用上三角矩阵
+                                nz_val[t] = nz_val[t] + ele_stiff(mm, nn);
+                            }
+                        }
+                    }
+                }
                 break;
             }
             case 2:
             {
-                build_hex_dofs_coors(item_ele_dofs, item_hex_coors, data_cae, id_ele, item_ele_type);
+                build_hex_dofs_coors(item_ele_dofs, item_hex_coors, data_cae, id_ele);
+                Matrix24d24 ele_stiff;
+                item_hex_stiff.build_ele_stiff_mat(item_hex_coors, ele_stiff);
+                // 组装
+                int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
+                for (int mm = 0; mm < loop_size; mm++)
+                {
+                    jj_dof = item_ele_dofs[mm];
+                    if (jj_dof >= 0)
+                    {
+                        int start = col_idx[jj_dof];
+                        for (int nn = 0; nn < loop_size; nn++)
+                        {
+                            int t = start;
+                            ii_dof = item_ele_dofs[nn];
+                            if (ii_dof >= 0)
+                            {
+                                for (; row_idx[t] < ii_dof; t++)
+                                {
+                                }  // 使用上三角矩阵
+                                nz_val[t] = nz_val[t] + ele_stiff(mm, nn);
+                            }
+                        }
+                    }
+                }
                 break;
             }
             default:
@@ -150,7 +198,7 @@ namespace CAE
     // 基于单元编号，单元类型和节点拓扑关系，返回自由度和节点坐标
     // 四面体
     void assamble_stiffness::build_tetra_dofs_coors(vector<int> &item_ele_dofs, Matrix4d3 &item_ele_coors,
-                                                    data_management &data_cae, int ele_id, string ele_type)
+                                                    data_management &data_cae, int ele_id)
     {
         item_ele_dofs.resize(12);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
@@ -173,7 +221,7 @@ namespace CAE
     }
     // 六面体
     void assamble_stiffness::build_hex_dofs_coors(vector<int> &item_ele_dofs, Matrix8d3 &item_ele_coors,
-                                                  data_management &data_cae, int ele_id, string ele_type)
+                                                  data_management &data_cae, int ele_id)
     {
         item_ele_dofs.resize(24);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
