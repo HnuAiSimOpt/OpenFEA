@@ -45,5 +45,6 @@ namespace CAE
         // 组装刚度矩阵
         assamble_stiffness item_assam;
         item_assam.build_CSR(data_cae_);
+        item_assam.fill_CSR_sparse_mat(data_cae_);
     }
 }

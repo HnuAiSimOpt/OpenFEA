@@ -171,7 +171,6 @@ namespace CAE
         item_ele_dofs.resize(24);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
         item_ele_coors.setZero();
-        cout << item_ele_coors;
         int item_dof, item_node;
         for (int i = 0; i < 8; i++)
         {
