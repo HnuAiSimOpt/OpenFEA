@@ -108,12 +108,13 @@ namespace CAE
     }
 
     // 基于CSR索引格式填充稀疏矩阵
-    void assamble_stiffness::fill_CSR_sparse_mat(data_management &data_cae)
+    void assamble_stiffness::fill_CSR_sparse_mat(data_management &data_cae, elastic_mat& data_mat)
     {
         int num_nodes;
         vector<int> item_ele_dofs;
         Matrix4d3 item_tetra_coors;
         Matrix8d3 item_hex_coors;
+        ele_base* item_stiff_mat;
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
@@ -124,6 +125,12 @@ namespace CAE
             case 1:
             {
                 build_tetra_dofs_coors(item_ele_dofs, item_tetra_coors, data_cae, id_ele, item_ele_type);
+                tetra_ele_elastic item_tetra_stiff(data_mat);
+                item_stiff_mat = &item_tetra_stiff;
+                // 加入宏判定是否建立本构
+                
+                Matrix12d12 ele_stiff;
+                item_stiff_mat->build_ele_stiff_mat(item_tetra_coors);
                 break;
             }
             case 2:

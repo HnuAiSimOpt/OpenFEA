@@ -12,7 +12,11 @@ Description: XXX
 
 #pragma once
 
+#include "Eigen/Dense"
 #include "include/elastic_mat.h"
+
+typedef Eigen::Matrix<double, 4, 3> Matrix4d3;
+typedef Eigen::Matrix<double, 8, 3> Matrix8d3;
 
 namespace CAE
 {
@@ -23,12 +27,16 @@ namespace CAE
         ele_base(){};
 
         // 赋值材料属性
-        virtual void set_matrial() = 0;
+        virtual void set_matrial(){};
 
         // 建立本构矩阵
-        virtual void build_cons_mat() = 0;
+        virtual void build_cons_mat(){};
 
         // 建立应变矩阵
-        virtual void build_strain_mat() = 0;
+        virtual void build_strain_mat(){};
+
+        // 建立单元刚度矩阵
+        void build_ele_stiff_mat(Matrix4d3 &node_coords){};
+        void build_ele_stiff_mat(Matrix8d3 &node_coords){};
     };
 }
