@@ -35,5 +35,7 @@ void main()
     cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
 
     // 执行结构响应分析
-    cae_item.implict_analysis();
+    string result_path = "E:/CADCAE_project/OpenFEA/model/mix_ele_model/shaft_bracket/dis_with_error.vtk";
+    string path_abaqus = "E:/CADCAE_project/OpenFEA/model/mix_ele_model/shaft_bracket/Abaqus_U.txt";
+    cae_item.implict_analysis(result_path, path_abaqus);
 }

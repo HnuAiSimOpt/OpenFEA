@@ -19,6 +19,7 @@ Description: XXX
 #include "include/set_bcs.h"
 #include "include/assemble.h"
 #include "include/solver_linear.h"
+#include "include/data2vtk.h"
 
 using namespace std;
 namespace CAE
@@ -40,6 +41,6 @@ namespace CAE
         void pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword);
 
         // 执行结构响应分析
-        void implict_analysis();
+        void implict_analysis(string result_path, string path_abaqus);
     };
 }

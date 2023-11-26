@@ -193,6 +193,7 @@ namespace CAE
             }
             }
         }
+        cout << "The CSR index has been filled" << endl;
     }
 
     // 基于单元编号，单元类型和节点拓扑关系，返回自由度和节点坐标

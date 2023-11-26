@@ -32,7 +32,7 @@ namespace CAE
     }
 
     // 执行结构响应分析
-    void CAE_process::implict_analysis()
+    void CAE_process::implict_analysis(string result_path, string path_abaqus)
     {
         set_BCs item_bcs;
 
@@ -49,13 +49,13 @@ namespace CAE
 
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
-        vector<double> x(3 * num_free_nodes);
-        superlu_solver(item_assam, data_cae_.single_load_vec_, x);
+        data_cae_.single_load_vec_.resize(3 * num_free_nodes);
+        superlu_solver(item_assam, data_cae_.single_load_vec_, data_cae_.single_dis_vec_);
 
         // 输出物理场
-        for(int i=0;i<3 * num_free_nodes;i++)
-        {
-            cout<<x[i]<<endl;
-        }
+        data_process item_output;
+        item_output.fill_full_dis(data_cae_);
+        double scale_dis = 1.0;
+        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, true);
     }
 }

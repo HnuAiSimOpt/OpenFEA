@@ -32,5 +32,7 @@ namespace CAE
         vector<int> dis_bc_set_;             // 约束节点集合
         vector<int> resort_free_nodes_;       // 重排无约束自由度索引
         vector<double> single_load_vec_;      // 基于重排自由度的单载荷向量
+        vector<double> single_dis_vec_;       // 仅考虑无约束自由度的位移向量
+        vector<double> single_full_dis_vec_;  // 考虑所有自由度的位移向量
     };
 }
