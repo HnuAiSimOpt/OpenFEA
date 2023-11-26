@@ -62,7 +62,7 @@ namespace CAE
         virtual void build_strain_mat(Matrix4d3 &node_coords, Matrix6d12 &strain_mat);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &ele_stiff);
+        void build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &stiffness_matrix);
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();
@@ -93,7 +93,7 @@ namespace CAE
         virtual void build_strain_mat(Matrix8d3 &node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &ele_stiff);
+        void build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &stiffness_matrix);
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();

@@ -70,16 +70,16 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void tetra_ele_elastic::build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &ele_stiff)
+    void tetra_ele_elastic::build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &stiffness_matrix)
     {
         // 基于 单点Hammer积分 计算四面体单元
-        ele_stiff.setZero();
+        stiffness_matrix.setZero();
         double weight = 1. / 6.; // Hammer积分 权重
         Matrix6d12 strain_mat;
         build_strain_mat(node_coords, strain_mat);
         Matrix12d6 item_temp = strain_mat.transpose() * C_matrix_; // 12 x 6
-        ele_stiff = item_temp * strain_mat;                        // 12 x 12
-        ele_stiff = weight * det_jacobi_ * ele_stiff;
+        stiffness_matrix = item_temp * strain_mat;                        // 12 x 12
+        stiffness_matrix = weight * det_jacobi_ * stiffness_matrix;
     }
 
     //****************************************************************************//
@@ -158,7 +158,7 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void hex_ele_elastic::build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &ele_stiff)
+    void hex_ele_elastic::build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &stiffness_matrix)
     {
         // 初始化等参坐标
         double gp_values = 1. / sqrt(3.);
@@ -173,7 +173,7 @@ namespace CAE
             -gp_values, gp_values, gp_values;
         //
         double weight = 1.; // 两点高斯积分 权重
-        ele_stiff.setZero();
+        stiffness_matrix.setZero();
         Matrix6d24 strain_mat;
         Matrix24d6 item_temp_1;
         Matrix24d24 item_temp_2;
@@ -184,7 +184,7 @@ namespace CAE
             build_strain_mat(node_coords, strain_mat, gp_points, &det_jacobi_point);
             item_temp_1 = strain_mat.transpose() * C_matrix_; // 24 x 6
             item_temp_2 = item_temp_1 * strain_mat;           // 24 x 24
-            ele_stiff = ele_stiff + weight * det_jacobi_point * item_temp_2;
+            stiffness_matrix = stiffness_matrix + weight * det_jacobi_point * item_temp_2;
         }
     }
 }

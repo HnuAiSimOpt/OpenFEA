@@ -18,15 +18,15 @@ Description: XXX
 void main()
 {
     // 材料属性赋值
-    CAE::elastic_mat mat_item{2.1e5, 0.3, 0.};
+    CAE::elastic_mat mat_item{2.1e9, 0.3, 0.};
 
     // 材料路径
-    std::string path = "E:/CADCAE_project/OpenFEA/model/mix_ele_model.inp";
+    std::string path = "E:/CADCAE_project/OpenFEA/model/mix_ele_model/shaft_bracket/Job-1.inp";
 
     // 关键字
     string load_set_keyword = "Set-load";
     string load_value_keyword = "Cload";
-    string dis_set_keyword = "Set-constrain";
+    string dis_set_keyword = "Set-fix";
 
     // 建立CAE分析对象
     CAE::CAE_process cae_item(path, mat_item);

@@ -129,10 +129,10 @@ namespace CAE
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
-            {
+            {  
                 build_tetra_dofs_coors(item_ele_dofs, item_tetra_coors, data_cae, id_ele);
-                Matrix12d12 ele_stiff;
-                item_tetra_stiff.build_ele_stiff_mat(item_tetra_coors, ele_stiff);
+                Matrix12d12 stiffness_matrix;
+                item_tetra_stiff.build_ele_stiff_mat(item_tetra_coors, stiffness_matrix);
                 // 组装
                 int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
                 for (int mm = 0; mm < loop_size; mm++)
@@ -150,7 +150,7 @@ namespace CAE
                                 for (; row_idx[t] < ii_dof; t++)
                                 {
                                 } // 使用上三角矩阵
-                                nz_val[t] = nz_val[t] + ele_stiff(mm, nn);
+                                nz_val[t] = nz_val[t] + stiffness_matrix(mm, nn);
                             }
                         }
                     }
@@ -160,8 +160,8 @@ namespace CAE
             case 2:
             {
                 build_hex_dofs_coors(item_ele_dofs, item_hex_coors, data_cae, id_ele);
-                Matrix24d24 ele_stiff;
-                item_hex_stiff.build_ele_stiff_mat(item_hex_coors, ele_stiff);
+                Matrix24d24 stiffness_matrix;
+                item_hex_stiff.build_ele_stiff_mat(item_hex_coors, stiffness_matrix);
                 // 组装
                 int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
                 for (int mm = 0; mm < loop_size; mm++)
@@ -179,7 +179,7 @@ namespace CAE
                                 for (; row_idx[t] < ii_dof; t++)
                                 {
                                 }  // 使用上三角矩阵
-                                nz_val[t] = nz_val[t] + ele_stiff(mm, nn);
+                                nz_val[t] = nz_val[t] + stiffness_matrix(mm, nn);
                             }
                         }
                     }
@@ -203,7 +203,6 @@ namespace CAE
         item_ele_dofs.resize(12);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
         item_ele_coors.setZero();
-        cout << item_ele_coors;
         int item_dof, item_node;
         for (int i = 0; i < 4; i++)
         {

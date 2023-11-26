@@ -18,7 +18,6 @@ Description: XXX
 #include <map>
 #include "Eigen/Dense"
 #include "include/data_management.h"
-#include "include/element_base.h"
 #include "include/elastic_ele.h"
 
 using std::cout;
