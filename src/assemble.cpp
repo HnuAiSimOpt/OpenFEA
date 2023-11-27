@@ -112,15 +112,20 @@ namespace CAE
     {
         // 声明内存
         nz_val.resize(num_nz_val);
-        // 初始化
-        int num_nodes;
-        vector<int> item_ele_dofs;
-        Matrix4d3 item_tetra_coors;
-        Matrix8d3 item_hex_coors;
+        // 初始化单元
+        vector<string> ele_type_set;
+        data_cae.filter_ele_type(ele_type_set);
+        // *******************************************
         tetra_ele_elastic item_tetra_stiff(data_mat);
         item_tetra_stiff.build_cons_mat();
         hex_ele_elastic item_hex_stiff(data_mat);
         item_hex_stiff.build_cons_mat();
+        Matrix4d3 item_tetra_coors;
+        Matrix8d3 item_hex_coors;
+        // *******************************************
+
+        int num_nodes;
+        vector<int> item_ele_dofs;
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
@@ -129,7 +134,7 @@ namespace CAE
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
-            {  
+            {
                 build_tetra_dofs_coors(item_ele_dofs, item_tetra_coors, data_cae, id_ele);
                 Matrix12d12 stiffness_matrix;
                 item_tetra_stiff.build_ele_stiff_mat(item_tetra_coors, stiffness_matrix);
@@ -178,7 +183,7 @@ namespace CAE
                             {
                                 for (; row_idx[t] < ii_dof; t++)
                                 {
-                                }  // 使用上三角矩阵
+                                } // 使用上三角矩阵
                                 nz_val[t] = nz_val[t] + stiffness_matrix(mm, nn);
                             }
                         }

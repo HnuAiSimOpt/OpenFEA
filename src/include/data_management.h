@@ -14,8 +14,11 @@ Description: XXX
 
 #include <iostream>
 #include <vector>
-using std::vector;
+#include <algorithm>
+
 using std::string;
+using std::vector;
+using std::sort;
 
 namespace CAE
 {
@@ -30,9 +33,13 @@ namespace CAE
         int load_dof_;                       // 载荷自由度，1:X   2:Y   3:Z
         double load_value_;                  // 承载幅值
         vector<int> dis_bc_set_;             // 约束节点集合
-        vector<int> resort_free_nodes_;       // 重排无约束自由度索引
-        vector<double> single_load_vec_;      // 基于重排自由度的单载荷向量
-        vector<double> single_dis_vec_;       // 仅考虑无约束自由度的位移向量
-        vector<double> single_full_dis_vec_;  // 考虑所有自由度的位移向量
+        vector<int> resort_free_nodes_;      // 重排无约束自由度索引
+        vector<double> single_load_vec_;     // 基于重排自由度的单载荷向量
+        vector<double> single_dis_vec_;      // 仅考虑无约束自由度的位移向量
+        vector<double> single_full_dis_vec_; // 考虑所有自由度的位移向量
+
+    public:
+        // 单元种类 去重
+        void filter_ele_type(vector<string> &ele_typr_sets);
     };
 }
