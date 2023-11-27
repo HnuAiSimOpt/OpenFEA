@@ -133,7 +133,9 @@ namespace CAE
             //string item_ele_type = data_cae.ele_type_[id_ele];
             string item_ele_type = data_cae.ele_list_[data_cae.elelist_idx_[id_ele]]->type_;
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
-            //
+            //这个地方build_tetra_dofs_coors我感觉可以写成一个函数，从单元获取节点数和各节点自由度数，
+            //统一生成单元各节点坐标矩阵，用Eigen::Ref<Eigen::MatrixXd> node_coords传参，然后就不用下面的switch了
+            //具体的看你下面代码能不能实现吧
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
