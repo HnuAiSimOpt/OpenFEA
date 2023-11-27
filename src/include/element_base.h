@@ -27,7 +27,8 @@ namespace CAE
     public:
         // 构造函数，析构函数
         ele_base(){};
-
+    public:
+        std::string type_;
         // 赋值材料属性
         virtual void set_matrial(){};
 
@@ -38,6 +39,6 @@ namespace CAE
         virtual void build_strain_mat(){};
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(){};
+        virtual void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix){};
     };
 }

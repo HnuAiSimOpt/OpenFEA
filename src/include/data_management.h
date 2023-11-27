@@ -15,10 +15,14 @@ Description: XXX
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <map>
+#include "include/element_base.h"
+#include "include/elastic_ele.h"
 
 using std::string;
 using std::vector;
 using std::sort;
+using std::map;
 
 namespace CAE
 {
@@ -37,9 +41,12 @@ namespace CAE
         vector<double> single_load_vec_;     // 基于重排自由度的单载荷向量
         vector<double> single_dis_vec_;      // 仅考虑无约束自由度的位移向量
         vector<double> single_full_dis_vec_; // 考虑所有自由度的位移向量
+        vector<ele_base*> ele_list_;         // 单元类型列表
+        vector<int> elelist_idx_;            // 各单元对应的ele_list的索引
 
     public:
         // 单元种类 去重
-        void filter_ele_type(vector<string> &ele_typr_sets);
+        void filter_ele_type(vector<string> &ele_type_sets);
+        void ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat);
     };
 }

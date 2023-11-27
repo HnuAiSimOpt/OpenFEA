@@ -2,3 +2,4 @@ AutoBuild/*
 build/*
 buildDebug/*
 .vscode/*
+bin/

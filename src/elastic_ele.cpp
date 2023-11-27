@@ -37,8 +37,8 @@ namespace CAE
     }
 
     // 建立应变矩阵
-    void tetra_ele_elastic::build_strain_mat(Matrix4d3 &node_coords, Matrix6d12 &strain_mat)
-    {
+    //void tetra_ele_elastic::build_strain_mat(Matrix4d3 &node_coords, Matrix6d12 &strain_mat)
+    void tetra_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat) {
         strain_mat.setZero();
         Matrix3d4 dN_drst(3, 4), dN_dxyz(3, 4);
         Matrix3d3 jacobi(3, 3), inv_jacobi(3, 3);
@@ -70,7 +70,7 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void tetra_ele_elastic::build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &stiffness_matrix)
+    void tetra_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
         // 基于 单点Hammer积分 计算四面体单元
         stiffness_matrix.setZero();
@@ -103,7 +103,7 @@ namespace CAE
     }
 
     // 建立应变矩阵(积分点)
-    void hex_ele_elastic::build_strain_mat(Matrix8d3 &node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point)
+    void hex_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point)
     {
         // 初始化
         strain_mat.setZero();
@@ -158,7 +158,7 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void hex_ele_elastic::build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &stiffness_matrix)
+    void hex_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
         // 初始化等参坐标
         double gp_values = 1. / sqrt(3.);

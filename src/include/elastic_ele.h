@@ -14,6 +14,7 @@ Description: XXX
 
 #include <vector>
 #include "Eigen/Dense"
+#include "Eigen/SVD"
 #include "include/element_base.h"
 
 typedef Eigen::Matrix<double, 3, 3> Matrix3d3;
@@ -33,6 +34,8 @@ typedef Eigen::Matrix<double, 12, 12> Matrix12d12;
 typedef Eigen::Matrix<double, 24, 6> Matrix24d6;
 typedef Eigen::Matrix<double, 24, 24> Matrix24d24;
 
+//typedef Eigen::MatrixXd<24, 24> Matrix24d24;
+
 using std::vector;
 
 namespace CAE
@@ -46,11 +49,12 @@ namespace CAE
         double det_jacobi_; // 雅可比矩阵行列式(中心积分点)
         elastic_mat matrial_struc_;
         Matrix6d6 C_matrix_;
+        Matrix6d12 strain_mat;
 
     public:
         // 构造函数，析构函数
-        tetra_ele_elastic(){};
-        tetra_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc){};
+        tetra_ele_elastic(){ type_ = "C3D4"; };
+        tetra_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc){ type_ = "C3D4"; };
 
         // 材料赋属性
         virtual void set_matrial(elastic_mat matrial_struc) { matrial_struc_ = matrial_struc; };
@@ -59,10 +63,11 @@ namespace CAE
         virtual void build_cons_mat();
 
         // 建立应变矩阵(积分点)
-        virtual void build_strain_mat(Matrix4d3 &node_coords, Matrix6d12 &strain_mat);
+        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat);
+
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Matrix4d3 &node_coords, Matrix12d12 &stiffness_matrix);
+        void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();
@@ -80,8 +85,8 @@ namespace CAE
 
     public:
         // 构造函数，析构函数
-        hex_ele_elastic(){};
-        hex_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc){};
+        hex_ele_elastic(){ type_ = "C3D8R"; };
+        hex_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D8R"; };
 
         // 材料赋属性
         virtual void set_matrial(elastic_mat matrial_struc) { matrial_struc_ = matrial_struc; };
@@ -90,10 +95,10 @@ namespace CAE
         virtual void build_cons_mat();
 
         // 建立应变矩阵(积分点)
-        virtual void build_strain_mat(Matrix8d3 &node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
+        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Matrix8d3 &node_coords, Matrix24d24 &stiffness_matrix);
+        void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();

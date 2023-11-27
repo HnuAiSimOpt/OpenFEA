@@ -115,13 +115,14 @@ namespace CAE
         // 初始化单元
         vector<string> ele_type_set;
         data_cae.filter_ele_type(ele_type_set);
+        data_cae.ele_inite(ele_type_set,ELE_TYPES,data_mat);
         // *******************************************
-        tetra_ele_elastic item_tetra_stiff(data_mat);
-        item_tetra_stiff.build_cons_mat();
-        hex_ele_elastic item_hex_stiff(data_mat);
-        item_hex_stiff.build_cons_mat();
-        Matrix4d3 item_tetra_coors;
-        Matrix8d3 item_hex_coors;
+        //tetra_ele_elastic item_tetra_stiff(data_mat);
+        //item_tetra_stiff.build_cons_mat();
+        //hex_ele_elastic item_hex_stiff(data_mat);
+        //item_hex_stiff.build_cons_mat();
+        //Matrix4d3 item_tetra_coors;
+        //Matrix8d3 item_hex_coors;
         // *******************************************
 
         int num_nodes;
@@ -129,15 +130,19 @@ namespace CAE
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
-            string item_ele_type = data_cae.ele_type_[id_ele];
+            //string item_ele_type = data_cae.ele_type_[id_ele];
+            string item_ele_type = data_cae.ele_list_[data_cae.elelist_idx_[id_ele]]->type_;
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
+            //
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
             {
+                Matrix4d3 item_tetra_coors;////
                 build_tetra_dofs_coors(item_ele_dofs, item_tetra_coors, data_cae, id_ele);
                 Matrix12d12 stiffness_matrix;
-                item_tetra_stiff.build_ele_stiff_mat(item_tetra_coors, stiffness_matrix);
+                //item_tetra_stiff.build_ele_stiff_mat(item_tetra_coors, stiffness_matrix);////
+                data_cae.ele_list_[data_cae.elelist_idx_[id_ele]]->build_ele_stiff_mat(item_tetra_coors, stiffness_matrix);//
                 // 组装
                 int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
                 for (int mm = 0; mm < loop_size; mm++)
@@ -164,9 +169,11 @@ namespace CAE
             }
             case 2:
             {
+                Matrix8d3 item_hex_coors;/////
                 build_hex_dofs_coors(item_ele_dofs, item_hex_coors, data_cae, id_ele);
                 Matrix24d24 stiffness_matrix;
-                item_hex_stiff.build_ele_stiff_mat(item_hex_coors, stiffness_matrix);
+                //item_hex_stiff.build_ele_stiff_mat(item_hex_coors, stiffness_matrix);
+                data_cae.ele_list_[data_cae.elelist_idx_[id_ele]]->build_ele_stiff_mat(item_hex_coors, stiffness_matrix);//
                 // 组装
                 int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
                 for (int mm = 0; mm < loop_size; mm++)

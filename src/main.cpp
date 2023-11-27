@@ -21,7 +21,7 @@ void main()
     CAE::elastic_mat mat_item{2.1e9, 0.3, 0.};
 
     // 材料路径
-    std::string path = "E:/CADCAE_project/model/mix_ele_model/shaft_bracket/Job-1.inp";
+    std::string path = "F:/OpenFEM/dev-cbx/OpenFEA/model/Job-1.inp";
 
     // 关键字
     string load_set_keyword = "Set-load";
@@ -35,7 +35,7 @@ void main()
     cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
 
     // 执行结构响应分析
-    string result_path = "E:/CADCAE_project/model/mix_ele_model/shaft_bracket/dis_with_error.vtk";
-    string path_abaqus = "E:/CADCAE_project/model/mix_ele_model/shaft_bracket/Abaqus_U.txt";
+    string result_path = "F:/OpenFEM/dev-cbx/OpenFEA/model/dis_with_error.vtk";
+    string path_abaqus = "F:/OpenFEM/dev-cbx/OpenFEA/model/Abaqus_U.txt";
     cae_item.implict_analysis(result_path, path_abaqus);
 }
