@@ -38,7 +38,7 @@ namespace CAE
 
     // 建立应变矩阵
     //void tetra_ele_elastic::build_strain_mat(Matrix4d3 &node_coords, Matrix6d12 &strain_mat)
-    void tetra_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat) {
+    void tetra_ele_elastic::build_strain_mat(MatrixXd &node_coords, Matrix6d12 &strain_mat) {
         strain_mat.setZero();
         Matrix3d4 dN_drst(3, 4), dN_dxyz(3, 4);
         Matrix3d3 jacobi(3, 3), inv_jacobi(3, 3);
@@ -70,16 +70,18 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void tetra_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
+    void tetra_ele_elastic::build_ele_stiff_mat(MatrixXd &node_coords, MatrixXd &stiffness_matrix)
     {
         // 基于 单点Hammer积分 计算四面体单元
+        stiffness_matrix.resize(12, 12);
         stiffness_matrix.setZero();
         double weight = 1. / 6.; // Hammer积分 权重
         Matrix6d12 strain_mat;
         build_strain_mat(node_coords, strain_mat);
         Matrix12d6 item_temp = strain_mat.transpose() * C_matrix_; // 12 x 6
-        stiffness_matrix = item_temp * strain_mat;                        // 12 x 12
+        stiffness_matrix = item_temp * strain_mat;                 // 12 x 12
         stiffness_matrix = weight * det_jacobi_ * stiffness_matrix;
+        stiffness_matrix = stiffness_matrix;
     }
 
     //****************************************************************************//
@@ -103,7 +105,7 @@ namespace CAE
     }
 
     // 建立应变矩阵(积分点)
-    void hex_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point)
+    void hex_ele_elastic::build_strain_mat(MatrixXd &node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point)
     {
         // 初始化
         strain_mat.setZero();
@@ -158,7 +160,7 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void hex_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
+    void hex_ele_elastic::build_ele_stiff_mat(MatrixXd &node_coords, MatrixXd &stiffness_matrix)
     {
         // 初始化等参坐标
         double gp_values = 1. / sqrt(3.);
@@ -173,6 +175,7 @@ namespace CAE
             -gp_values, gp_values, gp_values;
         //
         double weight = 1.; // 两点高斯积分 权重
+        stiffness_matrix.resize(24, 24);
         stiffness_matrix.setZero();
         Matrix6d24 strain_mat;
         Matrix24d6 item_temp_1;

@@ -12,6 +12,7 @@ Description: XXX
 
 #pragma once
 
+#include <iostream>
 #include <vector>
 #include "Eigen/Dense"
 #include "Eigen/SVD"
@@ -37,6 +38,7 @@ typedef Eigen::Matrix<double, 24, 24> Matrix24d24;
 //typedef Eigen::MatrixXd<24, 24> Matrix24d24;
 
 using std::vector;
+using Eigen::MatrixXd;
 
 namespace CAE
 {
@@ -63,11 +65,10 @@ namespace CAE
         virtual void build_cons_mat();
 
         // 建立应变矩阵(积分点)
-        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat);
-
+        virtual void build_strain_mat(MatrixXd &node_coords, Matrix6d12 &strain_mat);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
+        void build_ele_stiff_mat(MatrixXd &node_coords, MatrixXd &stiffness_matrix) override;
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();
@@ -95,10 +96,10 @@ namespace CAE
         virtual void build_cons_mat();
 
         // 建立应变矩阵(积分点)
-        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
+        virtual void build_strain_mat(MatrixXd &node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
+        void build_ele_stiff_mat(MatrixXd &node_coords, MatrixXd &stiffness_matrix) override;
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();

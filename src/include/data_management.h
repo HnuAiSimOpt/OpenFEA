@@ -42,7 +42,7 @@ namespace CAE
         vector<double> single_dis_vec_;      // 仅考虑无约束自由度的位移向量
         vector<double> single_full_dis_vec_; // 考虑所有自由度的位移向量
         vector<ele_base*> ele_list_;         // 单元类型列表
-        vector<int> elelist_idx_;            // 各单元对应的ele_list的索引
+        vector<int> ele_list_idx_;           // 各单元对应的ele_list的索引
 
     public:
         // 单元种类 去重

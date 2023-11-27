@@ -24,17 +24,18 @@ namespace CAE
         sort(ele_type_sets.begin(), ele_type_sets.end());
         vector<string>::iterator pos = unique(ele_type_sets.begin(), ele_type_sets.end());
         ele_type_sets.erase(pos, ele_type_sets.end());
-        for(int i=0;i<ele_type_sets.size();i++)
+        for (int i = 0; i < ele_type_sets.size(); i++)
         {
-            std::cout<<ele_type_sets[i]<<std::endl;
+            std::cout << ele_type_sets[i] << std::endl;
         }
     }
 
-    void data_management::ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat)
+    void data_management::ele_inite(vector<string> &ele_type_sets, map<string, int> &ELE_TYPES, elastic_mat &data_mat)
     {
         map<string, int> type_idx;
-        for (int i = 0; i < ele_type_sets.size();i++) {
-            ele_base* ele;
+        for (int i = 0; i < ele_type_sets.size(); i++)
+        {
+            ele_base *ele;
             auto type = ele_type_sets[i];
             switch (ELE_TYPES[type])
             {
@@ -44,7 +45,7 @@ namespace CAE
                 ele->build_cons_mat();
                 ele_list_.push_back(ele);
                 type_idx[type] = i;
-                break; 
+                break;
             }
             case 2:
             {
@@ -62,10 +63,11 @@ namespace CAE
             }
         }
 
-        //单元名字对应其在ele_list中的索引
-        elelist_idx_.resize(ne_);
-        for (int i = 0; i < ne_; i++) {
-            elelist_idx_[i] = type_idx[ele_type_[i]];
+        // 单元名字对应其在ele_list中的索引
+        ele_list_idx_.resize(ne_);
+        for (int i = 0; i < ne_; i++)
+        {
+            ele_list_idx_[i] = type_idx[ele_type_[i]];
         }
     }
 

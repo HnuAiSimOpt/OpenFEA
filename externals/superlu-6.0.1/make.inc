@@ -15,7 +15,7 @@
 #
 #  The name of the libraries to be created/linked to
 #
-# SuperLUroot	= F:/OpenFEM/dev-cbx/OpenFEA/build
+# SuperLUroot	= E:/CADCAE_project/OpenFEA/build
 #
 SuperLUroot	= C:/Program Files/project_main
 SUPERLULIB   	= $(SuperLUroot)/SRC/libsuperlu.a
@@ -34,11 +34,11 @@ LIBS  +=
 #  The archiver and the flag(s) to use when building archive (library)
 #  If your system has no ranlib, set RANLIB = echo.
 #
-ARCH         = C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/lib.exe
+ARCH         = D:/vs2019/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/lib.exe
 ARCHFLAGS    = cr
 RANLIB       = :
 
-CC           = C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
+CC           = D:/vs2019/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
 CFLAGS 	     = /DWIN32 /D_WINDOWS 
 NOOPTS       = -O0
 FORTRAN	     = 
