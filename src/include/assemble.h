@@ -57,7 +57,9 @@ namespace CAE
         //                             data_management &data_cae, int ele_id);
         // void build_hex_dofs_coors(vector<int> &item_ele_dofs, Matrix8d3 &item_ele_coors,
         //                           data_management &data_cae, int ele_id);
-        void build_ele_dofs_coors(vector<int> &item_ele_dofs, MatrixXd &item_ele_coors,
-                                  data_management &data_cae, int ele_id, string ele_type);
+        //void build_ele_dofs_coors(vector<int> &item_ele_dofs, MatrixXd &item_ele_coors,
+        //                          data_management &data_cae, int ele_id, string ele_type);
+        void build_ele_dofs_coors(vector<int>& item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors,
+            data_management& data_cae, int ele_id, int num_nodes);
     };
 }

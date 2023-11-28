@@ -68,10 +68,9 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void tetra_ele_elastic::build_ele_stiff_mat(Eigen::MatrixXd& node_coords, Eigen::MatrixXd& stiffness_matrix)
+    void tetra_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
         // 基于 单点Hammer积分 计算四面体单元
-        stiffness_matrix.resize(12, 12);
         stiffness_matrix.setZero();
         double weight = 1. / 6.; // Hammer积分 权重
         Matrix6d12 strain_mat;

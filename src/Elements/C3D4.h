@@ -40,7 +40,7 @@ namespace CAE
 
 
         // 建立单元刚度矩阵
-        void build_ele_stiff_mat(Eigen::MatrixXd& node_coords, Eigen::MatrixXd& stiffness_matrix) override;
+        void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
         // 建立单元密度矩阵
         // void build_ele_den_mat();

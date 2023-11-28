@@ -126,10 +126,13 @@ namespace CAE
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->type_;
+            // string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->type_;
+            int node_num_ele = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
             // 查找节点自由度及坐标
-            build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, item_ele_type);
+            item_ele_coors.resize(node_num_ele, 3);
+            build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, node_num_ele);
             // 计算单元刚度矩阵
+            stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
             // 组装
             int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
@@ -158,10 +161,10 @@ namespace CAE
         cout << "The CSR index has been filled" << endl;
     }
 
-    void assamble_stiffness::build_ele_dofs_coors(vector<int> &item_ele_dofs, MatrixXd &item_ele_coors,
-                                                  data_management &data_cae, int ele_id, string ele_type)
+    void assamble_stiffness::build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors,
+                                                  data_management &data_cae, int ele_id, int num_nodes)
     {
-        int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[ele_id]]->nnode_;
+        //int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[ele_id]]->nnode_;
         /*switch (ELE_TYPES[ele_type])
         {
         case 1:

@@ -90,7 +90,7 @@ namespace CAE
     }
 
     // 建立单元刚度矩阵
-    void hex_ele_elastic::build_ele_stiff_mat(Eigen::MatrixXd& node_coords, Eigen::MatrixXd& stiffness_matrix)
+    void hex_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
         // 初始化等参坐标
         double gp_values = 1. / sqrt(3.);
@@ -105,7 +105,6 @@ namespace CAE
             -gp_values, gp_values, gp_values;
         //
         double weight = 1.; // 两点高斯积分 权重
-        stiffness_matrix.resize(24, 24);
         stiffness_matrix.setZero();
         Matrix6d24 strain_mat;
         Matrix24d6 item_temp_1;

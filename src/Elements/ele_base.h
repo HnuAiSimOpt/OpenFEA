@@ -59,7 +59,7 @@ namespace CAE
         virtual void build_strain_mat() {};
 
         // 建立单元刚度矩阵
-        virtual void build_ele_stiff_mat(Eigen::MatrixXd& node_coords, Eigen::MatrixXd& stiffness_matrix) {};
+        virtual void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) {};
     };
     CREAT_FACTORY(ele_base);
 }
