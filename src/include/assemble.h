@@ -38,7 +38,6 @@ namespace CAE
         vector<double> nz_val;                                    // 储存每个非零元素值的值
         vector<int> row_idx;                                      // 储存每个非零元素值的行索引
         vector<int> col_idx;                                      // 储存每行第一个非零元素值的列索引
-        map<string, int> ELE_TYPES = {{"C3D4", 1}, {"C3D8R", 2}}; // 建立单元类型到整型的映射
 
     public:
         // 建立压缩稀疏行（Compressed Sparse Row，CSR）索引

@@ -94,8 +94,6 @@ namespace CAE
         // 声明内存
         nz_val.resize(num_nz_val);
         // 初始化单元
-        vector<string> ele_type_set;
-        data_cae.filter_ele_type(ele_type_set);
         data_cae.ele_inite(data_mat);
         // 初始化单元坐标，刚度矩阵
         int num_nodes;

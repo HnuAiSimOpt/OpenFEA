@@ -79,7 +79,6 @@ namespace CAE
         // 初始化单元数据
         data_cae.coords_.resize(data_cae.nd_, vector<double>(3));
         data_cae.node_topos_.resize(data_cae.ne_, vector<int>(8));
-        data_cae.ele_type_.resize(data_cae.ne_);
         data_cae.ele_list_idx_.resize(data_cae.ne_);
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
@@ -151,7 +150,6 @@ namespace CAE
                     for (int i = 0; i < ele_nnode; i++) {
                         data_cae.node_topos_[id_ - 1][i] = atoi(temp_a[i + 1].c_str());
                     }
-                    data_cae.ele_type_[id_ - 1] = type_temp[1];//To 纪超：保留了这个，如果你觉得没必要了，可以删掉
                     id_ele++;
                 }
             }

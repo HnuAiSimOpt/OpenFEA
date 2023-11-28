@@ -32,7 +32,6 @@ namespace CAE
         int ne_, nd_;                        // 单元，节点总数
         vector<vector<double>> coords_;      // 节点坐标
         vector<vector<int>> node_topos_;     // 节点拓扑关系
-        vector<string> ele_type_;            // 各单元类型
         vector<int> load_set_;               // 承载节点集合
         int load_dof_;                       // 载荷自由度，1:X   2:Y   3:Z
         double load_value_;                  // 承载幅值
@@ -45,10 +44,10 @@ namespace CAE
         vector<int> ele_list_idx_;           // 各单元对应的ele_list的索引
 
     public:
-        // 单元种类 去重
-        void filter_ele_type(vector<string> &ele_type_sets);
         //void ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat);
+        // 单元初始化
         void ele_inite(elastic_mat& data_mat);
+        // 工厂注册单元
         int add_ele(string& ele_type);
     };
 }
