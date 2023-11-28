@@ -18,8 +18,6 @@ Description: XXX
 #include <map>
 #include "Eigen/Dense"
 #include "include/data_management.h"
-#include "include/element_base.h"
-#include "include/elastic_ele.h"
 
 using std::cout;
 using std::endl;
@@ -47,7 +45,8 @@ namespace CAE
         void build_CSR(data_management &data_cae);
 
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度
-        void build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, string ele_type);
+        //void build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, string ele_type);
+        void build_ele_dofs(vector<int>& item_ele_dofs, data_management& data_cae, int ele_id, int num_nodes);
 
         // 基于CSR索引格式填充稀疏矩阵
         void fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat);

@@ -15,7 +15,7 @@
 #
 #  The name of the libraries to be created/linked to
 #
-# SuperLUroot	= F:/OpenFEM/temp/OpenFEA/build
+# SuperLUroot	= F:/OpenFEM/dev-cbx/OpenFEA/build
 #
 SuperLUroot	= C:/Program Files/project_main
 SUPERLULIB   	= $(SuperLUroot)/SRC/libsuperlu.a

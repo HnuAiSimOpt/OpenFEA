@@ -18,7 +18,6 @@ Description: XXX
 #include <map>
 #include "include/Factory.h"
 #include "Elements/ele_base.h"
-#include "include/elastic_ele.h"
 
 using std::string;
 using std::vector;

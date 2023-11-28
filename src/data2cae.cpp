@@ -153,61 +153,6 @@ namespace CAE
                     }
                     data_cae.ele_type_[id_ - 1] = type_temp[1];//To 纪超：保留了这个，如果你觉得没必要了，可以删掉
                     id_ele++;
-                    //if (type_temp[1] == "C3D4")
-                    //{
-                    //    string id, node1, node2, node3, node4;
-                    //    int id_, node1_, node2_, node3_, node4_;
-                    //    std::istringstream iss(line);
-                    //    iss >> id >> node1 >> node2 >> node3 >> node4;
-                    //    id.erase(id.end() - 1);               // 删除字符串最后的符号
-                    //    id_ = atoi(id.c_str());               // 转换字符串为int
-                    //    data_cae.ele_type_[id_ - 1] = "C3D4"; // 记录单元类型
-                    //    node1.erase(node1.end() - 1);
-                    //    node1_ = atoi(node1.c_str());
-                    //    node2.erase(node2.end() - 1);
-                    //    node2_ = atoi(node2.c_str());
-                    //    node3.erase(node3.end() - 1);
-                    //    node3_ = atoi(node3.c_str());
-                    //    node4_ = atoi(node4.c_str());
-                    //    data_cae.node_topos_[id_ - 1][0] = node1_;
-                    //    data_cae.node_topos_[id_ - 1][1] = node2_;
-                    //    data_cae.node_topos_[id_ - 1][2] = node3_;
-                    //    data_cae.node_topos_[id_ - 1][3] = node4_;
-                    //}
-                    //else if (type_temp[1] == "C3D8R")
-                    //{
-                    //    string id, node1, node2, node3, node4, node5, node6, node7, node8;
-                    //    int id_, node1_, node2_, node3_, node4_, node5_, node6_, node7_, node8_;
-                    //    std::istringstream iss(line);
-                    //    iss >> id >> node1 >> node2 >> node3 >> node4 >> node5 >> node6 >> node7 >> node8;
-                    //    id.erase(id.end() - 1);
-                    //    id_ = atoi(id.c_str());
-                    //    data_cae.ele_type_[id_ - 1] = "C3D8R";
-                    //    node1.erase(node1.end() - 1);
-                    //    node1_ = atoi(node1.c_str());
-                    //    node2.erase(node2.end() - 1);
-                    //    node2_ = atoi(node2.c_str());
-                    //    node3.erase(node3.end() - 1);
-                    //    node3_ = atoi(node3.c_str());
-                    //    node4.erase(node4.end() - 1);
-                    //    node4_ = atoi(node4.c_str());
-                    //    node5.erase(node5.end() - 1);
-                    //    node5_ = atoi(node5.c_str());
-                    //    node6.erase(node6.end() - 1);
-                    //    node6_ = atoi(node6.c_str());
-                    //    node7.erase(node7.end() - 1);
-                    //    node7_ = atoi(node7.c_str());
-                    //    node8_ = atoi(node8.c_str());
-                    //    data_cae.node_topos_[id_ - 1][0] = node1_;
-                    //    data_cae.node_topos_[id_ - 1][1] = node2_;
-                    //    data_cae.node_topos_[id_ - 1][2] = node3_;
-                    //    data_cae.node_topos_[id_ - 1][3] = node4_;
-                    //    data_cae.node_topos_[id_ - 1][4] = node5_;
-                    //    data_cae.node_topos_[id_ - 1][5] = node6_;
-                    //    data_cae.node_topos_[id_ - 1][6] = node7_;
-                    //    data_cae.node_topos_[id_ - 1][7] = node8_;
-                    //    id_ele = id_;
-                    //}
                 }
             }
         }
