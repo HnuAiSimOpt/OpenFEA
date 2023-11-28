@@ -11,7 +11,7 @@ Description: XXX
 **************************************************************************/
 
 #include "include/cae.h"
-
+#include <chrono>
 namespace CAE
 {
     void CAE_process::pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword)
@@ -43,10 +43,13 @@ namespace CAE
         item_bcs.build_single_load(data_cae_);
 
         // 组装刚度矩阵
+        auto start = std::chrono::system_clock::now();
         assamble_stiffness item_assam;
         item_assam.build_CSR(data_cae_);
         item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
-
+        auto end = std::chrono::system_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout << "Time to cal use " << duration.count() << " ms\n";
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
         data_cae_.single_load_vec_.resize(3 * num_free_nodes);

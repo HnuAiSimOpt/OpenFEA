@@ -16,7 +16,8 @@ Description: XXX
 #include <vector>
 #include <algorithm>
 #include <map>
-#include "include/element_base.h"
+#include "include/Factory.h"
+#include "Elements/ele_base.h"
 #include "include/elastic_ele.h"
 
 using std::string;
@@ -47,6 +48,8 @@ namespace CAE
     public:
         // 单元种类 去重
         void filter_ele_type(vector<string> &ele_type_sets);
-        void ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat);
+        //void ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat);
+        void ele_inite(elastic_mat& data_mat);
+        int add_ele(string& ele_type);
     };
 }

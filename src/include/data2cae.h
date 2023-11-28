@@ -51,6 +51,7 @@ namespace CAE
 
         // 读取约束信息
         void read_dis_bcs(string dis_set_keyword, data_management &data_cae);
+        void del_blank(string& str);
     };
 
 }

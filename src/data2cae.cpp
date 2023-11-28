@@ -80,10 +80,11 @@ namespace CAE
         data_cae.coords_.resize(data_cae.nd_, vector<double>(3));
         data_cae.node_topos_.resize(data_cae.ne_, vector<int>(8));
         data_cae.ele_type_.resize(data_cae.ne_);
+        data_cae.ele_list_idx_.resize(data_cae.ne_);
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
-        int id_node = 0, id_ele = 0;
+        int id_node = 0, id_ele = 0, ele_type_idx = 0;
         while (getline(infile, line))
         {
             // 读取节点坐标
@@ -119,12 +120,18 @@ namespace CAE
             if (line.find("*Element") != string::npos)
             {
                 type_temp = split_str(line, "=");
+                int ele_nnode;
+                del_blank(type_temp[1]);
+                ele_nnode = data_cae.add_ele(type_temp[1]);
                 while (getline(infile, line))
                 {
                     bool flag = true;
                     if (line.find("*Element") != string::npos)
                     {
                         type_temp = split_str(line, "=");
+                        del_blank(type_temp[1]);
+                        ele_nnode = data_cae.add_ele(type_temp[1]);
+                        ele_type_idx++;
                         flag = false;
                         getline(infile, line);
                     }
@@ -132,66 +139,81 @@ namespace CAE
                     {
                         break;
                     }
-                    if (type_temp[1] == "C3D4")
-                    {
-                        string id, node1, node2, node3, node4;
-                        int id_, node1_, node2_, node3_, node4_;
-                        std::istringstream iss(line);
-                        iss >> id >> node1 >> node2 >> node3 >> node4;
-                        id.erase(id.end() - 1);               // 删除字符串最后的符号
-                        id_ = atoi(id.c_str());               // 转换字符串为int
-                        data_cae.ele_type_[id_ - 1] = "C3D4"; // 记录单元类型
-                        node1.erase(node1.end() - 1);
-                        node1_ = atoi(node1.c_str());
-                        node2.erase(node2.end() - 1);
-                        node2_ = atoi(node2.c_str());
-                        node3.erase(node3.end() - 1);
-                        node3_ = atoi(node3.c_str());
-                        node4_ = atoi(node4.c_str());
-                        data_cae.node_topos_[id_ - 1][0] = node1_;
-                        data_cae.node_topos_[id_ - 1][1] = node2_;
-                        data_cae.node_topos_[id_ - 1][2] = node3_;
-                        data_cae.node_topos_[id_ - 1][3] = node4_;
+                    std::istringstream iss(line);
+                    vector<string> temp_a;
+                    string temp;
+                    while (getline(iss, temp, ',')) {
+                        del_blank(temp);
+                        temp_a.push_back(temp);
                     }
-                    else if (type_temp[1] == "C3D8R")
-                    {
-                        string id, node1, node2, node3, node4, node5, node6, node7, node8;
-                        int id_, node1_, node2_, node3_, node4_, node5_, node6_, node7_, node8_;
-                        std::istringstream iss(line);
-                        iss >> id >> node1 >> node2 >> node3 >> node4 >> node5 >> node6 >> node7 >> node8;
-                        id.erase(id.end() - 1);
-                        id_ = atoi(id.c_str());
-                        data_cae.ele_type_[id_ - 1] = "C3D8R";
-                        node1.erase(node1.end() - 1);
-                        node1_ = atoi(node1.c_str());
-                        node2.erase(node2.end() - 1);
-                        node2_ = atoi(node2.c_str());
-                        node3.erase(node3.end() - 1);
-                        node3_ = atoi(node3.c_str());
-                        node4.erase(node4.end() - 1);
-                        node4_ = atoi(node4.c_str());
-                        node5.erase(node5.end() - 1);
-                        node5_ = atoi(node5.c_str());
-                        node6.erase(node6.end() - 1);
-                        node6_ = atoi(node6.c_str());
-                        node7.erase(node7.end() - 1);
-                        node7_ = atoi(node7.c_str());
-                        node8_ = atoi(node8.c_str());
-                        data_cae.node_topos_[id_ - 1][0] = node1_;
-                        data_cae.node_topos_[id_ - 1][1] = node2_;
-                        data_cae.node_topos_[id_ - 1][2] = node3_;
-                        data_cae.node_topos_[id_ - 1][3] = node4_;
-                        data_cae.node_topos_[id_ - 1][4] = node5_;
-                        data_cae.node_topos_[id_ - 1][5] = node6_;
-                        data_cae.node_topos_[id_ - 1][6] = node7_;
-                        data_cae.node_topos_[id_ - 1][7] = node8_;
-                        id_ele = id_;
+                    int id_ = atoi(temp_a[0].c_str());
+                    data_cae.ele_list_idx_[id_ - 1] = ele_type_idx;
+                    for (int i = 0; i < ele_nnode; i++) {
+                        data_cae.node_topos_[id_ - 1][i] = atoi(temp_a[i + 1].c_str());
                     }
+                    data_cae.ele_type_[id_ - 1] = type_temp[1];//To 纪超：保留了这个，如果你觉得没必要了，可以删掉
+                    id_ele++;
+                    //if (type_temp[1] == "C3D4")
+                    //{
+                    //    string id, node1, node2, node3, node4;
+                    //    int id_, node1_, node2_, node3_, node4_;
+                    //    std::istringstream iss(line);
+                    //    iss >> id >> node1 >> node2 >> node3 >> node4;
+                    //    id.erase(id.end() - 1);               // 删除字符串最后的符号
+                    //    id_ = atoi(id.c_str());               // 转换字符串为int
+                    //    data_cae.ele_type_[id_ - 1] = "C3D4"; // 记录单元类型
+                    //    node1.erase(node1.end() - 1);
+                    //    node1_ = atoi(node1.c_str());
+                    //    node2.erase(node2.end() - 1);
+                    //    node2_ = atoi(node2.c_str());
+                    //    node3.erase(node3.end() - 1);
+                    //    node3_ = atoi(node3.c_str());
+                    //    node4_ = atoi(node4.c_str());
+                    //    data_cae.node_topos_[id_ - 1][0] = node1_;
+                    //    data_cae.node_topos_[id_ - 1][1] = node2_;
+                    //    data_cae.node_topos_[id_ - 1][2] = node3_;
+                    //    data_cae.node_topos_[id_ - 1][3] = node4_;
+                    //}
+                    //else if (type_temp[1] == "C3D8R")
+                    //{
+                    //    string id, node1, node2, node3, node4, node5, node6, node7, node8;
+                    //    int id_, node1_, node2_, node3_, node4_, node5_, node6_, node7_, node8_;
+                    //    std::istringstream iss(line);
+                    //    iss >> id >> node1 >> node2 >> node3 >> node4 >> node5 >> node6 >> node7 >> node8;
+                    //    id.erase(id.end() - 1);
+                    //    id_ = atoi(id.c_str());
+                    //    data_cae.ele_type_[id_ - 1] = "C3D8R";
+                    //    node1.erase(node1.end() - 1);
+                    //    node1_ = atoi(node1.c_str());
+                    //    node2.erase(node2.end() - 1);
+                    //    node2_ = atoi(node2.c_str());
+                    //    node3.erase(node3.end() - 1);
+                    //    node3_ = atoi(node3.c_str());
+                    //    node4.erase(node4.end() - 1);
+                    //    node4_ = atoi(node4.c_str());
+                    //    node5.erase(node5.end() - 1);
+                    //    node5_ = atoi(node5.c_str());
+                    //    node6.erase(node6.end() - 1);
+                    //    node6_ = atoi(node6.c_str());
+                    //    node7.erase(node7.end() - 1);
+                    //    node7_ = atoi(node7.c_str());
+                    //    node8_ = atoi(node8.c_str());
+                    //    data_cae.node_topos_[id_ - 1][0] = node1_;
+                    //    data_cae.node_topos_[id_ - 1][1] = node2_;
+                    //    data_cae.node_topos_[id_ - 1][2] = node3_;
+                    //    data_cae.node_topos_[id_ - 1][3] = node4_;
+                    //    data_cae.node_topos_[id_ - 1][4] = node5_;
+                    //    data_cae.node_topos_[id_ - 1][5] = node6_;
+                    //    data_cae.node_topos_[id_ - 1][6] = node7_;
+                    //    data_cae.node_topos_[id_ - 1][7] = node8_;
+                    //    id_ele = id_;
+                    //}
                 }
             }
         }
         cout << "a total of " << id_node << " nodal coordinates have been readed." << endl;
         cout << "a total of " << id_ele << " nodal connectivities have been readed." << endl;
+        cout << "a total of " << ele_type_idx + 1 << " types of elements have been readed." << endl;
     }
 
     // 读取载荷信息
@@ -294,5 +316,17 @@ namespace CAE
         }
         infile.close();
         cout << "the information of displacement boundary (" << data_cae.dis_bc_set_.size() << ")  have been readed." << endl;
+    }
+
+    void ReadInfo::del_blank(string& str)
+    {
+        int index = 0;
+        if (!str.empty())
+        {
+            while ((index = str.find(' ', index)) != string::npos)
+            {
+                str.erase(index, 1);
+            }
+        }
     }
 }

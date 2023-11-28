@@ -76,8 +76,9 @@ namespace CAE
     // 基于单元类型和节点拓扑关系，返回自由度
     void assamble_stiffness::build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, string ele_type)
     {
-        int num_nodes = 0;
-        switch (ELE_TYPES[ele_type])
+        int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[ele_id]]->nnode_;
+
+        /*switch (ELE_TYPES[ele_type])
         {
         case 1:
         {
@@ -94,7 +95,7 @@ namespace CAE
             cout << "This type does not exist in the element library" << endl;
             break;
         }
-        }
+        }*/
         item_ele_dofs.resize(3 * num_nodes);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
         int item_dof;
@@ -115,7 +116,8 @@ namespace CAE
         // 初始化单元
         vector<string> ele_type_set;
         data_cae.filter_ele_type(ele_type_set);
-        data_cae.ele_inite(ele_type_set, ELE_TYPES, data_mat);
+        //data_cae.ele_inite(ele_type_set, ELE_TYPES, data_mat);
+        data_cae.ele_inite(data_mat);
         // 初始化单元坐标，刚度矩阵
         int num_nodes;
         vector<int> item_ele_dofs;
@@ -159,8 +161,8 @@ namespace CAE
     void assamble_stiffness::build_ele_dofs_coors(vector<int> &item_ele_dofs, MatrixXd &item_ele_coors,
                                                   data_management &data_cae, int ele_id, string ele_type)
     {
-        int num_nodes = 0;
-        switch (ELE_TYPES[ele_type])
+        int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[ele_id]]->nnode_;
+        /*switch (ELE_TYPES[ele_type])
         {
         case 1:
         {
@@ -177,7 +179,7 @@ namespace CAE
             cout << "This type does not exist in the element library" << endl;
             break;
         }
-        };
+        };*/
         item_ele_dofs.resize(3 * num_nodes);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
         item_ele_coors.resize(num_nodes, 3);
