@@ -42,6 +42,8 @@ namespace CAE
         vector<double> single_full_dis_vec_; // 考虑所有自由度的位移向量
         vector<ele_base*> ele_list_;         // 单元类型列表
         vector<int> ele_list_idx_;           // 各单元对应的ele_list的索引
+        double time_total_;                  // 计算总时间
+        double time_step_;                   // 计算时间步长，为0则采用自动步长
 
     public:
         //void ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat);

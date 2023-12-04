@@ -49,9 +49,9 @@ namespace CAE
 		private:																\
 			std::map<std::string, create_##ClassBase> m_classMap;								\
 	};																			\
-	class ClassRegister {												\
+	class ClassRegister##ClassBase {												\
 		public:																\
-			ClassRegister(const std::string& className, create_##ClassBase method)	\
+			ClassRegister##ClassBase(const std::string& className, create_##ClassBase method)	\
 			{																\
 				GetFactory<ClassBase##Factory>::instance()->register_class(className, method);\
 			}																\
@@ -64,7 +64,7 @@ namespace CAE
 		ClassBase* obj = new ClassName();			\
 		return obj;								\
 	}											\
-	ClassRegister classRegister##ClassBase##ClassName(ClassKey, createObject##ClassName)
+	ClassRegister##ClassBase classRegister##ClassBase##ClassName(ClassKey, createObject##ClassName)
 
 
 

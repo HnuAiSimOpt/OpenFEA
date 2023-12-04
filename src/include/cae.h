@@ -42,5 +42,8 @@ namespace CAE
 
         // 执行结构响应分析
         void implict_analysis(string result_path, string path_abaqus);
+
+        // 执行结构动态响应分析
+        void explicit_analysis(string result_path, string path_abaqus);
     };
 }

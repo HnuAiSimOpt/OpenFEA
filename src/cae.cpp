@@ -58,4 +58,20 @@ namespace CAE
         double scale_dis = 1.0;
         item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, true);
     }
+
+    // 执行结构动态响应分析
+    void CAE_process::explicit_analysis(string result_path, string path_abaqus)
+    {
+
+
+
+
+
+
+
+
+
+
+
+    }
 }

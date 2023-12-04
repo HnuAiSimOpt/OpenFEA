@@ -1,5 +1,5 @@
 # cmake最低版本号要求
-cmake_minimum_required (VERSION 3.26)
+cmake_minimum_required (VERSION 3.5)
 
 # 设置项目名
 set(PROJECT_NAME project_main)
