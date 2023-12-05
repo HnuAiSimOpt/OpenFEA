@@ -49,6 +49,7 @@ namespace CAE
         std::string type_;//单元类型名字
         int nnode_;//该单元拥有节点数量
         int node_dof_;//该单元每个节点自由度数
+        int ngps_;//积分点数量
         // 赋值材料属性
         virtual void set_matrial(elastic_mat data_mat) {};
 
@@ -60,6 +61,16 @@ namespace CAE
 
         // 建立单元刚度矩阵
         virtual void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) {};
+    
+        // 建立质量列阵
+        virtual void build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass) {};
+
+        // 计算单元内力
+        virtual void cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d,
+                                  vector<double>& stress, vector<double>& strain, vector<double>& InFroce) {};
+    
+        // 计算单元时间步长
+        virtual void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) {};
     };
     CREAT_FACTORY(ele_base);
 }

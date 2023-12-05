@@ -20,6 +20,7 @@ Description: XXX
 #include "include/assemble.h"
 #include "include/solver_linear.h"
 #include "include/data2vtk.h"
+#include "include/ExplicitTools.h"
 
 using namespace std;
 namespace CAE

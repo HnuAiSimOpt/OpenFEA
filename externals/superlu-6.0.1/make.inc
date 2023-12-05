@@ -39,7 +39,7 @@ ARCHFLAGS    = cr
 RANLIB       = :
 
 CC           = C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe
-CFLAGS 	     = /DWIN32 /D_WINDOWS 
+CFLAGS 	     = /DWIN32 /D_WINDOWS /W3 
 NOOPTS       = -O0
 FORTRAN	     = 
 

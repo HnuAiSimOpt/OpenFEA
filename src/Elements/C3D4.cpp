@@ -79,4 +79,83 @@ namespace CAE
         stiffness_matrix = item_temp * strain_mat;                        // 12 x 12
         stiffness_matrix = weight * det_jacobi_ * stiffness_matrix;
     }
+
+    // 建立单元质量矩阵
+    void tetra_ele_elastic::build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass)
+    {
+        // define & initialize variables
+        double volume, mass;
+        Eigen::Matrix4d nodes_coor;
+        nodes_coor.setZero();
+        int item_node;
+        // trans nodes coor to a matrix
+        for (int i = 0; i < 4; i++) {
+            item_node = node_topos[i] - 1;
+            nodes_coor(i, 0) = coords[item_node][0];
+            nodes_coor(i, 1) = coords[item_node][1];
+            nodes_coor(i, 2) = coords[item_node][2];
+            nodes_coor(i, 3) = 1.0;
+        }
+        // calculate the element volume & mass = volums * density
+        volume = std::abs(nodes_coor.determinant() / 6.0);
+        mass = volume * this->matrial_struc_.density;
+        // assemble the Global mass vector
+        for (int i = 0; i < 4;i++) {
+            Mass[node_topos[i] - 1] = Mass[node_topos[i] - 1] + mass / 4.0;
+        }
+    }
+
+    // 计算单元内力
+    void tetra_ele_elastic::cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d,
+                                         vector<double>& stress, vector<double>& strain, vector<double>& InFroce)
+    {
+        Matrix4d3 nodes_coor;
+        nodes_coor.setZero();
+        int item_node;
+        // trans nodes coor to a matrix
+        for (int i = 0; i < 4; i++) {
+            item_node = node_topos[i] - 1;
+            nodes_coor(i, 0) = real_coords[item_node][0];
+            nodes_coor(i, 1) = real_coords[item_node][1];
+            nodes_coor(i, 2) = real_coords[item_node][2];
+        }
+        Eigen::MatrixXd stiffness_matrix, disp,dstrain, inforce;
+        stiffness_matrix.resize(12, 12);
+        disp.resize(12, 1);
+        int idx_temp;
+        for (int i = 0; i < 4; i++) {
+            idx_temp = node_topos[i] - 1;
+            disp(3 * i, 0) = disp_d[3 * idx_temp];
+            disp(3 * i + 1, 0) = disp_d[3 * idx_temp + 1];
+            disp(3 * i + 2, 0) = disp_d[3 * idx_temp + 2];
+        }
+        build_ele_stiff_mat(nodes_coor, stiffness_matrix);
+        inforce = stiffness_matrix * disp;//12*12 12*1 = 12*1
+        for (int i = 0; i < 4; i++) {
+            idx_temp = node_topos[i] - 1;
+            // 内力为负，故减去
+            InFroce[3 * idx_temp] -= inforce(3 * i, 0);
+            InFroce[3 * idx_temp + 1] -= inforce(3 * i + 1, 0);
+            InFroce[3 * idx_temp + 2] -= inforce(3 * i + 2, 0);
+        }
+    }
+
+    // 计算单元时间步长
+    void tetra_ele_elastic::update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step)
+    {
+        Eigen::MatrixXd stiffness_matrix;
+        stiffness_matrix.resize(12,12);
+        build_ele_stiff_mat(node_coords, stiffness_matrix);
+        Eigen::EigenSolver<Eigen::MatrixXd> es(stiffness_matrix);
+        Matrix12d12 D = es.pseudoEigenvalueMatrix();
+        double max_v = DBL_MIN;
+        for (int i = 0; i < 12; i++) {
+            if (max_v < D(i, i)) {
+                max_v = D(i, i);
+            }
+        }
+        if (time_step > 2 / sqrt(max_v)) {
+            time_step = 2 / sqrt(max_v);
+        }
+    }
 }

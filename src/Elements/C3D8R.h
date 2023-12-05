@@ -25,8 +25,8 @@ namespace CAE
 
     public:
         // 构造函数，析构函数
-        hex_ele_elastic() { type_ = "C3D8R"; nnode_ = 8; node_dof_ = 3;};
-        hex_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D8R"; nnode_ = 8; node_dof_ = 3; };
+        hex_ele_elastic() { type_ = "C3D8R"; nnode_ = 8; node_dof_ = 3; ngps_ = 8; };
+        hex_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D8R"; nnode_ = 8; node_dof_ = 3; ngps_ = 8;};
 
         // 材料赋属性
         void set_matrial(elastic_mat matrial_struc) override { matrial_struc_ = matrial_struc; };
@@ -41,6 +41,16 @@ namespace CAE
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
         // 建立单元密度矩阵
-        // void build_ele_den_mat();
+        void build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass)override;
+
+        // 建立形函数
+        void build_shape_fun(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::MatrixXd& shape_fun, vector<double>& gp_points, double& det_jacobi_point);
+        
+        // 计算单元内力
+        void cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d,
+            vector<double>& stress, vector<double>& strain, vector<double>& InFroce)override;
+
+        // 计算单元时间步长
+        void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) override;
     };
 }
