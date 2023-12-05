@@ -144,18 +144,39 @@ namespace CAE
     void tetra_ele_elastic::update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step)
     {
         Eigen::MatrixXd stiffness_matrix;
-        stiffness_matrix.resize(12,12);
+        stiffness_matrix.resize(12, 12);
         build_ele_stiff_mat(node_coords, stiffness_matrix);
-        Eigen::EigenSolver<Eigen::MatrixXd> es(stiffness_matrix);
-        Matrix12d12 D = es.pseudoEigenvalueMatrix();
         double max_v = DBL_MIN;
+        double temp;
         for (int i = 0; i < 12; i++) {
-            if (max_v < D(i, i)) {
-                max_v = D(i, i);
+            temp = 0;
+            for (int j = 0; j < 12; j++) {
+                temp = temp + abs(stiffness_matrix(i, j));
+            }
+            if (max_v < temp) {
+                max_v = temp;
             }
         }
         if (time_step > 2 / sqrt(max_v)) {
             time_step = 2 / sqrt(max_v);
         }
+
+
+
+
+        //Eigen::MatrixXd stiffness_matrix;
+        //stiffness_matrix.resize(12,12);
+        //build_ele_stiff_mat(node_coords, stiffness_matrix);
+        //Eigen::EigenSolver<Eigen::MatrixXd> es(stiffness_matrix);
+        //Matrix12d12 D = es.pseudoEigenvalueMatrix();
+        //double max_v = DBL_MIN;
+        //for (int i = 0; i < 12; i++) {
+        //    if (max_v < D(i, i)) {
+        //        max_v = D(i, i);
+        //    }
+        //}
+        //if (time_step > 2 / sqrt(max_v)) {
+        //    time_step = 2 / sqrt(max_v);
+        //}
     }
 }

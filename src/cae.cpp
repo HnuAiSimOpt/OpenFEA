@@ -71,7 +71,7 @@ namespace CAE
         double time_now_ = 0;
         double time_step_ = DBL_MAX;
         double time_step_old_ = 0;
-        double time_scale_ = 0.8;// use to scale the timestep
+        double time_scale_ = 0.9;// use to scale the timestep
         int output_gap_ = 10;
         // start explicit solve 
         // 1.allocate and inite disp_tp1, disp_t0, vel_tphalf, vel_thalf, acc_t0, InFroce_, OutFroce_, Mass_, stress_, strain_, strain_p_, real_coords_;
@@ -156,7 +156,8 @@ namespace CAE
             // 4.4.3 iterate over all elements to update Infroce
             for (int i = 0; i < data_cae_.ne_; i++) {
                 int idx = data_cae_.ele_list_idx_[i];
-                data_cae_.ele_list_[idx]->cal_in_force(data_cae_.node_topos_[i], real_coords_, disp_d, stress_[i], strain_[i], InFroce_);
+                //data_cae_.ele_list_[idx]->cal_in_force(data_cae_.node_topos_[i], real_coords_, disp_d, stress_[i], strain_[i], InFroce_);
+                data_cae_.ele_list_[idx]->cal_in_force(data_cae_.node_topos_[i], data_cae_.coords_, disp_d, stress_[i], strain_[i], InFroce_);
             }
             // 4.4.4 update timestep
             // update real_coords
