@@ -75,10 +75,11 @@ namespace CAE
         int output_gap_ = 10;
         // start explicit solve 
         // 1.allocate and inite disp_tp1, disp_t0, vel_tphalf, vel_thalf, acc_t0, InFroce_, OutFroce_, Mass_, stress_, strain_, strain_p_, real_coords_;
-        vector<double> disp_tp1(3 * data_cae_.nd_), disp_t0(3 * data_cae_.nd_), disp_d(3 * data_cae_.nd_), vel_tphalf(3 * data_cae_.nd_),
-            vel_thalf(3 * data_cae_.nd_), acc_t0(3 * data_cae_.nd_), InFroce_(3 * data_cae_.nd_), OutFroce_(3 * data_cae_.nd_), Mass_(data_cae_.nd_);
-        vector<vector<double>> stress_(data_cae_.ne_), strain_(data_cae_.ne_), strain_p_(data_cae_.ne_), real_coords_(data_cae_.coords_);
-        for (int i = 0; i < data_cae_.ne_; i++) {
+        int nnode_ = data_cae_.nd_, nele_ = data_cae_.ne_;
+        vector<double> disp_tp1(3 * nnode_), disp_t0(3 * nnode_), disp_d(3 * nnode_), vel_tphalf(3 * nnode_),
+            vel_thalf(3 * nnode_), acc_t0(3 * nnode_), InFroce_(3 * nnode_), OutFroce_(3 * nnode_), Mass_(nnode_);
+        vector<vector<double>> stress_(nele_), strain_(nele_), strain_p_(nele_), real_coords_(data_cae_.coords_);
+        for (int i = 0; i < nele_; i++) {
             int idx = data_cae_.ele_list_idx_[i];
             vector<double> temp(6 * data_cae_.ele_list_[idx]->ngps_);
             stress_.push_back(temp);
@@ -106,7 +107,7 @@ namespace CAE
             time_step_ = data_cae_.time_step_;
         }
         // 3.2 calcul half time velocity(vel_thalf) 
-        for (int i = 0; i < data_cae_.nd_; i++) {
+        for (int i = 0; i < nnode_; i++) {
             // update acc_t0
             acc_t0[3 * i] = (InFroce_[3 * i] + OutFroce_[3 * i]) / Mass_[i];
             acc_t0[3 * i + 1] = (InFroce_[3 * i + 1] + OutFroce_[3 * i + 1]) / Mass_[i];
@@ -154,9 +155,8 @@ namespace CAE
                 disp_t0[3 * node_idx + 2] = 0;
             }
             // 4.4.3 iterate over all elements to update Infroce
-            for (int i = 0; i < data_cae_.ne_; i++) {
+            for (int i = 0; i < nele_; i++) {
                 int idx = data_cae_.ele_list_idx_[i];
-                //data_cae_.ele_list_[idx]->cal_in_force(data_cae_.node_topos_[i], real_coords_, disp_d, stress_[i], strain_[i], InFroce_);
                 data_cae_.ele_list_[idx]->cal_in_force(data_cae_.node_topos_[i], data_cae_.coords_, disp_d, stress_[i], strain_[i], InFroce_);
             }
             // 4.4.4 update timestep
@@ -166,9 +166,6 @@ namespace CAE
                 UpdateTimeStep(data_cae_.node_topos_, real_coords_, data_cae_.ele_list_, data_cae_.ele_list_idx_, time_step_);
                 time_step_ *= time_scale_;
             }
-            std::cout << "-----------------------------------"<< std::endl;
-            std::cout << "step_count:" << step_count << std::endl;
-            std::cout << "time_step:" << time_step_ << std::endl;
             // check wether if time_now + timestep > time_total or next output time
             //next output time = (time_total / output_gap_) * (output_count + 1)
             if (CheckTime(time_step_, (data_cae_.time_total_ / output_gap_) * (output_count + 1) - time_now_)) {
@@ -176,7 +173,7 @@ namespace CAE
             }
             CheckTime(time_step_, data_cae_.time_total_ - time_now_);
             // 4.4.5 calcul half time velocity(vel_thalf)
-            for (int i = 0; i < data_cae_.nd_; i++) {
+            for (int i = 0; i < nnode_; i++) {
                 // update acc_t0
                 acc_t0[3 * i] = (InFroce_[3 * i] + OutFroce_[3 * i]) / Mass_[i];
                 acc_t0[3 * i + 1] = (InFroce_[3 * i + 1] + OutFroce_[3 * i + 1]) / Mass_[i];

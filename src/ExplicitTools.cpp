@@ -43,9 +43,6 @@ namespace CAE {
         if (auto_time) {
             time_step = DBL_MAX;
         }
-        else {
-            time_step = 0.000001;
-        }
 
     }
 
