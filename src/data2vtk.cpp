@@ -230,21 +230,21 @@ namespace CAE
                  << "LOOKUP_TABLE  table7\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << data_cae.single_full_dis_vec_[3 * i] - abaqus_dis[3 * i] << "\n";
+                fout << abs(data_cae.single_full_dis_vec_[3 * i] - abaqus_dis[3 * i]) << "\n";
             }
             // Error in Y
             fout << "\nSCALARS Error_uy double 1\n"
                  << "LOOKUP_TABLE  table8\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << data_cae.single_full_dis_vec_[3 * i + 1] - abaqus_dis[3 * i + 1] << "\n";
+                fout << abs(data_cae.single_full_dis_vec_[3 * i + 1] - abaqus_dis[3 * i + 1]) << "\n";
             }
             // Error in Z
             fout << "\nSCALARS Error_uz double 1\n"
                  << "LOOKUP_TABLE  table9\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << data_cae.single_full_dis_vec_[3 * i + 2] - abaqus_dis[3 * i + 2] << "\n";
+                fout << abs(data_cae.single_full_dis_vec_[3 * i + 2] - abaqus_dis[3 * i + 2]) << "\n";
             }
         }
     };
