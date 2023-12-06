@@ -17,7 +17,7 @@ Description: XXX
 namespace CAE
 {
     REGISTER(ele_base, hex_ele_elastic, "C3D8R");
-    // ½¨Á¢±¾¹¹¾ØÕó
+    // å»ºç«‹æœ¬æ„çŸ©é˜µ
     void hex_ele_elastic::build_cons_mat()
     {
         double em = matrial_struc_.young_modulus;
@@ -25,7 +25,7 @@ namespace CAE
         double fac = (em * (1.0 - nu)) / ((1.0 + nu) * (1.0 - 2.0 * nu));
         double fac_a = fac * nu / (1.0 - nu);
         double fac_b = fac * (1.0 - 2.0 * nu) / (2.0 * (1.0 - nu));
-        // ±¾¹¹¾ØÕó¸³Öµ
+        // æœ¬æ„çŸ©é˜µèµ‹å€¼
         C_matrix_ << fac, fac_a, fac_a, 0., 0., 0.,
             fac_a, fac, fac_a, 0., 0., 0.,
             fac_a, fac_a, fac, 0., 0., 0.,
@@ -34,15 +34,15 @@ namespace CAE
             0., 0., 0., 0., 0., fac_b;
     }
 
-    // ½¨Á¢Ó¦±ä¾ØÕó(»ı·Öµã)
+    // å»ºç«‹åº”å˜çŸ©é˜µ(ç§¯åˆ†ç‚¹)
     void hex_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Matrix6d24& strain_mat, vector<double>& gp_points, double* det_jacobi_point)
     {
-        // ³õÊ¼»¯
+        // åˆå§‹åŒ–
         strain_mat.setZero();
         Matrix3d8 dN_drst(3, 8), dN_dxyz(3, 8);
         Matrix3d3 jacobi(3, 3), inv_jacobi(3, 3);
         double r = gp_points[0], s = gp_points[1], t = gp_points[2];
-        // ¼ÆËãĞÎº¯Êı¶ÔµÈ²Î×ø±êÏµµÄÆ«µ¼
+        // è®¡ç®—å½¢å‡½æ•°å¯¹ç­‰å‚åæ ‡ç³»çš„åå¯¼
         dN_drst(0, 0) = -0.125 * (1.0 - s) * (1.0 - t);
         dN_drst(0, 1) = 0.125 * (1.0 - s) * (1.0 - t);
         dN_drst(0, 2) = 0.125 * (1.0 + s) * (1.0 - t);
@@ -69,11 +69,11 @@ namespace CAE
         dN_drst(2, 5) = 0.125 * (1.0 + r) * (1.0 - s);
         dN_drst(2, 6) = 0.125 * (1.0 + r) * (1.0 + s);
         dN_drst(2, 7) = 0.125 * (1.0 - r) * (1.0 + s);
-        jacobi = dN_drst * node_coords; // 3x3 £º3x8 by 8x3
+        jacobi = dN_drst * node_coords; // 3x3 ï¼š3x8 by 8x3
         inv_jacobi = jacobi.inverse();  // 3x3
-        // ¼ÆËãĞÎº¯Êı¶Ô×ÔÈ»×ø±êÏµµÃÆ«µ¼
+        // è®¡ç®—å½¢å‡½æ•°å¯¹è‡ªç„¶åæ ‡ç³»å¾—åå¯¼
         dN_dxyz = inv_jacobi * dN_drst; // 3x8
-        // ¼ÆËãÓ¦±ä×ª»»¾ØÕó
+        // è®¡ç®—åº”å˜è½¬æ¢çŸ©é˜µ
         (*det_jacobi_point) = jacobi(0, 0) * jacobi(1, 1) * jacobi(2, 2) + jacobi(0, 1) * jacobi(1, 2) * jacobi(2, 0) + jacobi(0, 2) * jacobi(1, 0) * jacobi(2, 1) - jacobi(0, 2) * jacobi(1, 1) * jacobi(2, 0) - jacobi(1, 2) * jacobi(2, 1) * jacobi(0, 0) - jacobi(2, 2) * jacobi(0, 1) * jacobi(1, 0);
         for (int i = 0; i < 8; i++)
         {
@@ -89,10 +89,10 @@ namespace CAE
         }
     }
 
-    // ½¨Á¢µ¥Ôª¸Õ¶È¾ØÕó
+    // å»ºç«‹å•å…ƒåˆšåº¦çŸ©é˜µ
     void hex_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
-        // ³õÊ¼»¯µÈ²Î×ø±ê
+        // åˆå§‹åŒ–ç­‰å‚åæ ‡
         double gp_values = 1. / sqrt(3.);
         Matrix8d3 gps;
         gps << -gp_values, -gp_values, -gp_values,
@@ -104,7 +104,7 @@ namespace CAE
             gp_values, gp_values, gp_values,
             -gp_values, gp_values, gp_values;
         //
-        double weight = 1.; // Á½µã¸ßË¹»ı·Ö È¨ÖØ
+        double weight = 1.; // ä¸¤ç‚¹é«˜æ–¯ç§¯åˆ† æƒé‡
         stiffness_matrix.setZero();
         Matrix6d24 strain_mat;
         Matrix24d6 item_temp_1;
@@ -134,7 +134,7 @@ namespace CAE
             node_coords(i, 1) = coords[item_node][1];
             node_coords(i, 2) = coords[item_node][2];
         }
-        // ³õÊ¼»¯µÈ²Î×ø±ê
+        // åˆå§‹åŒ–ç­‰å‚åæ ‡
         double gp_values = 1. / sqrt(3.);
         Matrix8d3 gps;
         gps << -gp_values, -gp_values, -gp_values,
@@ -146,7 +146,7 @@ namespace CAE
             gp_values, gp_values, gp_values,
             -gp_values, gp_values, gp_values;
         //
-        double weight = 1.; // Á½µã¸ßË¹»ı·Ö È¨ÖØ
+        double weight = 1.; // ä¸¤ç‚¹é«˜æ–¯ç§¯åˆ† æƒé‡
         double ro = this->matrial_struc_.density;
         for (int i = 0; i < 8; i++) {
             vector<double> gp_points = { gps(i, 0), gps(i, 1), gps(i, 2) };
@@ -154,12 +154,12 @@ namespace CAE
             build_shape_fun(node_coords, shape_fun, gp_points, det_jacobi_point);
             eM = eM + shape_fun.transpose() * shape_fun * det_jacobi_point * ro;
         }
-        //×é×°½øÕûÌåÖÊÁ¿ºÉÔØÁĞÕó£¬8¸ö½Úµã
+        //ç»„è£…è¿›æ•´ä½“è´¨é‡è·è½½åˆ—é˜µï¼Œ8ä¸ªèŠ‚ç‚¹
         double temp;
         for (int i = 0; i < 8; i++) {
             temp = 0;
             for (int j = 0; j < 3; j++) {
-                for (int k = 0; k < 24; k++) { temp = temp + eM(i * 3 + j, k); }//¼¯ÖĞÖÊÁ¿ÁĞÕó
+                for (int k = 0; k < 24; k++) { temp = temp + eM(i * 3 + j, k); }//é›†ä¸­è´¨é‡åˆ—é˜µ
             }
             Mass[(node_topos[i] - 1)] = Mass[(node_topos[i] - 1)] + temp / 3;
         }
@@ -167,19 +167,19 @@ namespace CAE
 
     void hex_ele_elastic::build_shape_fun(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::MatrixXd& shape_fun, vector<double>& gp_points, double& det_jacobi_point)
     {
-        // ³õÊ¼»¯
+        // åˆå§‹åŒ–
         shape_fun.setZero();
         Matrix3d8 dN_drst(3, 8);
         Matrix3d3 jacobi(3, 3);
         double r = gp_points[0], s = gp_points[1], t = gp_points[2];
-        // ¼ÆËãĞÎº¯Êı
+        // è®¡ç®—å½¢å‡½æ•°
         vector<vector<double>> Parentnode{ {-1,1,1,-1,-1,1,1,-1},{-1,-1,1,1,-1,-1,1,1},{-1,-1,-1,-1,1,1,1,1} };
         double temp;
         for (int i = 0; i < 8; i++) {
             temp = (1 + Parentnode[0][i] * r) * (1 + Parentnode[1][i] * s) * (1 + Parentnode[2][i] * t) / 8;
             shape_fun(0, 3 * i) = shape_fun(1, 3 * i + 1) = shape_fun(2, 3 * i + 2) = temp;
         }
-        // ¼ÆËãĞÎº¯Êı¶ÔµÈ²Î×ø±êÏµµÄÆ«µ¼
+        // è®¡ç®—å½¢å‡½æ•°å¯¹ç­‰å‚åæ ‡ç³»çš„åå¯¼
         dN_drst(0, 0) = -0.125 * (1.0 - s) * (1.0 - t);
         dN_drst(0, 1) = 0.125 * (1.0 - s) * (1.0 - t);
         dN_drst(0, 2) = 0.125 * (1.0 + s) * (1.0 - t);
@@ -206,12 +206,12 @@ namespace CAE
         dN_drst(2, 5) = 0.125 * (1.0 + r) * (1.0 - s);
         dN_drst(2, 6) = 0.125 * (1.0 + r) * (1.0 + s);
         dN_drst(2, 7) = 0.125 * (1.0 - r) * (1.0 + s);
-        jacobi = dN_drst * node_coords; // 3x3 £º3x8 by 8x3
-        // ¼ÆËãÓ¦±ä×ª»»¾ØÕó
+        jacobi = dN_drst * node_coords; // 3x3 ï¼š3x8 by 8x3
+        // è®¡ç®—åº”å˜è½¬æ¢çŸ©é˜µ
         det_jacobi_point = jacobi(0, 0) * jacobi(1, 1) * jacobi(2, 2) + jacobi(0, 1) * jacobi(1, 2) * jacobi(2, 0) + jacobi(0, 2) * jacobi(1, 0) * jacobi(2, 1) - jacobi(0, 2) * jacobi(1, 1) * jacobi(2, 0) - jacobi(1, 2) * jacobi(2, 1) * jacobi(0, 0) - jacobi(2, 2) * jacobi(0, 1) * jacobi(1, 0);
     }
 
-    // ¼ÆËãµ¥ÔªÄÚÁ¦
+    // è®¡ç®—å•å…ƒå†…åŠ›
     void hex_ele_elastic::cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d, vector<double>& stress, vector<double>& strain, vector<double>& InFroce)
     {
         Matrix8d3 nodes_coor;
@@ -238,14 +238,14 @@ namespace CAE
         inforce = stiffness_matrix * disp;//24*24 24*1 = 24*1
         for (int i = 0; i < 8; i++) {
             idx_temp = node_topos[i] - 1;
-            // ÄÚÁ¦Îª¸º£¬¹Ê¼õÈ¥
+            // å†…åŠ›ä¸ºè´Ÿï¼Œæ•…å‡å»
             InFroce[3 * idx_temp] -= inforce(3 * i, 0);
             InFroce[3 * idx_temp + 1] -= inforce(3 * i + 1, 0);
             InFroce[3 * idx_temp + 2] -= inforce(3 * i + 2, 0);
         }
     }
 
-    // ¼ÆËãµ¥ÔªÊ±¼ä²½³¤
+    // è®¡ç®—å•å…ƒæ—¶é—´æ­¥é•¿
     void hex_ele_elastic::update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step)
     {
         Eigen::MatrixXd stiffness_matrix;

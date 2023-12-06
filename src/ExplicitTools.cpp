@@ -1,7 +1,7 @@
 #include "include/ExplicitTools.h"
 
 namespace CAE {
-    // »ñÈ¡µ¥Ôª½Úµã×ø±ê¾ØÕó
+    // è·å–å•å…ƒèŠ‚ç‚¹åæ ‡çŸ©é˜µ
     void CAE::get_ele_coords(const vector<int>& node_topos, const vector<vector<double>>& coords, MatrixXd& item_ele_coors,int nnode)
     {
         item_ele_coors.resize(nnode, 3);
@@ -9,15 +9,15 @@ namespace CAE {
         int  item_node;
         for (int i = 0; i < nnode; i++)
         {
-            // ×ø±ê
+            // åæ ‡
             item_node = node_topos[i] - 1;
-            item_ele_coors(i, 0) = coords[item_node][0]; // X ×ø±ê
-            item_ele_coors(i, 1) = coords[item_node][1]; // Y ×ø±ê
-            item_ele_coors(i, 2) = coords[item_node][2]; // Z ×ø±ê
+            item_ele_coors(i, 0) = coords[item_node][0]; // X åæ ‡
+            item_ele_coors(i, 1) = coords[item_node][1]; // Y åæ ‡
+            item_ele_coors(i, 2) = coords[item_node][2]; // Z åæ ‡
         }
     }
 
-    // ¸üĞÂ×Ô¶¯Ê±¼ä²½³¤
+    // æ›´æ–°è‡ªåŠ¨æ—¶é—´æ­¥é•¿
     void CAE::UpdateTimeStep(const vector<vector<int>>& node_topos, const vector<vector<double>>& coords,
         const vector<ele_base*>& ele_list, const vector<int>& ele_list_idx, double& time_step)
     {
@@ -29,7 +29,7 @@ namespace CAE {
         }
     }
 
-    // ÎªÏÂÒ»µü´ú²½¸üĞÂÏà¹Ø±äÁ¿
+    // ä¸ºä¸‹ä¸€è¿­ä»£æ­¥æ›´æ–°ç›¸å…³å˜é‡
     void CAE::SwapData(vector<double>& disp_tp1, vector<double>& disp_t0, vector<double>& vel_tphalf, vector<double>& vel_thalf,
         vector<double>& acc_t0, vector<double>& InFroce_, double& time_step, double& time_step_old, bool auto_time)
     {
@@ -46,7 +46,7 @@ namespace CAE {
 
     }
 
-    // ¼ì²éÊ±¼ä²½
+    // æ£€æŸ¥æ—¶é—´æ­¥
     bool CheckTime(double& timestep, double limit)
     {
         if (timestep > limit) {
@@ -56,7 +56,7 @@ namespace CAE {
         return 0;
     }
 
-    // ¸üĞÂÊµ¼Ê×ø±ê
+    // æ›´æ–°å®é™…åæ ‡
     void CAE::update_coords(const vector<vector<double>>& coords_, const vector<double>& disp_t0, vector<vector<double>>& real_coords_)
     {
         for (int i = 0; i < coords_.size(); i++) {

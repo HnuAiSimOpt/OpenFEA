@@ -2,7 +2,7 @@
 
 Copyright:  WH team
 
-Author: YinJichao <jichaoyinyjc@163.com>¡¢ChenBinXiang <chen_mech99@163.com>
+Author: YinJichao <jichaoyinyjc@163.com>ã€ChenBinXiang <chen_mech99@163.com>
 
 Completion date:  XXX
 
@@ -19,37 +19,37 @@ namespace CAE
     class tetra_ele_elastic : public ele_base
     {
     public:
-        double det_jacobi_; // ÑÅ¿É±È¾ØÕóĞĞÁĞÊ½(ÖĞĞÄ»ı·Öµã)
+        double det_jacobi_; // é›…å¯æ¯”çŸ©é˜µè¡Œåˆ—å¼(ä¸­å¿ƒç§¯åˆ†ç‚¹)
         elastic_mat matrial_struc_;
         Matrix6d6 C_matrix_;
         Matrix6d12 strain_mat;
 
     public:
-        // ¹¹Ôìº¯Êı£¬Îö¹¹º¯Êı
+        // æ„é€ å‡½æ•°ï¼Œææ„å‡½æ•°
         tetra_ele_elastic() { type_ = "C3D4"; node_dof_ = 3; nnode_ = 4; ngps_ = 1;};
         tetra_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D4"; node_dof_ = 3; nnode_ = 4; ngps_ = 1;};
 
-        // ²ÄÁÏ¸³ÊôĞÔ
+        // ææ–™èµ‹å±æ€§
         void set_matrial(elastic_mat matrial_struc)override { matrial_struc_ = matrial_struc; }  ;
 
-        // ½¨Á¢±¾¹¹¾ØÕó
+        // å»ºç«‹æœ¬æ„çŸ©é˜µ
         virtual void build_cons_mat();
 
-        // ½¨Á¢Ó¦±ä¾ØÕó(»ı·Öµã)
+        // å»ºç«‹åº”å˜çŸ©é˜µ(ç§¯åˆ†ç‚¹)
         virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat);
 
 
-        // ½¨Á¢µ¥Ôª¸Õ¶È¾ØÕó
+        // å»ºç«‹å•å…ƒåˆšåº¦çŸ©é˜µ
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
-        // ½¨Á¢µ¥ÔªÖÊÁ¿¾ØÕó
+        // å»ºç«‹å•å…ƒè´¨é‡çŸ©é˜µ
         void build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass)override;
 
-        // ¼ÆËãµ¥ÔªÄÚÁ¦
+        // è®¡ç®—å•å…ƒå†…åŠ›
         void cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d,
                           vector<double>& stress, vector<double>& strain, vector<double>& InFroce)override;
         
-        // ¼ÆËãµ¥ÔªÊ±¼ä²½³¤
+        // è®¡ç®—å•å…ƒæ—¶é—´æ­¥é•¿
         void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) override;
     };
 

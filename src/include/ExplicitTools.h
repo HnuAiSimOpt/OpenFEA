@@ -20,21 +20,21 @@ using std::vector;
 using Eigen::MatrixXd;
 
 namespace CAE {
-	// »ñÈ¡µ¥Ôª½Úµã×ø±ê¾ØÕó
+	// è·å–å•å…ƒèŠ‚ç‚¹åæ ‡çŸ©é˜µ
 	void get_ele_coords(const vector<int>& node_topos, const vector<vector<double>>& coords, MatrixXd& item_ele_coors, int nnode);
 
-	// ¸üĞÂ×Ô¶¯Ê±¼ä²½³¤
+	// æ›´æ–°è‡ªåŠ¨æ—¶é—´æ­¥é•¿
 	void UpdateTimeStep(const vector<vector<int>>& node_topos, const vector<vector<double>>& coords, const vector<ele_base*>& ele_list,
 						const vector<int>& ele_list_idx, double& time_step);
 
-	// ÎªÏÂÒ»µü´ú²½¸üĞÂÏà¹Ø±äÁ¿
+	// ä¸ºä¸‹ä¸€è¿­ä»£æ­¥æ›´æ–°ç›¸å…³å˜é‡
 	void SwapData(vector<double>& disp_tp1, vector<double>& disp_t0, vector<double>& vel_tphalf, vector<double>& vel_thalf,
 				  vector<double>& acc_t0, vector<double>& InFroce_, double& time_step, double& time_step_old, bool auto_time);
 
-	// ¼ì²éÊ±¼ä²½
+	// æ£€æŸ¥æ—¶é—´æ­¥
 	bool CheckTime(double& timestep, double limit);
 
-	// ¸üĞÂÊµ¼Ê×ø±ê
+	// æ›´æ–°å®é™…åæ ‡
 	void update_coords(const vector<vector<double>>&  coords_, const vector<double>& disp_t0, vector<vector<double>>& real_coords_);
 
 }// namespace
