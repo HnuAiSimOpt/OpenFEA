@@ -46,6 +46,9 @@ namespace CAE
         // 读取节点坐标，节点拓扑关系，单元类型
         void read_geo_mesh(data_management &data_cae);
 
+        //读取非协调信息
+        void readNconformingMessage(data_management& data_cae);
+
         // 读取载荷信息 
         void read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae);
 

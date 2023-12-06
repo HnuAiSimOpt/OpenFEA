@@ -158,5 +158,111 @@ namespace CAE
             item_ele_coors(i, 1) = data_cae.coords_[item_node][1]; // Y 坐标
             item_ele_coors(i, 2) = data_cae.coords_[item_node][2]; // Z 坐标
         }
-    };
+    }
+    
+    void assamble_stiffness::NCF_build_CSR(data_management& data_cae)
+    {
+        int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
+        vector<set<int>> col_data(3 * num_free_node);
+        vector<int> item_ele_dofs;
+        // 遍历单元，储存所有自由度
+        for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
+        {
+            // 识别单元类型
+            int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
+            // 基于单元类型和节点拓扑关系，计算单元包含的自由度
+            build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
+            // 删除负自由度，即被约束自由度
+            for (auto it = item_ele_dofs.begin(); it != item_ele_dofs.end();)
+            {
+                if ((*it) < 0)
+                {
+                    it = item_ele_dofs.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+            // 压缩稀疏矩阵
+            for (int id_dofs_row : item_ele_dofs)
+            {
+                for (int id_dofs_col : item_ele_dofs)
+                {
+                    col_data[id_dofs_col].insert(id_dofs_row);
+                }
+            }
+        }
+        
+        //开始插入非协调界面单元的节点信息[****非协调界面处不能有约束****
+        int nF_bmesh = data_cae.BndMesh_F.size();
+        for (int e = 0; e < nF_bmesh; e++) //交界面处细网格个数
+        {
+            //交界处六面体单元节点及坐标
+            vector<int> F_ele_dofs;
+            int F_id_ele = data_cae.BndMesh_F[e];
+            // 识别单元类型
+            int F_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[F_id_ele]]->nnode_;
+            build_ele_dofs(F_ele_dofs, data_cae, F_id_ele, F_num_nodes);
+            
+            vector<int> C_ele_dofs;
+            int C_id_ele = data_cae.BndMesh_C[e];
+            int C_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[C_id_ele]]->nnode_;
+            build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes);
+           
+            Storematrix_columns(col_data, F_ele_dofs, F_ele_dofs);
+            Storematrix_columns(col_data, F_ele_dofs, C_ele_dofs);
+            Storematrix_columns(col_data, C_ele_dofs, F_ele_dofs);
+            Storematrix_columns(col_data, C_ele_dofs, C_ele_dofs);
+        }
+        //****************************************************************************]
+        
+        // 建立CSR索引格式
+        num_nz_val = 0;
+        for (int id_dof = 0; id_dof < 3 * num_free_node; id_dof++)
+        {
+            num_nz_val += col_data[id_dof].size(); // 计算每个单元非零元数目
+        }
+        // 分配行索引容量
+        row_idx.resize(num_nz_val);
+        // 分配列索引容量
+        col_idx.resize(3 * num_free_node + 1);
+        // 建立列索引
+        int item_idx_csr = 0;
+        col_idx[0] = 0;
+        for (int i = 0; i < 3 * num_free_node; i++)
+        {
+            for (int row : col_data[i])
+            {
+                row_idx[item_idx_csr] = row;
+                item_idx_csr++;
+            }
+            col_idx[i + 1] = item_idx_csr;
+        }
+        cout << "The CSR index has been built" << endl;
+    }
+    
+    void assamble_stiffness::Storematrix_columns(vector<set<int>>& columns,
+        vector<int>& A_eper_dof, vector<int>& B_eper_dof)
+    {
+        int dof_row, dof_col;
+        for (int id_dofs : A_eper_dof)
+        {
+            if (id_dofs > 0)
+            {
+                dof_row = id_dofs ;
+                for (int id_id_dofs : B_eper_dof)
+                {
+                    if (id_id_dofs > 0)
+                    {
+                        dof_col = id_id_dofs;
+                        columns[dof_col].insert(dof_row); 
+                    }
+                }
+            }
+        }
+    }
+    
+  
+    ;
 }

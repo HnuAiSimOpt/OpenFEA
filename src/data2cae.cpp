@@ -159,6 +159,133 @@ namespace CAE
         cout << "a total of " << ele_type_idx + 1 << " types of elements have been readed." << endl;
     }
 
+    //读取非协调信息
+    void ReadInfo::readNconformingMessage(data_management& data_cae)
+    {
+        std::ifstream infile(path_.c_str(), std::ios::in);
+        string line;
+        while (getline(infile, line))
+        {
+            string node_id;
+            int node_id_;
+            //读取细网格单元8节点信息
+            if (line.find("*BndMesh_F") != string::npos)
+            {
+                while (getline(infile, line))
+                {
+                    if (line.find("*") != string::npos)
+                        break;
+                    else
+                    {
+                        std::istringstream iss(line);
+                        while (iss >> node_id)
+                        {
+                            if (node_id.find(",") != string::npos)
+                            {
+                                node_id.erase(node_id.end() - 1);   // delete the last symbol in the string
+                            }
+                            node_id_ = atoi(node_id.c_str());       // convert to int type
+                            data_cae.BndMesh_F.push_back(node_id_);
+                        }
+                    }
+                }
+            }
+            //读取粗网格单元8节点信息
+            if (line.find("*BndMesh_C") != string::npos)
+            {
+                while (getline(infile, line))
+                {
+                    if (line.find("*") != string::npos)
+                        break;
+                    else
+                    {
+                        std::istringstream iss(line);
+                        while (iss >> node_id)
+                        {
+                            if (node_id.find(",") != string::npos)
+                            {
+                                node_id.erase(node_id.end() - 1);   // delete the last symbol in the string
+                            }
+                            node_id_ = atoi(node_id.c_str());       // convert to int type
+                            data_cae.BndMesh_C.push_back(node_id_);
+                        }
+                    }
+                }
+            }
+            //读取细网格 交界面4节点信息
+            if (line.find("*BndFace_finemesh") != string::npos)
+            {  
+                int i;
+                i = data_cae.BndMesh_F.size();
+                data_cae.bndFace_finemesh.resize(i, vector<int>(4));
+                int id_node = 0;
+                while (getline(infile, line))
+                {
+                    if (line.find("*") != string::npos)
+                        break;
+                    else
+                    {
+                        string  x1, x2, x3, x4;
+                        double x1_, x2_, x3_, x4_;
+                        std::istringstream iss(line);
+                        iss >> x1 >> x2 >> x3 >> x4;
+                        x1.erase(x1.end() - 1);  
+                        x1_ = stod(x1);
+                        x2.erase(x2.end() - 1);
+                        x2_ = stod(x2);
+                        x3.erase(x3.end() - 1);
+                        x3_ = stod(x3);
+                        x4_ = stod(x4);
+                        data_cae.bndFace_finemesh[id_node][0] = x1_;
+                        data_cae.bndFace_finemesh[id_node][1] = x2_;
+                        data_cae.bndFace_finemesh[id_node][2] = x3_;
+                        data_cae.bndFace_finemesh[id_node][3] = x4_;
+                        id_node = id_node + 1;
+                    }
+                }
+            }
+            //读取粗网格 交界面4节点信息
+            if (line.find("*BndFace_coarsemesh") != string::npos)
+            {    
+                int j;
+                j = data_cae.BndMesh_C.size();
+                data_cae.bndFace_coarsemesh.resize(j, vector<int>(4));
+                int id_node = 0;
+                while (getline(infile, line))
+                {
+                    if (line.find("*") != string::npos)
+                        break;
+                    else
+                    {
+                        string  x1, x2, x3, x4;
+                        double x1_, x2_, x3_, x4_;
+                        std::istringstream iss(line);
+                        iss >> x1 >> x2 >> x3 >> x4;
+                        x1.erase(x1.end() - 1);  
+                        x1_ = stod(x1);
+                        x2.erase(x2.end() - 1);
+                        x2_ = stod(x2);
+                        x3.erase(x3.end() - 1);
+                        x3_ = stod(x3);
+                        x4_ = stod(x4);
+                        data_cae.bndFace_coarsemesh[id_node][0] = x1_;
+                        data_cae.bndFace_coarsemesh[id_node][1] = x2_;
+                        data_cae.bndFace_coarsemesh[id_node][2] = x3_;
+                        data_cae.bndFace_coarsemesh[id_node][3] = x4_;
+                        id_node = id_node + 1;
+                    }
+                }
+            }
+            if (line.find("*End Nconforming") != string::npos)
+            {
+                break;
+            }
+
+        }
+        infile.close();
+
+    }
+
     // 读取载荷信息
     void ReadInfo::read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae)
     {

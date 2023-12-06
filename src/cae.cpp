@@ -24,6 +24,9 @@ namespace CAE
         // 读取几何信息
         item_info.read_geo_mesh(data_cae_);
 
+        //读取非协调信息
+        item_info.readNconformingMessage(data_cae_);
+
         // 读取载荷边界信息
         item_info.read_load_bcs(load_set_keyword, load_value_keyword, data_cae_);
 
@@ -43,10 +46,21 @@ namespace CAE
         item_bcs.build_single_load(data_cae_);
 
         // 组装刚度矩阵
-
         assamble_stiffness item_assam;
-        item_assam.build_CSR(data_cae_);
-        item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
+        
+        //判断是否为非协调
+        if (data_cae_.BndMesh_F.empty())
+        {  //不是非协调
+            item_assam.build_CSR(data_cae_);
+            item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
+        }
+        else
+        {  //是非协调
+            item_assam.NCF_build_CSR(data_cae_);
+            item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
+
+        }
+        
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
         data_cae_.single_load_vec_.resize(3 * num_free_nodes);

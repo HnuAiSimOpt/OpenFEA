@@ -32,6 +32,10 @@ namespace CAE
         int ne_, nd_;                        // 单元，节点总数
         vector<vector<double>> coords_;      // 节点坐标
         vector<vector<int>> node_topos_;     // 节点拓扑关系
+        vector<int> BndMesh_F;               //非协调细网格单元编号
+        vector<int> BndMesh_C;               //非协调粗网格单元编号
+        vector<vector<int>> bndFace_finemesh;      // 非协调细网格 面单元节点编号
+        vector<vector<int>> bndFace_coarsemesh;      // 非协调粗网格 面单元节点编号
         vector<int> load_set_;               // 承载节点集合
         int load_dof_;                       // 载荷自由度，1:X   2:Y   3:Z
         double load_value_;                  // 承载幅值
