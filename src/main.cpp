@@ -21,7 +21,7 @@ void main()
     CAE::elastic_mat mat_item{2.1e9, 0.3, 7800};
 
     // 材料路径
-    std::string path = "E:\\CADCAE_project\\model\\C3D4_C3D8R\\Job-1.inp";
+    std::string path = "E:\\CADCAE_project\\model\\C3D4_C3D8\\Job-1.inp";
 
     // 关键字
     string load_set_keyword = "Set-load";
@@ -35,8 +35,8 @@ void main()
     cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
 
     // 执行结构响应分析
-    string result_path = "E:\\CADCAE_project\\model\\output\\dis_C3D4_C3D8R.vtk";
-    string path_abaqus = "E:\\CADCAE_project\\model\\Abaqus_U_C3D4_C3D8R.txt";
+    string result_path = "E:\\CADCAE_project\\model\\output\\dis_C3D4_C3D8.vtk";
+    string path_abaqus = "E:\\CADCAE_project\\model\\Abaqus_U_C3D4_C3D8.txt";
     cae_item.implict_analysis(result_path, path_abaqus);
 
 //     string result_path = "F:/OpenFEM/model/";

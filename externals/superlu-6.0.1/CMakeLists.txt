@@ -215,17 +215,17 @@ if(enable_matlabmex)
   add_subdirectory(MATLAB)
 endif()
 
-if(enable_tests)
-  enable_testing()
-  add_subdirectory(TESTING)
-endif()
+# if(enable_tests)
+#   enable_testing()
+#   add_subdirectory(TESTING)
+# endif()   # modify_1_yinjichao
 
 add_custom_target(examples)
 if (enable_fortran)
   add_subdirectory(FORTRAN)
 endif()
 
-add_subdirectory(EXAMPLE)
+# add_subdirectory(EXAMPLE)   # modify_2_yinjichao
 
 add_subdirectory(DOC)
 
