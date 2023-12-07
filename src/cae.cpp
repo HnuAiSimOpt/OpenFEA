@@ -43,7 +43,6 @@ namespace CAE
         item_bcs.build_single_load(data_cae_);
 
         // 组装刚度矩阵
-
         assamble_stiffness item_assam;
         item_assam.build_CSR(data_cae_);
         item_assam.fill_CSR_sparse_mat(data_cae_, mat_);

@@ -102,6 +102,7 @@ namespace CAE
         // 统计单元类型
         int num_ele = data_cae.ne_;
         int num_ele_C3D4 = 0;
+        int num_ele_C3D8 = 0;
         int num_ele_C3D8R = 0;
         for (int i = 0; i < num_ele; i++)
         {
@@ -115,6 +116,11 @@ namespace CAE
             }
             case 2:
             {
+                num_ele_C3D8 += 1;
+                break;
+            }
+            case 3:
+            {
                 num_ele_C3D8R += 1;
                 break;
             }
@@ -126,7 +132,7 @@ namespace CAE
             }
         }
         // 输入节点拓扑关系
-        fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
+        fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
         for (int i = 0; i < num_ele; i++)
         {
             string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
@@ -139,6 +145,14 @@ namespace CAE
                 break;
             }
             case 2:
+            {
+                fout << 8 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][1] - 1 << "\t"
+                     << data_cae.node_topos_[i][3] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
+                     << data_cae.node_topos_[i][4] - 1 << "\t" << data_cae.node_topos_[i][5] - 1 << "\t"
+                     << data_cae.node_topos_[i][7] - 1 << "\t" << data_cae.node_topos_[i][6] - 1 << "\n";
+                break;
+            }
+            case 3:
             {
                 fout << 8 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][1] - 1 << "\t"
                      << data_cae.node_topos_[i][3] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
@@ -166,6 +180,11 @@ namespace CAE
                 break;
             }
             case 2:
+            {
+                fout << 11 << "\n";
+                break;
+            }
+            case 3:
             {
                 fout << 11 << "\n";
                 break;
@@ -230,21 +249,21 @@ namespace CAE
                  << "LOOKUP_TABLE  table7\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << data_cae.single_full_dis_vec_[3 * i] - abaqus_dis[3 * i] << "\n";
+                fout << abs(data_cae.single_full_dis_vec_[3 * i + 0] - abaqus_dis[3 * i + 0]) << "\n";
             }
             // Error in Y
             fout << "\nSCALARS Error_uy double 1\n"
                  << "LOOKUP_TABLE  table8\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << data_cae.single_full_dis_vec_[3 * i + 1] - abaqus_dis[3 * i + 1] << "\n";
+                fout << abs(data_cae.single_full_dis_vec_[3 * i + 1] - abaqus_dis[3 * i + 1]) << "\n";
             }
             // Error in Z
             fout << "\nSCALARS Error_uz double 1\n"
                  << "LOOKUP_TABLE  table9\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << data_cae.single_full_dis_vec_[3 * i + 2] - abaqus_dis[3 * i + 2] << "\n";
+                fout << abs(data_cae.single_full_dis_vec_[3 * i + 2] - abaqus_dis[3 * i + 2]) << "\n";
             }
         }
     };
