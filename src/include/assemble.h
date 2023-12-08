@@ -18,6 +18,7 @@ Description: XXX
 #include <map>
 #include "Eigen/Dense"
 #include "include/data_management.h"
+#include "include/NCF_map.h"
 
 using std::cout;
 using std::endl;
@@ -42,9 +43,11 @@ namespace CAE
     public:
         // 建立压缩稀疏行（Compressed Sparse Row，CSR）索引
         void build_CSR(data_management &data_cae);
+        //组装非协调刚度矩阵
+        void NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat);
         void NCF_build_CSR(data_management& data_cae);
-        void Storematrix_columns(vector<set<int>>& columns,
-            vector<int>& A_eper_dof, vector<int>& B_eper_dof);
+        void Storematrix_columns(vector<set<int>>& columns,vector<int>& A_eper_dof,
+            vector<int>& B_eper_dof);
 
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度
         //void build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, string ele_type);

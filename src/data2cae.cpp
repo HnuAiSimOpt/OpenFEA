@@ -141,7 +141,8 @@ namespace CAE
                     std::istringstream iss(line);
                     vector<string> temp_a;
                     string temp;
-                    while (getline(iss, temp, ',')) {
+                    while (getline(iss, temp, ',')) 
+                    {
                         del_blank(temp);
                         temp_a.push_back(temp);
                     }

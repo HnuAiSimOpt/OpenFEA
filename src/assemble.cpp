@@ -160,6 +160,21 @@ namespace CAE
         }
     }
     
+
+    //[*******非协调部分********]
+    void assamble_stiffness::NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat)
+    {   
+        //非协调刚度矩阵CSR格式
+        NCF_build_CSR(data_cae);
+        //填充稀疏矩阵（与FEA方法共用一个函数）
+        fill_CSR_sparse_mat(data_cae, data_mat);
+        NCF_map map_ncfGP;
+        map_ncfGP.PhySpaceGPs(data_cae, data_mat);
+        map_ncfGP.InterfacialStifMatrix(data_cae, data_mat, nz_val, row_idx, col_idx);
+    }
+
+
+
     void assamble_stiffness::NCF_build_CSR(data_management& data_cae)
     {
         int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();

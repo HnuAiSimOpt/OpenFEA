@@ -48,6 +48,7 @@ namespace CAE
         // 组装刚度矩阵
         assamble_stiffness item_assam;
         
+
         //判断是否为非协调
         if (data_cae_.BndMesh_F.empty())
         {  //不是非协调
@@ -56,9 +57,8 @@ namespace CAE
         }
         else
         {  //是非协调
-            item_assam.NCF_build_CSR(data_cae_);
-            item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
-
+            item_assam.NCF_assembleStiffness(data_cae_, mat_);
+            //12.8非协调面自由度索引有问题还未改完
         }
         
         // 求解
@@ -70,7 +70,7 @@ namespace CAE
         data_process item_output;
         item_output.fill_full_dis(data_cae_);
         double scale_dis = 1.0;
-        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, true);
+        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
     }
 
     // 执行结构动态响应分析
