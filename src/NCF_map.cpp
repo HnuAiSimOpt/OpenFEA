@@ -36,17 +36,26 @@ namespace CAE
 			MatrixXd nodes1(4, 3);//四边形交界面节点编号
 			MatrixXd pts1(8, 3), pts2(8, 3);//交界处粗、细六面体单元节点坐标
 			vector<int>  sctr1(8), sctr2(8);//交界处粗、细六面体单元节点编号
-			int b_node1 = data_cae.bndFace_finemesh[e][0];
-			int b_node2 = data_cae.bndFace_finemesh[e][1];
-			int b_node3 = data_cae.bndFace_finemesh[e][2];
-			int b_node4 = data_cae.bndFace_finemesh[e][3];
+			int b_node1 = data_cae.bndFace_finemesh[e][0]-1;//节点编号索引
+			int b_node2 = data_cae.bndFace_finemesh[e][1]-1;
+			int b_node3 = data_cae.bndFace_finemesh[e][2]-1;
+			int b_node4 = data_cae.bndFace_finemesh[e][3]-1;
 
 			nodes1 << data_cae.coords_[b_node1][0], data_cae.coords_[b_node1][1], data_cae.coords_[b_node1][2],
 				data_cae.coords_[b_node2][0], data_cae.coords_[b_node2][1], data_cae.coords_[b_node2][2],
 				data_cae.coords_[b_node3][0], data_cae.coords_[b_node3][1], data_cae.coords_[b_node3][2],
 				data_cae.coords_[b_node4][0], data_cae.coords_[b_node4][1], data_cae.coords_[b_node4][2];
-				
+			//temp
+		    /*for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					cout << nodes1(i, j) << endl;
+				}
+			}*/
 			GetIntF_ele_Inform(data_cae, sctr1, sctr2, pts1, pts2, e);
+
+			
 				
 			//高斯积分点循环 4组  
 			for (int q = 0; q < 4; q++)
@@ -83,15 +92,17 @@ namespace CAE
 				N_1(0, 3) = 0.25 * (1 - gps(q, 0)) * (1 + gps(q, 1));
 				MatrixXd X = N_1 * nodes1;//高斯积分点物理坐标
 				
+				
 
 				//积分点网格单元向父空间映射
 				MatrixXd X1, X2;
-				//-----------------------------------10.11测试
+				//-----------------------------------测试
 				std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
-				X1 = GlobalMap3D(X, pts1);//细网格9.5
+				X1 = GlobalMap3D(X, pts1);//细网格
 				std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
-				X2 = GlobalMap3D(X, pts2);//粗网格9.5
+				X2 = GlobalMap3D(X, pts2);//粗网格
 				//-----------------------------------
+				
 
 
 				GP1(t, 0) = X1(0, 0);
@@ -100,23 +111,37 @@ namespace CAE
 				GP1(t, 3) = norm_a3;
 				GP1(t, 4) = unit_a3[0];
 				GP1(t, 5) = unit_a3[1];
-				GP1(t, 4) = unit_a3[2];
+				GP1(t, 6) = unit_a3[2];
 
 				GP2(t, 0) = X2(0, 0);
 				GP2(t, 1) = X2(0, 1);
 				GP2(t, 2) = X2(0, 2);
 				t++;
+				
+
 
 			}
 		}
+		
+		
+		//temp
+			   /*for (int i = 0; i < 5; i++)
+			   {
+				  for (int j = 0; j < 7; j++)
+				  {
+				   cout <<"GP1:" << GP1(i, j) << endl;
+
+				  }
+			   }*/
+
 
 	}
 
 	void NCF_map::GetIntF_ele_Inform(data_management& data_cae, vector<int>& sctr1, 
 		vector<int>& sctr2,MatrixXd& pts1, MatrixXd& pts2, int& e)
 	{
-		const auto& node_topos_BndMesh_F = data_cae.node_topos_[data_cae.BndMesh_F[e]];
-		const auto& node_topos_BndMesh_C = data_cae.node_topos_[data_cae.BndMesh_C[e]];
+		const auto& node_topos_BndMesh_F = data_cae.node_topos_[data_cae.BndMesh_F[e]-1];//索引要减1
+		const auto& node_topos_BndMesh_C = data_cae.node_topos_[data_cae.BndMesh_C[e]-1];
 
 		const auto& coords = data_cae.coords_;
 
@@ -125,8 +150,8 @@ namespace CAE
 			sctr1[i] = node_topos_BndMesh_F[i];
 			sctr2[i] = node_topos_BndMesh_C[i];
 
-			const auto& coord_sctr1_i = coords[sctr1[i]];
-			const auto& coord_sctr2_i = coords[sctr2[i]];
+			const auto& coord_sctr1_i = coords[sctr1[i]-1];
+			const auto& coord_sctr2_i = coords[sctr2[i]-1];
 
 			for (int j = 0; j < 3; ++j)
 			{
@@ -134,6 +159,7 @@ namespace CAE
 				pts2(i, j) = coord_sctr2_i[j];
 			}
 		}
+		
 	}
 	/*
 	void NCF_map::GetIntF_ele_Inform(data_management& data_cae, vector<int>& sctr1, vector<int>& sctr2,
@@ -200,6 +226,8 @@ namespace CAE
 			 vector<int>  sctr1(8), sctr2(8);//交界处细、粗六面体单元节点编号
 			 GetIntF_ele_Inform(data_cae, sctr1, sctr2, pts1, pts2, e);
 			
+			
+
 			 //初始化耦合矩阵
 			 MatrixXd  Kp11(24, 24), Kp12(24, 24), Kp22(24, 24),
 				 Kd11(24, 24), Kd12(24, 24), Kd21(24, 24), Kd22(24, 24);
@@ -274,6 +302,17 @@ namespace CAE
 					 Nm2(1, 3 * i + 1) = r_out2.N_out(0, i);
 					 Nm2(2, 3 * i + 2) = r_out2.N_out(0, i);
 				 }
+
+				 //temp
+				/* for (int i = 0; i < 3; i++)
+				 {
+					 for (int j = 0; j < 24; j++)
+					 {
+						 cout << "Nm2:" << Nm2(i, j) << endl;
+						 
+
+					 }
+				 }*/
 				 
 				 //计算罚参数
 				 double alpha = Get_Alpha(data_cae, data_mat, pts1);
@@ -281,14 +320,37 @@ namespace CAE
 				 Calculate_Kp_Kd(Kp11, Kp12, Kp22, Kd11, Kd12, Kd21, Kd22,
 					 Nm1, Nm2, B1, B2, n, Ce, alpha, wt1);
 
+
 			 }
 			 //计算界面总刚
 			 MatrixXd K11(24, 24), K12(24, 24), K21(24, 24), K22(24, 24);
+			 K11.setZero();
+			 K12.setZero();
+			 K21.setZero();
+			 K22.setZero();
 			 vector<int> F_eper_dof(24), C_eper_dof(24);
 			 Calculate_InterFMatrix(K11, K12, K21, K22, F_eper_dof, C_eper_dof,
 				 Kd11, Kd12, Kd21, Kd22, Kp11, Kp12, Kp22, data_cae, e);
 
+			 //temp
+				 /*for (int i = 0; i < 24; i++)
+				 {
+					 for (int j = 0; j < 24; j++)
+					 {
+						 cout << "K11:" << K11(i, j) << endl;
+					 }
+				 }
+				 for (int i = 0; i < 24; i++)
+				 {
+					 for (int j = 0; j < 24; j++)
+					 {
+						 cout << "K12:" << K12(i, j) << endl;
+					 }
+				 }*/
+
+
 			 //界面刚度矩阵储存为CSR
+
 			 Fill_InterFMatrix(F_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K11);
 			 Fill_InterFMatrix(F_eper_dof, C_eper_dof, nz_val, row_idx, col_idx, K12);
 			 Fill_InterFMatrix(C_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K21);
@@ -326,9 +388,9 @@ namespace CAE
 		MatrixXd Tp_Nm12 = Nm1.transpose() * Nm2 * (alpha * wt1);
 		MatrixXd Tp_Nm22 = Nm2.transpose() * Nm2 * (alpha * wt1);
 
-		Kp11 += Tp_Nm11;
-		Kp12 += Tp_Nm12;
-		Kp22 += Tp_Nm22;
+		Kp11 = Kp11+Tp_Nm11;
+		Kp12 = Kp12+Tp_Nm12;
+		Kp22 = Kp22+Tp_Nm22;
 
 		MatrixXd Tp_Nm1_n = Nm1.transpose() * n * 0.5;
 		MatrixXd Tp_Nm1_n_c = Tp_Nm1_n * Ce;
@@ -340,15 +402,15 @@ namespace CAE
 		MatrixXd Tp_Nm2_n_c_B1 = Tp_Nm2_n_c * B1 * wt1;
 		MatrixXd Tp_Nm2_n_c_B2 = Tp_Nm2_n_c * B2 * wt1;
 
-		Kd11 += Tp_Nm1_n_c_B1;
-		Kd12 += Tp_Nm1_n_c_B2;
-		Kd21 += Tp_Nm2_n_c_B1;
-		Kd22 += Tp_Nm2_n_c_B2;
+		Kd11 = Kd11 + Tp_Nm1_n_c_B1;
+		Kd12 = Kd12 + Tp_Nm1_n_c_B2;
+		Kd21 = Kd21 + Tp_Nm2_n_c_B1;
+		Kd22 = Kd22 + Tp_Nm2_n_c_B2;
 	}
 
 	//计算总界面刚度矩阵
 	void NCF_map::Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,
-		MatrixXd& K21, MatrixXd& K22, vector<int> F_eper_dof, vector<int> C_eper_dof,
+		MatrixXd& K21, MatrixXd& K22, vector<int>& F_eper_dof, vector<int>& C_eper_dof,
 		MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
 		MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
 		data_management& data_cae, int& e)
@@ -360,14 +422,22 @@ namespace CAE
 		MatrixXd T_Kp12 = Kp12.transpose();
 		
 		for (int i = 0; i < 8; i++)
-		{
+		{  /*
+			item_dof = data_cae.resort_free_nodes_[data_cae.node_topos_[ele_id][i] - 1];
+			item_ele_dofs[3 * i] = 3 * item_dof;
+			item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
+			item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
+			*/
 			// 自由度
-			int item_dof_F = data_cae.resort_free_nodes_[data_cae.BndMesh_F[e] - 1];
+
+			int ncf_F = data_cae.BndMesh_F[e] - 1;//细网格单元编号从0开始
+			int item_dof_F = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_F][i] - 1];
 			F_eper_dof[3 * i] = 3 * item_dof_F;
 			F_eper_dof[3 * i + 1] = 3 * item_dof_F + 1;
 			F_eper_dof[3 * i + 2] = 3 * item_dof_F + 2;
 
-			int item_dof_C = data_cae.resort_free_nodes_[data_cae.BndMesh_C[e] - 1];
+			int ncf_C = data_cae.BndMesh_C[e] - 1;//粗网格单元编号从0开始
+			int item_dof_C = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_C][i] - 1];
 			C_eper_dof[3 * i] = 3 * item_dof_C;
 			C_eper_dof[3 * i + 1] = 3 * item_dof_C + 1;
 			C_eper_dof[3 * i + 2] = 3 * item_dof_C + 2;
@@ -449,11 +519,15 @@ namespace CAE
 			gpoint(0, j) -= xm[j];
 		}
 
+		
+
 		//Newton-Raphson iterations
 		double dSi = 1.0;
 		int n = 1;
 
 		MatrixXd Xi(1, 3);
+		Xi.setZero();
+		
 		while (dSi > tolSquared && n < nMax)
 		{
 
@@ -463,6 +537,8 @@ namespace CAE
 			MatrixXd N, dNdxi;
 			dNdxi = result_out.dNdxi_out;
 			N = result_out.N_out;
+
+			
 
 			MatrixXd x, hessian, inv_hessian, f, dxi;
 			x = N * nodes;
@@ -484,6 +560,14 @@ namespace CAE
 			}
 
 		}
+		//temp
+		/*for (int i = 0; i < 1; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				cout << Xi(i, j) << endl;
+			}
+		}*/
 		return Xi;
 	}
 

@@ -18,6 +18,7 @@ namespace CAE
 {
     void superlu_solver(assamble_stiffness &K, vector<double> &F, vector<double> &dis)
     {
+
         if (F.size() == 0)
         {
             printf("有无穷多解\n");

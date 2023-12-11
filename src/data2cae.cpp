@@ -148,7 +148,8 @@ namespace CAE
                     }
                     int id_ = atoi(temp_a[0].c_str());
                     data_cae.ele_list_idx_[id_ - 1] = ele_type_idx;
-                    for (int i = 0; i < ele_nnode; i++) {
+                    for (int i = 0; i < ele_nnode; i++)
+                    {
                         data_cae.node_topos_[id_ - 1][i] = atoi(temp_a[i + 1].c_str());
                     }
                     id_ele++;

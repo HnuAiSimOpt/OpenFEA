@@ -58,7 +58,7 @@ namespace CAE
             MatrixXd& n, MatrixXd& Ce, double& alpha, double& wt1);
         //计算总界面刚度矩阵
         void Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,
-            MatrixXd& K21, MatrixXd& K22, vector<int> F_eper_dof, vector<int> C_eper_dof,
+            MatrixXd& K21, MatrixXd& K22, vector<int>& F_eper_dof, vector<int>& C_eper_dof,
             MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
             MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
             data_management& data_cae, int& e);
