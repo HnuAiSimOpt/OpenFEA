@@ -2,7 +2,7 @@
 
 Copyright:  WH team
 
-Author: YinJichao <jichaoyinyjc@163.com>¡¢ChenBinXiang <chen_mech99@163.com>
+Author: YinJichao <jichaoyinyjc@163.com>ã€ChenBinXiang <chen_mech99@163.com>
 
 Completion date:  XXX
 
@@ -43,33 +43,33 @@ namespace CAE
     class ele_base
     {
     public:
-        // ¹¹Ôìº¯Êı£¬Îö¹¹º¯Êı
+        // æ„é€ å‡½æ•°ï¼Œææ„å‡½æ•°
         ele_base() {};
     public:
-        std::string type_;//µ¥ÔªÀàĞÍÃû×Ö
-        int nnode_;//¸Ãµ¥ÔªÓµÓĞ½ÚµãÊıÁ¿
-        int node_dof_;//¸Ãµ¥ÔªÃ¿¸ö½Úµã×ÔÓÉ¶ÈÊı
-        int ngps_;//»ı·ÖµãÊıÁ¿
-        // ¸³Öµ²ÄÁÏÊôĞÔ
+        std::string type_;//å•å…ƒç±»å‹åå­—
+        int nnode_;//è¯¥å•å…ƒæ‹¥æœ‰èŠ‚ç‚¹æ•°é‡
+        int node_dof_;//è¯¥å•å…ƒæ¯ä¸ªèŠ‚ç‚¹è‡ªç”±åº¦æ•°
+        int ngps_;//ç§¯åˆ†ç‚¹æ•°é‡
+        // èµ‹å€¼ææ–™å±æ€§
         virtual void set_matrial(elastic_mat data_mat) {};
 
-        // ½¨Á¢±¾¹¹¾ØÕó
+        // å»ºç«‹æœ¬æ„çŸ©é˜µ
         virtual void build_cons_mat() {};
 
-        // ½¨Á¢Ó¦±ä¾ØÕó
+        // å»ºç«‹åº”å˜çŸ©é˜µ
         virtual void build_strain_mat() {};
 
-        // ½¨Á¢µ¥Ôª¸Õ¶È¾ØÕó
+        // å»ºç«‹å•å…ƒåˆšåº¦çŸ©é˜µ
         virtual void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) {};
     
-        // ½¨Á¢ÖÊÁ¿ÁĞÕó
+        // å»ºç«‹è´¨é‡åˆ—é˜µ
         virtual void build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass) {};
 
-        // ¼ÆËãµ¥ÔªÄÚÁ¦
+        // è®¡ç®—å•å…ƒå†…åŠ›
         virtual void cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d,
                                   vector<double>& stress, vector<double>& strain, vector<double>& InFroce) {};
     
-        // ¼ÆËãµ¥ÔªÊ±¼ä²½³¤
+        // è®¡ç®—å•å…ƒæ—¶é—´æ­¥é•¿
         virtual void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) {};
     };
     CREAT_FACTORY(ele_base);

@@ -4,8 +4,8 @@
 
 namespace CAE
 {
-	//Ê¹ÓÃ·½·¨£º
-	//»ùÀàÀàĞÍ* ±äÁ¿Ãû = GetFatory<»ùÀàÀàĞÍFactory>::instance()->create_class(key);
+	//ä½¿ç”¨æ–¹æ³•ï¼š
+	//åŸºç±»ç±»å‹* å˜é‡å = GetFatory<åŸºç±»ç±»å‹Factory>::instance()->create_class(key);
 	template<typename T>
 	class GetFactory
 	{
@@ -57,7 +57,7 @@ namespace CAE
 			}																\
 		};
 
-	//ÔÚ×ÓÀàµÄcppÖĞÊ¹ÓÃ£¬ÔÚhÎÄ¼şÖĞ¿ÉÄÜ»áÔì³ÉÖØ¸´¶¨Òå
+	//åœ¨å­ç±»çš„cppä¸­ä½¿ç”¨ï¼Œåœ¨hæ–‡ä»¶ä¸­å¯èƒ½ä¼šé€ æˆé‡å¤å®šä¹‰
 	#define REGISTER(ClassBase,ClassName,ClassKey)									\
 	ClassBase * createObject##ClassName()			\
 	{											\
