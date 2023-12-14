@@ -12,9 +12,13 @@ Description: XXX
 
 #pragma once
 
+#define min(x,y) (((x) < (y)) ? (x) : (y))
+
 #include <iostream>
 #include <Eigen/Dense>
 #include "slu_ddefs.h"
+#include <mkl.h>
+#include <mkl_pardiso.h>
 
 using namespace std;
 using namespace Eigen;
@@ -22,3 +26,5 @@ using namespace Eigen;
 bool sample_eigen();
 
 bool sample_superlu();
+
+bool sample_mkl();

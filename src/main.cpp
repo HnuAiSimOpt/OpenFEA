@@ -14,6 +14,7 @@ Description: XXX
 #include <iostream>
 #include "include/cae.h"
 #include "include/elastic_mat.h"
+// #include "include/sample_eigen_superlu_mkl.h"
 
 void main()
 {
@@ -21,7 +22,7 @@ void main()
     CAE::elastic_mat mat_item{2.1e9, 0.3, 7800};
 
     // 材料路径
-    std::string path = "E:\\CADCAE_project\\model\\C3D4_C3D8\\Job-1.inp";
+    std::string path = "E:\\CADCAE_BY_ME\\model\\C3D4\\Job-1.inp";
 
     // 关键字
     string load_set_keyword = "Set-load";
@@ -35,13 +36,15 @@ void main()
     cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
 
     // 执行结构响应分析
-    string result_path = "E:\\CADCAE_project\\model\\output\\dis_C3D4_C3D8.vtk";
-    string path_abaqus = "E:\\CADCAE_project\\model\\Abaqus_U_C3D4_C3D8.txt";
+    string result_path = "E:\\CADCAE_BY_ME\\model\\output\\dis_C3D4.vtk";
+    string path_abaqus = "E:\\CADCAE_BY_ME\\model\\model\\Abaqus_U_C3D4.txt";
     cae_item.implict_analysis(result_path, path_abaqus);
 
-//     string result_path = "F:/OpenFEM/model/";
-//     string path_abaqus = "F:/OpenFEM/model/Abaqus_U.txt";
-//     cae_item.data_cae_.time_total_ = 0.1;
-//     cae_item.data_cae_.time_step_ = 0.0;
-//     cae_item.explicit_analysis(result_path, path_abaqus);
+    // string result_path = "F:/OpenFEM/model/";
+    // string path_abaqus = "F:/OpenFEM/model/Abaqus_U.txt";
+    // cae_item.data_cae_.time_total_ = 0.1;
+    // cae_item.data_cae_.time_step_ = 0.0;
+    // cae_item.explicit_analysis(result_path, path_abaqus);
+
+    // bool t = sample_mkl();
 }
