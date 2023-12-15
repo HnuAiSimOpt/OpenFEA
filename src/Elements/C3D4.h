@@ -26,8 +26,8 @@ namespace CAE
 
     public:
         // 构造函数，析构函数
-        tetra_ele_elastic() { type_ = "C3D4"; node_dof_ = 3; nnode_ = 4; ngps_ = 1;};
-        tetra_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D4"; node_dof_ = 3; nnode_ = 4; ngps_ = 1;};
+        tetra_ele_elastic() { type_ = "C3D4"; node_dof_ = 3; nnode_ = 4; ngps_ = 1; face_node = 3; face_gps = 1; };
+        tetra_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D4"; node_dof_ = 3; nnode_ = 4; ngps_ = 1; face_node = 3; face_gps = 1; };
 
         // 材料赋属性
         void set_matrial(elastic_mat matrial_struc)override { matrial_struc_ = matrial_struc; }  ;
@@ -51,6 +51,11 @@ namespace CAE
         
         // 计算单元时间步长
         void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) override;
+
+        // 交界面积分点物理空间坐标（非协调）
+        void gps_phy_coords(Eigen::Ref<Eigen::MatrixXd> nodes1,
+            Eigen::Ref<Eigen::MatrixXd> phy_gps, vector<double>& W_1,
+            vector<Eigen::Vector3d>& Normal) override;
     };
 
 

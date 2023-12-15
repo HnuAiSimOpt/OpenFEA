@@ -50,6 +50,8 @@ namespace CAE
         int nnode_;//该单元拥有节点数量
         int node_dof_;//该单元每个节点自由度数
         int ngps_;//积分点数量
+        int face_node;//单元一个面上的节点数（非协调部分）
+        int face_gps;//单元一个面上的积分点数（非协调部分）
         // 赋值材料属性
         virtual void set_matrial(elastic_mat data_mat) {};
 
@@ -71,6 +73,11 @@ namespace CAE
     
         // 计算单元时间步长
         virtual void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) {};
+
+        // 交界面积分点物理空间坐标（非协调）
+        virtual void gps_phy_coords( Eigen::Ref<Eigen::MatrixXd> nodes1,
+            Eigen::Ref<Eigen::MatrixXd> phy_gps, vector<double>& W_1,
+            vector<Eigen::Vector3d>& Normal) {};
     };
     CREAT_FACTORY(ele_base);
 }

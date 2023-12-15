@@ -30,6 +30,14 @@ namespace CAE
     public:
         MatrixXd GP1, GP2;
 
+        vector<MatrixXd> P_GP1;//父空间积分点
+        vector<MatrixXd> P_GP2;//父空间积分点
+        //vector<double> W_1;//权重
+        //vector<Eigen::Vector3d> Normal;//法向量
+
+
+
+
 
 
     public:
@@ -42,13 +50,17 @@ namespace CAE
         };
 
         void PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat);
-        void GetIntF_ele_Inform(data_management& data_cae, vector<int>& sctr1, vector<int>& sctr2,
+        void GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
+            int& face_nodes, int& e);
+        void GetIntF_ele_Inform(data_management& data_cae,
             MatrixXd& pts1, MatrixXd& pts2, int& e);
         MatrixXd GlobalMap3D(MatrixXd gpoint, MatrixXd nodes);
         LagrangeBR lagrange_basis(MatrixXd& coord);
         //填充界面刚度矩阵
         void InterfacialStifMatrix(data_management& data_cae, elastic_mat& data_mat,
             vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx);
+        //Ce计算
+        void Get_Ce(elastic_mat& data_mat, MatrixXd& Ce);
         //罚参数计算
         double Get_Alpha(data_management& data_cae, elastic_mat& data_mat, MatrixXd& pts1);
         //计算Kp，Kd
@@ -63,7 +75,8 @@ namespace CAE
             MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
             data_management& data_cae, int& e);
         //储存界面刚度矩阵
-        void Fill_InterFMatrix(vector<int> j_eper_dof, vector<int> i_eper_dof,
-            vector<double>& nz_val, vector<int> row_idx, vector<int>& col_idx, MatrixXd& K_interface);
+        void Fill_InterFMatrix(vector<int>& j_eper_dof, vector<int>& i_eper_dof,
+            vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx,
+            MatrixXd& K_interface);
     };
 }

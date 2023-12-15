@@ -58,7 +58,8 @@ namespace CAE
         else
         {  //是非协调
             item_assam.NCF_assembleStiffness(data_cae_, mat_);
-            //12.8非协调面自由度索引有问题还未改完
+            
+            
         }
         
         // 求解
