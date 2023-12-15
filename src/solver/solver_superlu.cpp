@@ -12,11 +12,11 @@ Description: XXX
 
 #pragma once
 
-#include "include/solver_linear.h"
+#include "include/solver_superlu.h"
 
 namespace CAE
 {
-    void superlu_solver(assamble_stiffness &K, vector<double> &F, vector<double> &dis)
+    void superlu_solver(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, vector<double> &F, vector<double> &dis)
     {
         if (F.size() == 0)
         {
@@ -31,12 +31,12 @@ namespace CAE
             SuperLUStat_t stat;
 
             /* Initialize matrix A. */
-            int *ia = K.col_idx.data();
-            int *ja = K.row_idx.data();
-            double *a = K.nz_val.data();
+            int *ia = col_idx.data();
+            int *ja = row_idx.data();
+            double *a = nz_val.data();
             double *rhs = F.data();
-            int neqs = F.size();
-            int nz = K.num_nz_val;
+            int neqs = int(F.size());
+            int nz = int(nz_val.size());
 
             /*Create matrix A in the format expected by SuperLU.*/
             dCreate_CompCol_Matrix(&A, neqs, neqs, nz, a, ja, ia, SLU_NC, SLU_D, SLU_GE);

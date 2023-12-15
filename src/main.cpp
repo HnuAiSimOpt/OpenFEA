@@ -37,7 +37,7 @@ void main()
 
     // 执行结构响应分析
     string result_path = "E:\\CADCAE_BY_ME\\model\\output\\dis_C3D4.vtk";
-    string path_abaqus = "E:\\CADCAE_BY_ME\\model\\model\\Abaqus_U_C3D4.txt";
+    string path_abaqus = "E:\\CADCAE_BY_ME\\model\\Abaqus_U_C3D4.txt";
     cae_item.implict_analysis(result_path, path_abaqus);
 
     // string result_path = "F:/OpenFEM/model/";
