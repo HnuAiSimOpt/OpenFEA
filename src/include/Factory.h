@@ -5,7 +5,7 @@
 namespace CAE
 {
 	//使用方法：
-	//基类类型* 变量名 = GetFatory<基类类型Factory>::instance()->create_class(key);
+	//基类类型* 变量名 = GetFactory<基类类型Factory>::instance()->create_class(key);
 	template<typename T>
 	class GetFactory
 	{
