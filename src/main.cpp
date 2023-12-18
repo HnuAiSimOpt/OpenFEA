@@ -18,13 +18,13 @@ Description: XXX
 void main()
 {
     // 材料属性赋值
-    CAE::elastic_mat mat_item{2.1e5, 0.3, 7800};
+    CAE::elastic_mat mat_item{2.1e5, 0.3, 7800};//此材料参数用于非协调计算
 
     // 材料路径
     //std::string path = "E:/CADCAE_project/model/mix_ele_model/shaft_bracket/Job-1.inp";
     //std::string path = "F:/OpenFEM/model/Job-1.inp";
     std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/model.inp";//非协调路径
-
+    //std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/FEMinp/Job-1.inp";//FEM路径
 
     // 关键字
     string load_set_keyword = "Set-load";

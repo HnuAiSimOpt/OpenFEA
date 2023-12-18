@@ -184,16 +184,17 @@ namespace CAE
 	void NCF_map::InterfacialStifMatrix(data_management& data_cae, elastic_mat& data_mat,
 		vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx)
 	{
-		
 		MatrixXd Ce;
 		Get_Ce(data_mat,Ce);
 
-		 MatrixXd pts1(8, 3), pts2(8, 3);//交界处细、粗六面体单元节点坐标
+		 MatrixXd pts1, pts2;//交界处细、粗六面体单元节点坐标
+		
+		 vector<int> F_eper_dof, C_eper_dof; // 粗细单元节点自由度
 		 
 		 //初始化耦合矩阵,界面总刚
-		 MatrixXd  Kp11(24, 24), Kp12(24, 24), Kp22(24, 24),
-			       Kd11(24, 24), Kd12(24, 24), Kd21(24, 24), Kd22(24, 24),
-			       K11(24, 24), K12(24, 24), K21(24, 24), K22(24, 24);
+		 MatrixXd  Kp11, Kp12, Kp22,
+			       Kd11, Kd12, Kd21, Kd22,
+			       K11, K12, K21, K22;
 
 		 int nF_bmesh = data_cae.BndMesh_F.size();//交界面处细网格个数
 
@@ -202,13 +203,10 @@ namespace CAE
 		 MatrixXd phy_gps;//储存一个面上的高斯积分点物理坐标
 		 vector<double> W_1;//权重
 		 vector<Eigen::Vector3d> Normal;//法向量
-
+		 //法向量矩阵
+		 MatrixXd n(3, 6);
 		 for (int e = 0; e < nF_bmesh; e++) //每一组"粗细网格单元的界面刚度矩阵"计算
 		 {  
-			 //初始化每一组“粗细单元”的耦合矩阵
-			 Kp11.setZero(); Kp12.setZero(); Kp22.setZero();
-			 Kd11.setZero(); Kd12.setZero(); Kd21.setZero(); Kd22.setZero();
-			
 			 int id_ele_F = data_cae.BndMesh_F[e] - 1;//索引-1
 			 int id_ele_C = data_cae.BndMesh_C[e] - 1;
 			 int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
@@ -221,6 +219,24 @@ namespace CAE
 			 pts2.resize(n_node_C, 3);
 			 //获取"粗细单元"节点信息
 			 GetIntF_ele_Inform(data_cae, pts1, pts2, e);
+			 //初始化每一组“粗细单元”的耦合矩阵
+			 Kp11.resize(n_node_F * 3, n_node_F * 3);
+			 Kp12.resize(n_node_F * 3, n_node_C * 3);
+			 Kp22.resize(n_node_C * 3, n_node_C * 3);
+			 Kd11.resize(n_node_F * 3, n_node_F * 3);
+			 Kd12.resize(n_node_F * 3, n_node_C * 3);
+			 Kd21.resize(n_node_C * 3, n_node_F * 3);
+			 Kd22.resize(n_node_C * 3, n_node_C * 3);
+			 
+			/* K11.resize(n_node_F * 3, n_node_F * 3);
+			 K12.resize(n_node_F * 3, n_node_C * 3);
+			 K21.resize(n_node_C * 3, n_node_F * 3);
+			 K22.resize(n_node_C * 3, n_node_C * 3);
+			 */
+			 Kp11.setZero(); Kp12.setZero(); Kp22.setZero();
+			 Kd11.setZero(); Kd12.setZero(); Kd21.setZero(); Kd22.setZero();
+
+			 //K11.setZero();K12.setZero();K21.setZero();K22.setZero();
 
 			 //一个面上的高斯积分点个数
 			 int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
@@ -228,8 +244,11 @@ namespace CAE
 			 W_1.resize(face_gps_);//权重
 			 Normal.resize(face_gps_);//法向量
 			 // 计算交界面积分点物理空间坐标、权重、法向量
-
 			 data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->gps_phy_coords(nodes1, phy_gps, W_1, Normal);
+
+			 MatrixXd B1(6, n_node_F * 3), Nm1(3, n_node_F * 3),
+				 B2(6, n_node_C * 3), Nm2(3, n_node_C * 3);
+			 
 
 			 //积分点循环 
 			 for (int q = 0; q < face_gps_; q++)
@@ -241,114 +260,43 @@ namespace CAE
 				 MatrixXd X1, X2; //"粗细网格"积分点父空间坐标
 				 //-----------------------------------测试
 				 std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
-				 X1 = GlobalMap3D(xx, pts1);//细网格
+				 X1 = GlobalMap3D(xx, pts1, n_node_F);//细网格
 				 std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
-				 X2 = GlobalMap3D(xx, pts2);//粗网格
+				 X2 = GlobalMap3D(xx, pts2, n_node_C);//粗网格
 				 //-----------------------------------
 
-				/* P_GP1.push_back(X1);
-				 P_GP2.push_back(X2);*/
+				 Calculate_B_Nm(X1, pts1, B1, Nm1, n_node_F);
+				 Calculate_B_Nm(X2, pts2, B2, Nm2, n_node_C);
 
-
-				 
-				 //法向量
-				 MatrixXd n(3, 6);
-				 /*vector<double> normal(3);
-				 normal[0] = Normal[q](0); 
-				 normal[1] = Normal[q](1); 
-				 normal[2] = Normal[q](2);*/
-				 n.setZero();//法向量方向
+				 n.setZero();//交界面细网格法向量方向
 				 n(0, 0) = Normal[q](0);  n(0, 3) = Normal[q](1); n(0, 5) = Normal[q](2);
 				 n(1, 1) = Normal[q](1);  n(1, 3) = Normal[q](0); n(1, 4) = Normal[q](2);
 				 n(2, 2) = Normal[q](2);  n(2, 4) = Normal[q](1); n(2, 5) = Normal[q](0);
 				 //权重
 				 double wt1 = W_1[q];
-
-				//积分点父空间坐标
-				 /*MatrixXd pt1(1, 3), pt2(1, 3);
-				 pt1.row(0) = P_GP1[q];
-				 pt2.row(0) = P_GP2[q];
-				 LagrangeBR r_out1 = lagrange_basis(pt1);
-				 LagrangeBR r_out2 = lagrange_basis(pt2);*/
-
-				 LagrangeBR r_out1 = lagrange_basis(X1);
-				 LagrangeBR r_out2 = lagrange_basis(X2);
-				 
-				 
-				 MatrixXd J1, J2, inv_J1, inv_J2;
-				 J1 = pts1.transpose() * r_out1.dNdxi_out;
-				 J2 = pts2.transpose() * r_out2.dNdxi_out;
-				 inv_J1 = J1.inverse();
-				 inv_J2 = J2.inverse();
-
-				 MatrixXd dN1dx, dN2dx, T_dN1dx, T_dN2dx;
-				 dN1dx = r_out1.dNdxi_out * inv_J1;
-				 dN2dx = r_out2.dNdxi_out * inv_J2;
-
-				 T_dN1dx = dN1dx.transpose();
-				 T_dN2dx = dN2dx.transpose();
-
-				 MatrixXd B1(6, 24), B2(6, 24), Nm1(3, 24), Nm2(3, 24);
-				 B1.setZero();
-				 B2.setZero();
-				 Nm1.setZero();
-				 Nm2.setZero();
-
-				 for (int i = 0; i < 8; i++) 
-				 {
-					 B1(0, 3 * i)     = T_dN1dx(0, i);
-					 B1(1, 3 * i + 1) = T_dN1dx(1, i);
-					 B1(2, 3 * i + 2) = T_dN1dx(2, i);
-					 B1(3, 3 * i)     = T_dN1dx(1, i);   B1(3, 3 * i + 1) = T_dN1dx(0, i);
-					 B1(4, 3 * i + 1) = T_dN1dx(2, i);   B1(4, 3 * i + 2) = T_dN1dx(1, i); 
-					 B1(5, 3 * i)     = T_dN1dx(2, i);   B1(5, 3 * i + 2) = T_dN1dx(0, i);
-					 
-					 B2(0, 3 * i)     = T_dN2dx(0, i);
-					 B2(1, 3 * i + 1) = T_dN2dx(1, i);
-					 B2(2, 3 * i + 2) = T_dN2dx(2, i);
-					 B2(3, 3 * i)     = T_dN2dx(1, i); B2(3, 3 * i + 1) = T_dN2dx(0, i);
-					 B2(4, 3 * i + 1) = T_dN2dx(2, i); B2(4, 3 * i + 2) = T_dN2dx(1, i);
-					 B2(5, 3 * i)     = T_dN2dx(2, i); B2(5, 3 * i + 2) = T_dN2dx(0, i);
-					
-					 Nm1(0, 3 * i)     = r_out1.N_out(0, i);
-					 Nm1(1, 3 * i + 1) = r_out1.N_out(0, i);
-					 Nm1(2, 3 * i + 2) = r_out1.N_out(0, i);
-
-					 Nm2(0, 3 * i)     = r_out2.N_out(0, i);
-					 Nm2(1, 3 * i + 1) = r_out2.N_out(0, i);
-					 Nm2(2, 3 * i + 2) = r_out2.N_out(0, i);
-				 }
-
-				 
 				 //计算罚参数
 				 double alpha = Get_Alpha(data_cae, data_mat, pts1);
 				 //计算Kp,Kd
 				 Calculate_Kp_Kd(Kp11, Kp12, Kp22, Kd11, Kd12, Kd21, Kd22,
 					 Nm1, Nm2, B1, B2, n, Ce, alpha, wt1);
 
-
 			 }
+
+			 
+			 // 单元自由度
+			 Get_ele_dof(F_eper_dof, C_eper_dof, data_cae, e, n_node_F, n_node_C);
+
 			 //计算界面总刚
-			 //MatrixXd K11(24, 24), K12(24, 24), K21(24, 24), K22(24, 24);
-			 K11.setZero();
-			 K12.setZero();
-			 K21.setZero();
-			 K22.setZero();
-
-			 vector<int> F_eper_dof(24), C_eper_dof(24);
-			 Calculate_InterFMatrix(K11, K12, K21, K22, F_eper_dof, C_eper_dof,
-				 Kd11, Kd12, Kd21, Kd22, Kp11, Kp12, Kp22, data_cae, e);
-
+			 Calculate_InterFMatrix(K11, K12, K21, K22, Kd11, Kd12, Kd21, Kd22,
+				 Kp11, Kp12, Kp22, n_node_F, n_node_C);
 
 			 //界面刚度矩阵储存为CSR
-
 			 Fill_InterFMatrix(F_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K11);
 			 Fill_InterFMatrix(F_eper_dof, C_eper_dof, nz_val, row_idx, col_idx, K12);
 			 Fill_InterFMatrix(C_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K21);
 			 Fill_InterFMatrix(C_eper_dof, C_eper_dof, nz_val, row_idx, col_idx, K22);
 
 		 }
-
 
 	}
 
@@ -372,6 +320,41 @@ namespace CAE
 
 	}
 
+
+	//计算B、Nm
+	void NCF_map::Calculate_B_Nm(MatrixXd& p_gps, MatrixXd& nodes, MatrixXd& B,
+		MatrixXd& Nm,int& n_node_mesh)
+	{
+		LagrangeBR r_out = lagrange_basis(p_gps, n_node_mesh);
+		MatrixXd J, inv_J, dNdx, T_dNdx;
+		J = nodes.transpose() * r_out.dNdxi_out;
+		inv_J = J.inverse();
+		dNdx = r_out.dNdxi_out * inv_J;
+		T_dNdx = dNdx.transpose();
+		B.setZero();
+		Nm.setZero();
+		for (int i = 0; i < n_node_mesh; i++)
+		{
+			B(0, 3 * i)     = T_dNdx(0, i);
+			B(1, 3 * i + 1) = T_dNdx(1, i);
+			B(2, 3 * i + 2) = T_dNdx(2, i);
+			B(3, 3 * i)     = T_dNdx(1, i);   B(3, 3 * i + 1) = T_dNdx(0, i);
+			B(4, 3 * i + 1) = T_dNdx(2, i);   B(4, 3 * i + 2) = T_dNdx(1, i);
+			B(5, 3 * i)     = T_dNdx(2, i);   B(5, 3 * i + 2) = T_dNdx(0, i);
+
+			Nm(0, 3 * i)     = r_out.N_out(0, i);
+			Nm(1, 3 * i + 1) = r_out.N_out(0, i);
+			Nm(2, 3 * i + 2) = r_out.N_out(0, i);
+
+		}
+
+	}
+
+
+
+
+	
+
 	//罚参数计算
 	double NCF_map::Get_Alpha(data_management& data_cae, elastic_mat& data_mat, MatrixXd& pts1)
 	{
@@ -386,6 +369,9 @@ namespace CAE
 		double alpha = theta * (lambda + mu) / (2 * h);
 		return alpha;
 	}
+
+
+
 
 	//计算Kp，Kd
 	void NCF_map::Calculate_Kp_Kd(MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
@@ -417,35 +403,49 @@ namespace CAE
 		Kd22 = Kd22 + Tp_Nm2_n_c_B2;
 	}
 
-	//计算总界面刚度矩阵
-	void NCF_map::Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,
-		MatrixXd& K21, MatrixXd& K22, vector<int>& F_eper_dof, vector<int>& C_eper_dof,
-		MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
-		MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
-		data_management& data_cae, int& e)
+	void NCF_map::Get_ele_dof(vector<int>& F_eper_dof, vector<int>& C_eper_dof,
+		data_management& data_cae, int& e, int& n_node_F, int& n_node_C)
 	{
+		F_eper_dof.resize(n_node_F * 3);
+		C_eper_dof.resize(n_node_C * 3);
+
+		for (int i = 0; i < n_node_F; i++)
+		{  
+			// 细网格自由度
+			int ncf_F = data_cae.BndMesh_F[e] - 1;//细网格单元编号从0开始
+			int item_dof_F = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_F][i] - 1];
+			F_eper_dof[3 * i] = 3 * item_dof_F;
+			F_eper_dof[3 * i + 1] = 3 * item_dof_F + 1;
+			F_eper_dof[3 * i + 2] = 3 * item_dof_F + 2;
+			
+		}
+		for (int i = 0; i < n_node_C; i++)
+		{  //粗网格自由度
+			int ncf_C = data_cae.BndMesh_C[e] - 1;//粗网格单元编号从0开始
+			int item_dof_C = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_C][i] - 1];
+			C_eper_dof[3 * i] = 3 * item_dof_C;
+			C_eper_dof[3 * i + 1] = 3 * item_dof_C + 1;
+			C_eper_dof[3 * i + 2] = 3 * item_dof_C + 2;
+
+		}
+	}
+
+	//计算总界面刚度矩阵
+	void NCF_map::Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,MatrixXd& K21, MatrixXd& K22,
+		MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
+		MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22, int& n_node_F, int& n_node_C)
+	{
+		K11.resize(n_node_F * 3, n_node_F * 3);
+		K12.resize(n_node_F * 3, n_node_C * 3);
+		K21.resize(n_node_C * 3, n_node_F * 3);
+		K22.resize(n_node_C * 3, n_node_C * 3);
+
 		MatrixXd T_Kd11 = Kd11.transpose();
 		MatrixXd T_Kd21 = Kd21.transpose();
 		MatrixXd T_Kd12 = Kd12.transpose();
 		MatrixXd T_Kd22 = Kd22.transpose();
 		MatrixXd T_Kp12 = Kp12.transpose();
 		
-		for (int i = 0; i < 8; i++)
-		{  
-			// 自由度
-
-			int ncf_F = data_cae.BndMesh_F[e] - 1;//细网格单元编号从0开始
-			int item_dof_F = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_F][i] - 1];
-			F_eper_dof[3 * i] = 3 * item_dof_F;
-			F_eper_dof[3 * i + 1] = 3 * item_dof_F + 1;
-			F_eper_dof[3 * i + 2] = 3 * item_dof_F + 2;
-
-			int ncf_C = data_cae.BndMesh_C[e] - 1;//粗网格单元编号从0开始
-			int item_dof_C = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_C][i] - 1];
-			C_eper_dof[3 * i] = 3 * item_dof_C;
-			C_eper_dof[3 * i + 1] = 3 * item_dof_C + 1;
-			C_eper_dof[3 * i + 2] = 3 * item_dof_C + 2;
-		}
 	
 		for (int i = 0; i < 24; i++)
 		{
@@ -491,7 +491,7 @@ namespace CAE
 
 	
 	//积分点网格单元向父空间映射
-	MatrixXd NCF_map::GlobalMap3D(MatrixXd gpoint, MatrixXd nodes)
+	MatrixXd NCF_map::GlobalMap3D(MatrixXd gpoint, MatrixXd nodes, int& n_node_mesh)
 	{
 		const int nMax = 10;//d迭代次数改为15  10.11
 		const double tol = 1e-14;
@@ -499,27 +499,28 @@ namespace CAE
 		//double tolSquared = tol ;
 		vector<double> xm(3);
 		vector<double> columnSums(3);
-		int rows = 8;
-		int cols = 3;
+		
+		/*int rows = nodes.rows();
+		int cols = nodes.cols();*/
 		//移动坐标到中心
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < 3; j++)
 		{
-			for (int i = 0; i < rows; i++)
+			for (int i = 0; i < n_node_mesh; i++)
 			{
 				columnSums[j] += nodes(i, j);
 			}
-			xm[j] = columnSums[j] / 8;//8节点
+			xm[j] = columnSums[j] / n_node_mesh;
 		}
 
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < 3; j++)
 		{
-			for (int i = 0; i < rows; i++)
+			for (int i = 0; i < n_node_mesh; i++)
 			{
 				nodes(i, j) -= xm[j];
 			}
 		}
 
-		for (int j = 0; j < cols; j++)
+		for (int j = 0; j < 3; j++)
 		{
 			gpoint(0, j) -= xm[j];
 		}
@@ -537,7 +538,7 @@ namespace CAE
 		{
 
 			//调函数求形函数及偏导
-			LagrangeBR result_out = lagrange_basis(Xi);
+			LagrangeBR result_out = lagrange_basis(Xi, n_node_mesh);
 			//传出形函数及偏导
 			MatrixXd N, dNdxi;
 			dNdxi = result_out.dNdxi_out;
@@ -565,67 +566,84 @@ namespace CAE
 			}
 
 		}
-		//temp
-		/*for (int i = 0; i < 1; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				cout << Xi(i, j) << endl;
-			}
-		}*/
+		
 		return Xi;
 	}
 
 
-	NCF_map::LagrangeBR NCF_map::lagrange_basis(MatrixXd& coord)
+	NCF_map::LagrangeBR NCF_map::lagrange_basis(MatrixXd& coord, int& n_node_mesh)
 	{
 		double xi = coord(0, 0), eta = coord(0, 1), zeta = coord(0, 2);
-		vector<double>  I1(3), I2(3);
-		I1[0] = 0.5 - 0.5 * xi; I1[1] = 0.5 - 0.5 * eta; I1[2] = 0.5 - 0.5 * zeta;
-		I2[0] = 0.5 + 0.5 * xi; I2[1] = 0.5 + 0.5 * eta; I2[2] = 0.5 + 0.5 * zeta;
-
-		MatrixXd N(1, 8);//转置后的N
-		N(0, 0) = I1[0] * I1[1] * I1[2];
-		N(0, 1) = I2[0] * I1[1] * I1[2];
-		N(0, 2) = I2[0] * I2[1] * I1[2];
-		N(0, 3) = I1[0] * I2[1] * I1[2];
-		N(0, 4) = I1[0] * I1[1] * I2[2];
-		N(0, 5) = I2[0] * I1[1] * I2[2];
-		N(0, 6) = I2[0] * I2[1] * I2[2];
-		N(0, 7) = I1[0] * I2[1] * I2[2];
-
-		MatrixXd dNdxi(8, 3);
-		
-		dNdxi(0, 0) = 0.125 * (-1 + eta + zeta - eta * zeta);
-		dNdxi(1, 0) = 0.125 * (1 - eta - zeta + eta * zeta);
-		dNdxi(2, 0) = 0.125 * (1 + eta - zeta - eta * zeta);
-		dNdxi(3, 0) = 0.125 * (-1 - eta + zeta + eta * zeta);
-		dNdxi(4, 0) = 0.125 * (-1 + eta - zeta + eta * zeta);
-		dNdxi(5, 0) = 0.125 * (1 - eta + zeta - eta * zeta);
-		dNdxi(6, 0) = 0.125 * (1 + eta + zeta + eta * zeta);
-		dNdxi(7, 0) = 0.125 * (-1 - eta - zeta - eta * zeta);
-
-		dNdxi(0, 1) = 0.125 * (-1 + xi + zeta - xi * zeta);
-		dNdxi(1, 1) = 0.125 * (-1 - xi + zeta + xi * zeta);
-		dNdxi(2, 1) = 0.125 * (1 + xi - zeta - xi * zeta);
-		dNdxi(3, 1) = 0.125 * (1 - xi - zeta + xi * zeta);
-		dNdxi(4, 1) = 0.125 * (-1 + xi - zeta + xi * zeta);
-		dNdxi(5, 1) = 0.125 * (-1 - xi - zeta - xi * zeta);
-		dNdxi(6, 1) = 0.125 * (1 + xi + zeta + xi * zeta);
-		dNdxi(7, 1) = 0.125 * (1 - xi + zeta - xi * zeta);
-
-		dNdxi(0, 2) = 0.125 * (-1 + xi + eta - xi * eta);
-		dNdxi(1, 2) = 0.125 * (-1 - xi + eta + xi * eta);
-		dNdxi(2, 2) = 0.125 * (-1 - xi - eta - xi * eta);
-		dNdxi(3, 2) = 0.125 * (-1 + xi - eta + xi * eta);
-		dNdxi(4, 2) = 0.125 * (1 - xi - eta + xi * eta);
-		dNdxi(5, 2) = 0.125 * (1 + xi - eta - xi * eta);
-		dNdxi(6, 2) = 0.125 * (1 + xi + eta + xi * eta);
-		dNdxi(7, 2) = 0.125 * (1 - xi + eta - xi * eta);
-
 		LagrangeBR result;
-		result.N_out = N;
-		result.dNdxi_out = dNdxi;
+		if (n_node_mesh==8)
+		{
+			vector<double>  I1(3), I2(3);
+			I1[0] = 0.5 - 0.5 * xi; I1[1] = 0.5 - 0.5 * eta; I1[2] = 0.5 - 0.5 * zeta;
+			I2[0] = 0.5 + 0.5 * xi; I2[1] = 0.5 + 0.5 * eta; I2[2] = 0.5 + 0.5 * zeta;
+
+			MatrixXd N(1, 8);//转置后的N
+			N(0, 0) = I1[0] * I1[1] * I1[2];
+			N(0, 1) = I2[0] * I1[1] * I1[2];
+			N(0, 2) = I2[0] * I2[1] * I1[2];
+			N(0, 3) = I1[0] * I2[1] * I1[2];
+			N(0, 4) = I1[0] * I1[1] * I2[2];
+			N(0, 5) = I2[0] * I1[1] * I2[2];
+			N(0, 6) = I2[0] * I2[1] * I2[2];
+			N(0, 7) = I1[0] * I2[1] * I2[2];
+
+			MatrixXd dNdxi(8, 3);
+
+			dNdxi(0, 0) = 0.125 * (-1 + eta + zeta - eta * zeta);
+			dNdxi(1, 0) = 0.125 * (1 - eta - zeta + eta * zeta);
+			dNdxi(2, 0) = 0.125 * (1 + eta - zeta - eta * zeta);
+			dNdxi(3, 0) = 0.125 * (-1 - eta + zeta + eta * zeta);
+			dNdxi(4, 0) = 0.125 * (-1 + eta - zeta + eta * zeta);
+			dNdxi(5, 0) = 0.125 * (1 - eta + zeta - eta * zeta);
+			dNdxi(6, 0) = 0.125 * (1 + eta + zeta + eta * zeta);
+			dNdxi(7, 0) = 0.125 * (-1 - eta - zeta - eta * zeta);
+
+			dNdxi(0, 1) = 0.125 * (-1 + xi + zeta - xi * zeta);
+			dNdxi(1, 1) = 0.125 * (-1 - xi + zeta + xi * zeta);
+			dNdxi(2, 1) = 0.125 * (1 + xi - zeta - xi * zeta);
+			dNdxi(3, 1) = 0.125 * (1 - xi - zeta + xi * zeta);
+			dNdxi(4, 1) = 0.125 * (-1 + xi - zeta + xi * zeta);
+			dNdxi(5, 1) = 0.125 * (-1 - xi - zeta - xi * zeta);
+			dNdxi(6, 1) = 0.125 * (1 + xi + zeta + xi * zeta);
+			dNdxi(7, 1) = 0.125 * (1 - xi + zeta - xi * zeta);
+
+			dNdxi(0, 2) = 0.125 * (-1 + xi + eta - xi * eta);
+			dNdxi(1, 2) = 0.125 * (-1 - xi + eta + xi * eta);
+			dNdxi(2, 2) = 0.125 * (-1 - xi - eta - xi * eta);
+			dNdxi(3, 2) = 0.125 * (-1 + xi - eta + xi * eta);
+			dNdxi(4, 2) = 0.125 * (1 - xi - eta + xi * eta);
+			dNdxi(5, 2) = 0.125 * (1 + xi - eta - xi * eta);
+			dNdxi(6, 2) = 0.125 * (1 + xi + eta + xi * eta);
+			dNdxi(7, 2) = 0.125 * (1 - xi + eta - xi * eta);
+
+			result.N_out = N;
+			result.dNdxi_out = dNdxi;
+		}
+		else if(n_node_mesh==4)
+		{
+			MatrixXd N(1, 4);//转置后的N
+			//N.resize(1, 8);
+			N(0, 0) = 1 - xi - eta - zeta;
+			N(0, 1) = xi;
+			N(0, 2) = eta;
+			N(0, 3) = zeta;
+
+			MatrixXd dNdxi(4, 3);
+			dNdxi(0, 0) = -1; dNdxi(0, 1) = -1; dNdxi(0, 2) = -1;
+			dNdxi(1, 0) = 1;  dNdxi(1, 1) = 0;  dNdxi(1, 2) = 0;
+			dNdxi(2, 0) = 0;  dNdxi(2, 1) = 1;  dNdxi(2, 2) = 0;
+			dNdxi(3, 0) = 0;  dNdxi(3, 1) = 0;  dNdxi(3, 2) = 1;
+
+			result.N_out = N;
+			result.dNdxi_out = dNdxi;
+		}
+		
+		/*result.N_out = N;
+		result.dNdxi_out = dNdxi;*/
 
 		return result;
 	}
