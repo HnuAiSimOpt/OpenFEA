@@ -137,13 +137,12 @@ namespace CAE
                         {
                             for (; row_idx[t] < ii_dof; t++)
                             {
-                            } // 使用上三角矩阵
+                            } // 使得 t 对应的行索引 对应 ii_dof
                             nz_val[t] = nz_val[t] + stiffness_matrix(mm, nn);
                         }
                     }
                 }
             }
-            
         }
         cout << "The CSR index has been filled" << endl;
     }

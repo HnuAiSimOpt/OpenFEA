@@ -27,7 +27,7 @@ namespace CAE
     class data_process
     {
     public:
-        map<string, int> ELE_TYPES = {{"C3D4", 1}, {"C3D8R", 2}}; // 建立单元类型到整型的映射
+        map<string, int> ELE_TYPES = {{"C3D4", 1}, {"C3D8", 2}, {"C3D8R", 3}}; // 建立单元类型到整型的映射
     public:
         // 重排序位移，填充为完整自由度位移
         void fill_full_dis(data_management &data_cae);

@@ -18,9 +18,10 @@ Description: XXX
 #include "include/data2cae.h"
 #include "include/set_bcs.h"
 #include "include/assemble.h"
-#include "include/solver_linear.h"
 #include "include/data2vtk.h"
-#include "include/ExplicitTools.h"
+#include "include/explicit_tools.h"
+#include "solver/include/solver_superlu.h"
+#include "solver/include/solver_pardiso.h"
 
 using namespace std;
 namespace CAE
