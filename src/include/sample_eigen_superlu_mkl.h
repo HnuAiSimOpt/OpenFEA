@@ -14,6 +14,13 @@ Description: XXX
 
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 
+// Define the format to printf MKL_INT values
+#if !defined(MKL_ILP64)
+#define IFORMAT "%i"
+#else
+#define IFORMAT "%lli"
+#endif
+
 #include <iostream>
 #include <Eigen/Dense>
 #include "slu_ddefs.h"
@@ -28,3 +35,5 @@ bool sample_eigen();
 bool sample_superlu();
 
 bool sample_mkl();
+
+bool sample_pardiso();

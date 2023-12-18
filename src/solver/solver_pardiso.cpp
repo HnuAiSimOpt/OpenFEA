@@ -18,56 +18,82 @@ namespace CAE
 {
     void pardiso_solver(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, vector<double> &b, vector<double> &x)
     {
-        std::cout << "The pardiso solver is perfomed ......\n";
         /*
         pardiso 初始化
         */
+        MKL_INT n = int(b.size());
         int *ia = col_idx.data();
         int *ja = row_idx.data();
         double *a = nz_val.data();
         double *rhs = b.data();
         double *solution = x.data();
         //
-        void *pt[64];
-        pt[1] = 0;
-        int mtype = 1; /* 矩阵类型  实数对称正定时为1   实数非对称时为11   复数对称时为3   复数非对称时为13 */
-        int m_iparm[64];
+        MKL_INT mtype = 11; /* Real and nonsymmetric matrix */
+        MKL_INT nrhs = 1;  /* Number of right hand sides. */
+
+        /* PARDISO control parameters. */
+        MKL_INT iparm[64];
         for (int i = 0; i < 64; i++)
         {
-            m_iparm[i] = 0;
+            iparm[i] = 0;
         }
-        m_iparm[59] = 1;
-        pardisoinit(pt, &mtype, m_iparm);
+        iparm[0] = 1; /* No solver default */
+		iparm[1] = 3; /* Fill-in reordering from METIS, Numbers of processors, value of OMP_NUM_THREADS */
+        iparm[7] = 2; /* Max numbers of iterative refinement steps */
+        iparm[34] = 1;  /* Zero-based indexing */
+        //
+        MKL_INT maxfct = 1; /* Maximum number of numerical factorizations. */
+        MKL_INT mnum = 1;   /* Which factorization to use. */
+        MKL_INT msglvl = 1; /* Print statistical information in file */
+        MKL_INT error = 0;  /* Initialize error flag */
+        MKL_INT idum;       /* Integer dummy. */
+        double ddum;        /* Double dummy */
+        MKL_INT phase;
+        // Initialize the internal solver memory pointer. This is only necessary for the FIRST call of the PARDISO solver.
+        void *pt[64];
+        for (int i = 0; i < 64; i++)
+        {
+            pt[i] = 0;
+        }
         std::cout << "Initialization has been finished ......\n";
-        /*
+        /* ---------------------------------------------------------------------------------------------------------------
         分析
-        */
-        int n = int(b.size());
-        int nnz = int(nz_val.size());
-        int nrhs = 1;
-        int maxfct = 1; /* Maximum number of numerical factorizations */
-        int mnum = 1;   /* Which factorization to use */
-        int msglvl = 0; /* 0 Suppress printing, 1 Print statistical information */
-        int phase = 11;
-        int error = 0;
-        pardiso(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ja, ia, NULL, &nrhs, m_iparm, &msglvl, NULL, NULL, &error);
+        ---------------------------------------------------------------------------------------------------------------- */
+        phase = 11;
+        PARDISO(pt, &maxfct, &mnum, &mtype, &phase,
+                &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
+        if (error != 0)
+        {
+            printf("\nERROR during symbolic factorization: " IFORMAT, error);
+            exit(1);
+        }
+        printf("\nNumber of nonzeros in factors = " IFORMAT, iparm[17]);
+        printf("\nNumber of factorization MFLOPS = " IFORMAT, iparm[18]);
         std::cout << "Phase 11 has been finished ......\n";
-        /*
+        /* ---------------------------------------------------------------------------------------------------------------
         分解
-        */
+        ---------------------------------------------------------------------------------------------------------------- */
         phase = 22;
-        bool m_iparm3 = false;
-        m_iparm[3] = (m_iparm3 ? 61 : 0);
-        error = 0;
-        pardiso(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ia, ja, NULL, &nrhs, m_iparm, &msglvl, NULL, NULL, &error);
+        PARDISO(pt, &maxfct, &mnum, &mtype, &phase,
+                &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
+        if (error != 0)
+        {
+            printf("\nERROR during numerical factorization: " IFORMAT, error);
+            exit(2);
+        }
         std::cout << "Phase 22 has been finished ......\n";
-        /*
+        /* ---------------------------------------------------------------------------------------------------------------
         回代
-        */
+        ---------------------------------------------------------------------------------------------------------------- */
         phase = 33;
-        m_iparm[7] = 1; /* Maximum number of iterative refinement steps */
-        error = 0;
-        pardiso(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ia, ja, NULL, &nrhs, m_iparm, &msglvl, rhs, solution, &error);
+        iparm[7] = 2; /* Max numbers of iterative refinement steps. */
+        PARDISO(pt, &maxfct, &mnum, &mtype, &phase,
+                &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, rhs, solution, &error);
+        if (error != 0)
+        {
+            printf("\nERROR during solution: " IFORMAT, error);
+            exit(3);
+        }
         std::cout << "Phase 33 has been finished ......\n";
     }
 }

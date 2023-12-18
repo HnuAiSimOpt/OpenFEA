@@ -14,7 +14,7 @@ Description: XXX
 #include <iostream>
 #include "include/cae.h"
 #include "include/elastic_mat.h"
-// #include "include/sample_eigen_superlu_mkl.h"
+#include "include/sample_eigen_superlu_mkl.h"
 
 void main()
 {
@@ -47,4 +47,5 @@ void main()
     // cae_item.explicit_analysis(result_path, path_abaqus);
 
     // bool t = sample_mkl();
+    // bool t = sample_pardiso();
 }

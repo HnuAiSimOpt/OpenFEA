@@ -12,6 +12,12 @@ Description: XXX
 
 #pragma once
 
+#if !defined(MKL_ILP64)
+#define IFORMAT "%i"
+#else
+#define IFORMAT "%lli"
+#endif
+
 #include<iostream>
 #include <vector>
 #include <mkl.h>
