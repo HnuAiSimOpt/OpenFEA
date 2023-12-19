@@ -19,9 +19,9 @@ Description: XXX
 #include "include/set_bcs.h"
 #include "include/assemble.h"
 #include "include/data2vtk.h"
+#include "include/linear_solution.h"
 #include "include/explicit_tools.h"
-#include "solver/include/solver_superlu.h"
-#include "solver/include/solver_pardiso.h"
+
 
 using namespace std;
 namespace CAE
