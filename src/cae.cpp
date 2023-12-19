@@ -64,8 +64,7 @@ namespace CAE
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
         data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
         string type_solver = "Pardiso_class";  // "SuperLU"; "Pardiso_func"; "Pardiso_class"
-        solution_api(item_assam.nz_val, item_assam.row_idx, item_assam.col_idx,
-                     data_cae_.single_load_vec_, data_cae_.single_dis_vec_, type_solver);
+        solution_api(item_assam, data_cae_, type_solver);
 
         // 输出物理场
         data_process item_output;

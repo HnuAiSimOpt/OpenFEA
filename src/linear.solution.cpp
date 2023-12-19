@@ -14,23 +14,26 @@ Description: XXX
 
 namespace CAE
 {
-    bool solution_api(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, vector<double> &b,
-                      vector<double> &x, string solver_type)
+    bool solution_api(assamble_stiffness &item_ass, data_management &item_cae_data, string solver_type)
     {
         if (solver_type == "SuperLU")
         {
-            superlu_solver(nz_val, row_idx, col_idx, b, x);
+            superlu_solver(item_ass.nz_val, item_ass.row_idx, item_ass.col_idx,
+                           item_cae_data.single_load_vec_, item_cae_data.single_dis_vec_);
         }
         else if (solver_type == "Pardiso_func")
         {
-            pardiso_solver_func(nz_val, row_idx, col_idx, b, x);
+            pardiso_solver_func(item_ass.nz_val, item_ass.row_idx, item_ass.col_idx,
+                                item_cae_data.single_load_vec_, item_cae_data.single_dis_vec_);
         }
         else if (solver_type == "Pardiso_class")
         {
-            PardisoSolution item_pardiso;
-            item_pardiso.phase_00 = item_pardiso.pardiso_init(nz_val, row_idx, col_idx, b, x);
-            item_pardiso.phase_1122 = item_pardiso.pardiso_decomposition();
-            item_pardiso.phase_33 = item_pardiso.pardiso_solution();
+            item_cae_data.item_pardiso = PardisoSolution();
+            item_cae_data.item_pardiso.phase_00 = item_cae_data.item_pardiso.pardiso_init(item_ass.nz_val, item_ass.row_idx,
+                                                                                          item_ass.col_idx, item_cae_data.single_load_vec_,
+                                                                                          item_cae_data.single_dis_vec_);
+            item_cae_data.item_pardiso.phase_1122 = item_cae_data.item_pardiso.pardiso_decomposition();
+            item_cae_data.item_pardiso.phase_33 = item_cae_data.item_pardiso.pardiso_solution();
         }
         else
         {
