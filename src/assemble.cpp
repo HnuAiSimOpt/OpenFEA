@@ -129,13 +129,12 @@ namespace CAE
                         {
                             for (; row_idx[t] < ii_dof; t++)
                             {
-                            } // 使用上三角矩阵
+                            } // 使得 t 对应的行索引 对应 ii_dof
                             nz_val[t] = nz_val[t] + stiffness_matrix(mm, nn);
                         }
                     }
                 }
             }
-            
         }
         cout << "The CSR index has been filled" << endl;
     }
@@ -229,7 +228,6 @@ namespace CAE
             int C_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[C_id_ele]]->nnode_;
             build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes);
            
-
             Storematrix_columns(col_data, F_ele_dofs, F_ele_dofs);
             Storematrix_columns(col_data, F_ele_dofs, C_ele_dofs);
             Storematrix_columns(col_data, C_ele_dofs, F_ele_dofs);
@@ -265,21 +263,20 @@ namespace CAE
     void assamble_stiffness::Storematrix_columns(vector<set<int>>& columns,
         vector<int>& A_eper_dof, vector<int>& B_eper_dof)
     {
-        int dof_row, dof_col;
-        for (int id_dofs : A_eper_dof)
+        //int dof_row, dof_col;
+        for (int dof_row : A_eper_dof)
         {
-            if (id_dofs > 0)
-            {
-                dof_row = id_dofs ;
-                for (int id_id_dofs : B_eper_dof)
+            //if (id_dofs > 0)
+           
+                //dof_row = id_dofs ;
+                for (int dof_col : B_eper_dof)
                 {
-                    if (id_id_dofs > 0)
-                    {
-                        dof_col = id_id_dofs;
+                    //if (id_id_dofs > 0)
+                       // dof_col = id_id_dofs;
                         columns[dof_col].insert(dof_row); 
-                    }
+                   
                 }
-            }
+           
         }
     }
     

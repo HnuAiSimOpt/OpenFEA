@@ -59,13 +59,13 @@ namespace CAE
         {  //是非协调
             item_assam.NCF_assembleStiffness(data_cae_, mat_);
             
-            
         }
         
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
-        data_cae_.single_load_vec_.resize(3 * num_free_nodes);
-        superlu_solver(item_assam, data_cae_.single_load_vec_, data_cae_.single_dis_vec_);
+        data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
+        superlu_solver(item_assam.nz_val, item_assam.row_idx, item_assam.col_idx,data_cae_.single_load_vec_, data_cae_.single_dis_vec_);
+        // pardiso_solver(item_assam.nz_val, item_assam.row_idx, item_assam.col_idx,data_cae_.single_load_vec_, data_cae_.single_dis_vec_);
 
         // 输出物理场
         data_process item_output;

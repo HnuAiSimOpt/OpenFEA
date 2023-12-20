@@ -114,7 +114,6 @@ namespace CAE
             }
 
             // 读取单元类型及节点拓扑关系
-
             std::vector<string> type_temp;
             if (line.find("*Element") != string::npos)
             {
@@ -214,18 +213,49 @@ namespace CAE
                     }
                 }
             }
-            //读取细网格 交界面4节点信息
+
+            //读取细网格 交界面（四边形、三角形）节点信息
+              std::vector<string> facenode_temp;
             if (line.find("*BndFace_finemesh") != string::npos)
             {  
-                int i;
-                i = data_cae.BndMesh_F.size();
-                data_cae.bndFace_finemesh.resize(i, vector<int>(4));
+                facenode_temp = split_str(line, "=");
+                int face_nnode;
+                del_blank(facenode_temp[1]);
+                face_nnode = std::stoi(facenode_temp[1]);
+                
+                 int r = data_cae.BndMesh_F.size();
+                 data_cae.bndFace_finemesh.resize(r, vector<int>(face_nnode));
+
                 int id_node = 0;
                 while (getline(infile, line))
                 {
                     if (line.find("*") != string::npos)
+                    {
                         break;
-                    else
+                    }
+                        
+                    std::istringstream iss(line);
+                    vector<string> tempN_a;
+                    string tempN;
+                    while (getline(iss, tempN, ','))
+                    {
+                        del_blank(tempN);
+                        tempN_a.push_back(tempN);
+                    }
+                    //int id_ = atoi(temp_a[0].c_str());
+                    //data_cae.ele_list_idx_[id_ - 1] = ele_type_idx;
+                    for (int i = 0; i < face_nnode; i++)
+                    {
+                        data_cae.bndFace_finemesh[id_node][i] = atoi(tempN_a[i].c_str());
+                    }
+                    id_node++;
+
+                    /*int i;
+                  i = data_cae.BndMesh_F.size();
+                 data_cae.bndFace_finemesh.resize(i, vector<int>(4));
+                    */
+
+                   /* else
                     {
                         string  x1, x2, x3, x4;
                         double x1_, x2_, x3_, x4_;
@@ -243,11 +273,11 @@ namespace CAE
                         data_cae.bndFace_finemesh[id_node][2] = x3_;
                         data_cae.bndFace_finemesh[id_node][3] = x4_;
                         id_node = id_node + 1;
-                    }
+                    }*/
                 }
             }
             //读取粗网格 交界面4节点信息
-            if (line.find("*BndFace_coarsemesh") != string::npos)
+            /*if (line.find("*BndFace_coarsemesh") != string::npos)
             {    
                 int j;
                 j = data_cae.BndMesh_C.size();
@@ -277,7 +307,7 @@ namespace CAE
                         id_node = id_node + 1;
                     }
                 }
-            }
+            }*/
             if (line.find("*End Nconforming") != string::npos)
             {
                 break;

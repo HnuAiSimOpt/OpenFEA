@@ -11,4 +11,5 @@ set (CMAKE_CXX_STANDARD_REQUIRED OFF)
 
 # 添加子文件
 add_subdirectory(src)
+add_subdirectory(externals/mkl)
 add_subdirectory(externals/superlu-6.0.1)

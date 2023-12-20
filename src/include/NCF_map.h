@@ -52,8 +52,9 @@ namespace CAE
        // void PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat);
         void GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
             int& face_nodes, int& e);
-        void GetIntF_ele_Inform(data_management& data_cae,
-            MatrixXd& pts1, MatrixXd& pts2, int& e);
+        void GetIntF_ele_Inform(MatrixXd& pts1, MatrixXd& pts2, vector<int>& F_eper_dof,
+            vector<int>& C_eper_dof, data_management& data_cae, int& e, 
+            int& n_node_F, int& n_node_C);
         MatrixXd GlobalMap3D(MatrixXd gpoint, MatrixXd nodes, int& n_node_mesh);
         LagrangeBR lagrange_basis(MatrixXd& coord, int& n_node_mesh);
         //填充界面刚度矩阵
@@ -71,8 +72,8 @@ namespace CAE
             MatrixXd& Nm1, MatrixXd& Nm2, MatrixXd& B1, MatrixXd& B2,
             MatrixXd& n, MatrixXd& Ce, double& alpha, double& wt1);
         //计算单元节点自由度
-        void Get_ele_dof(vector<int>& F_eper_dof, vector<int>& C_eper_dof,
-            data_management& data_cae, int& e, int& n_node_F, int& n_node_C);
+       // void Get_ele_dof(vector<int>& F_eper_dof, vector<int>& C_eper_dof,
+            //data_management& data_cae, int& e, int& n_node_F, int& n_node_C);
         //计算总界面刚度矩阵
         void Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,MatrixXd& K21, MatrixXd& K22,
             MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,

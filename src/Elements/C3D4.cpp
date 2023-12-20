@@ -12,7 +12,7 @@ Description: XXX
 
 #pragma once
 
-#include "C3D4.h"
+#include "include/C3D4.h"
 
 namespace CAE
 {
@@ -170,7 +170,7 @@ namespace CAE
         // hammer积分，权重为1/2
         double hm_values = 1. / 3;
         Eigen::MatrixXd hps(1, 2); //积分点
-        hps << hm_values, hps(1, 2) = hm_values;
+        hps << hm_values, hm_values;
 
         Eigen::MatrixXd dNdxi_1(2, 3);
         Eigen::MatrixXd N_1(1, 3);
@@ -195,9 +195,8 @@ namespace CAE
             Eigen::Vector3d unit_a3 = a3.normalized();
 
             phy_gps.row(q) = N_1 * nodes1;
-            W_1.push_back(norm_a3);
-            Normal.push_back(unit_a3);
-
+            W_1[q] = norm_a3;
+            Normal[q] = unit_a3;
                 
         }
 

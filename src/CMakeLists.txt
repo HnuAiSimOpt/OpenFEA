@@ -32,7 +32,17 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/bin")
 # 编译
 add_executable(${PROJECT_NAME} ${SRC_FILE})
 
+# 链接 MKL
+SET(MKL_LIBDIR "${PROJECT_SOURCE_DIR}/externals/mkl/lib")                        
+file(GLOB MKL_LIBS "${MKL_LIBDIR}/*.lib")
+SET(MKL_INC "${PROJECT_SOURCE_DIR}/externals/mkl/include")        
+target_include_directories(${PROJECT_NAME} PUBLIC ${MKL_INC})
+foreach(MKL_LIB ${MKL_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${MKL_LIB})
+endforeach()
+# 链接 Eigen
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/externals/eigen-3.4.0)
+# 链接 SuperLU
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/externals/superlu-6.0.1)
 target_link_libraries(${PROJECT_NAME} PUBLIC superlu)
 target_link_libraries(${PROJECT_NAME} PUBLIC blas)
