@@ -12,7 +12,7 @@ Description: XXX
 
 #pragma once
 
-#include "include/C3D4.h"
+#include "include/C3D3.h"
 
 namespace CAE
 {
