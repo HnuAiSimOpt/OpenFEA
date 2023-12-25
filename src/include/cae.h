@@ -21,6 +21,7 @@ Description: XXX
 #include "include/data2vtk.h"
 #include "include/linear_solution.h"
 #include "include/explicit_tools.h"
+#include "include/ca_reanalysis.h"
 
 
 using namespace std;

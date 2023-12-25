@@ -19,10 +19,13 @@ namespace CAE
         ReadInfo item_info(path_);
 
         // 读取单元、节点总数
-        item_info.read_ele_node_num(data_cae_);
+        // item_info.read_ele_node_num(data_cae_);
+        item_info.get_ele_num_node(data_cae_);
 
         // 读取几何信息
-        item_info.read_geo_mesh(data_cae_);
+        // item_info.read_geo_mesh(data_cae_);
+        item_info.get_geo_mesh(data_cae_);
+        item_info.check_geo_info(data_cae_);
 
         // 读取非协调信息
         item_info.readNconformingMessage(data_cae_);
@@ -32,6 +35,9 @@ namespace CAE
 
         // 读取位移边界信息
         item_info.read_dis_bcs(dis_set_keyword, data_cae_);
+
+        // 重分析 处理
+        ca_pre_process(data_cae_);
     }
 
     // 执行结构响应分析
@@ -44,18 +50,19 @@ namespace CAE
 
         // 建立单载荷向量
         item_bcs.build_single_load(data_cae_);
+        
 
         // 组装刚度矩阵
         assamble_stiffness item_assam;
 
         // 判断是否为非协调
         if (data_cae_.BndMesh_F.empty())
-        { // 不是非协调
+        { 
             item_assam.build_CSR(data_cae_);
             item_assam.fill_CSR_sparse_mat(data_cae_, mat_);
         }
         else
-        { // 是非协调
+        { 
             item_assam.NCF_assembleStiffness(data_cae_, mat_);
             // 12.8非协调面自由度索引有问题还未改完
         }
@@ -63,14 +70,14 @@ namespace CAE
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
         data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
-        string type_solver = "Pardiso_class";  // "SuperLU"; "Pardiso_func"; "Pardiso_class"
+        string type_solver = "Pardiso_class";  // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
         solution_api(item_assam, data_cae_, type_solver);
 
         // 输出物理场
         data_process item_output;
         item_output.fill_full_dis(data_cae_);
         double scale_dis = 1.0;
-        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, true);
+        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
     }
 
     // 执行结构动态响应分析

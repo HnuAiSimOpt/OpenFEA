@@ -24,7 +24,7 @@ void main()
         // 材料属性赋值
         CAE::elastic_mat mat_item{2.1e9, 0.3, 7800};
         // 材料路径
-        std::string path = "E:\\CADCAE_BY_ME\\model\\C3D4\\Job-1.inp";
+        std::string path = "E:\\CADCAE_BY_ME\\model\\CA\\INITIAL\\Job-1.inp";
         // 关键字
         string load_set_keyword = "Set-load";
         string load_value_keyword = "Cload";

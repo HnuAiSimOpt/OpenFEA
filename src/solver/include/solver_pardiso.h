@@ -30,7 +30,6 @@ namespace CAE
     class PardisoSolution
     {
     public:
-        /* -------------------------- */
         bool phase_00;
         bool phase_1122;
         bool phase_33;

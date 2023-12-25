@@ -35,6 +35,10 @@ namespace CAE
             item_cae_data.item_pardiso.phase_1122 = item_cae_data.item_pardiso.pardiso_decomposition();
             item_cae_data.item_pardiso.phase_33 = item_cae_data.item_pardiso.pardiso_solution();
         }
+        else if (solver_type == "CA")
+        {
+            
+        }
         else
         {
             std::cout << "Please check your flag of solver !!!";

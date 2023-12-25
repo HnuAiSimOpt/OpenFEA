@@ -61,8 +61,6 @@ namespace CAE
             printf("\nERROR during symbolic factorization: " IFORMAT, error);
             exit(1);
         }
-        printf("Number of nonzeros in factors = \n" IFORMAT, iparm[17]);
-        printf("Number of factorization MFLOPS = \n" IFORMAT, iparm[18]);
         std::cout << "Phase 11 has been finished ......\n";
         /* ---------------------------------------------------------------------------------------------------------------
         分解

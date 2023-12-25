@@ -20,11 +20,18 @@ namespace CAE
         int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
         vector<set<int>> col_data(3 * num_free_node);
         vector<int> item_ele_dofs;
+        
         // 遍历单元，储存所有自由度
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
+            exit(1);
             // 识别单元类型
+            if(data_cae.ele_list_.size()==0)
+            {
+                std::cout<<"AKUFGHUISA"<<std::endl;
+            }
             int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
+            exit(1);
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
             build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
             // 删除负自由度，即被约束自由度

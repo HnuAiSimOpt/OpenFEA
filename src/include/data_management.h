@@ -15,12 +15,16 @@ Description: XXX
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <deque>
 #include <map>
+#include <set>
 #include "include/Factory.h"
 #include "solver/include/solver_pardiso.h"
 #include "elements/include/ele_base.h"
 
+using std::deque;
 using std::map;
+using std::set;
 using std::sort;
 using std::string;
 using std::vector;
@@ -50,9 +54,18 @@ namespace CAE
         double time_total_;                     // 计算总时间
         double time_step_;                      // 计算时间步长，为0则采用自动步长
         PardisoSolution item_pardiso;           // paidiso求解器对象
-
+        // for reanalysis
+        vector<double> ca_rom;                  // 组合近似-降阶模型
+        //
+        int n_part_;                                         // part数量
+        vector<int> part_ne_, part_nd_;                      // 各part的单元，节点总数
+        deque<vector<vector<double>>> parts_coods_;          // 各part的节点坐标
+        deque<deque<vector<vector<int>>>> parts_node_topos_; // 各part的节点拓扑关系：part >> 多类型单元集合 >> 各类型节点拓扑
+        deque<vector<int>> parts_ele_type_;                  // 各单元对应的ele_list的索引
+        set<int> all_ele_type_;                              // 所有单元类型
+        //
+        map<string, int> ELE_TYPES = {{"C3D4", 1}, {"C3D8", 2}}; // 建立单元类型到整型的映射
     public:
-        // void ele_inite(vector<string>& ele_type_sets, map<string, int>& ELE_TYPES, elastic_mat& data_mat);
         //  单元初始化
         void ele_inite(elastic_mat &data_mat);
         // 工厂注册单元
