@@ -82,87 +82,104 @@ namespace CAE
         data_cae.ele_list_idx_.resize(data_cae.ne_);
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
-        string line;
-        int id_node = 0, id_ele = 0, ele_type_idx = 0;
+        string line, temp_node_topo;
+        std::vector<string> type_temp;
+        int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
+        bool node_record = false, node_topo_record = false;
         while (getline(infile, line))
         {
-            // 读取节点坐标
-
+            /* --------------------- 读取节点坐标 --------------------- */
             if (line.find("*Node") != string::npos)
             {
-                while (getline(infile, line))
-                {
-                    if (line.find("*") != string::npos)
-                        break;
-                    else
-                    {
-                        string id, x, y, z;
-                        double x_, y_, z_;
-                        std::istringstream iss(line);
-                        iss >> id >> x >> y >> z;
-                        x.erase(x.end() - 1); // 删除字符串最后的符号
-                        x_ = stod(x);         // 转换字符串为double
-                        y.erase(y.end() - 1);
-                        y_ = stod(y);
-                        z_ = stod(z);
-                        data_cae.coords_[id_node][0] = x_;
-                        data_cae.coords_[id_node][1] = y_;
-                        data_cae.coords_[id_node][2] = z_;
-                        id_node = id_node + 1;
-                    }
-                }
+                node_record = true;
+                getline(infile, line);
             }
-
-            // 读取单元类型及节点拓扑关系
-
-            std::vector<string> type_temp;
+            if (node_record & line.find("*") != string::npos)
+            {
+                node_record = false;
+            }
+            if (node_record)
+            {
+                string id, x, y, z;
+                double x_, y_, z_;
+                std::istringstream iss(line);
+                iss >> id >> x >> y >> z;
+                x.erase(x.end() - 1); // 删除字符串最后的符号
+                x_ = stod(x);         // 转换字符串为double
+                y.erase(y.end() - 1);
+                y_ = stod(y);
+                z_ = stod(z);
+                data_cae.coords_[id_node][0] = x_;
+                data_cae.coords_[id_node][1] = y_;
+                data_cae.coords_[id_node][2] = z_;
+                id_node = id_node + 1;
+            }
+            /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
             if (line.find("*Element") != string::npos)
             {
+                // 读取单元类型
                 type_temp = split_str(line, "=");
-                int ele_nnode;
-                del_blank(type_temp[1]);
-                ele_nnode = data_cae.add_ele(type_temp[1]);
-                while (getline(infile, line))
+                I_ele_type = del_blank(type_temp[1], data_cae.ELE_TYPES);
+                data_cae.ele_class_.insert(I_ele_type);
+                //
+                switch (I_ele_type)
                 {
-                    bool flag = true;
-                    if (line.find("*Element") != string::npos)
-                    {
-                        type_temp = split_str(line, "=");
-                        del_blank(type_temp[1]);
-                        ele_nnode = data_cae.add_ele(type_temp[1]);
-                        ele_type_idx++;
-                        flag = false;
-                        getline(infile, line);
-                    }
-                    if (line.find("*") != string::npos && flag)
-                    {
-                        break;
-                    }
-                    std::istringstream iss(line);
-                    vector<string> temp_a;
-                    string temp;
-                    while (getline(iss, temp, ',')) 
-                    {
-                        del_blank(temp);
-                        temp_a.push_back(temp);
-                    }
-                    int id_ = atoi(temp_a[0].c_str());
-                    data_cae.ele_list_idx_[id_ - 1] = ele_type_idx;
-                    for (int i = 0; i < ele_nnode; i++)
-                    {
-                        data_cae.node_topos_[id_ - 1][i] = atoi(temp_a[i + 1].c_str());
-                    }
-                    id_ele++;
+                case 0:
+                    node_per_ele = 4;
+                    break;
+                case 1:
+                    node_per_ele = 8;
+                    break;
+                default:
+                    cout << "Error in element type !!!\n";
+                    break;
                 }
+                node_topo_record = true;
+                getline(infile, line);
             }
+            if (node_topo_record & line.find("*") != string::npos)
+            {
+                node_topo_record = false;
+            }
+            if (node_topo_record)
+            {
+                std::istringstream iss(line);
+                // 储存单元类型
+                data_cae.ele_list_idx_[id_ele] = I_ele_type;
+                int temp_id = -1;
+                while (getline(iss, temp_node_topo, ','))
+                {
+                    del_blank(temp_node_topo);
+                    if (temp_id >= 0)
+                        data_cae.node_topos_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                    temp_id += 1;
+                }
+                id_ele += 1;
+            }
+            if (line.find("*End Assembly") != string::npos)
+            {
+                break;
+            }
+        }
+        // 单元类型在set自动去重，初始化单元
+        for (auto temp_ele_type : data_cae.ele_class_)
+        {
+            string temp_ele_type_str;
+            for (std::map<string, int>::iterator it = data_cae.ELE_TYPES.begin(); it != data_cae.ELE_TYPES.end(); it++)
+            {
+                if (it->second == temp_ele_type)
+                    temp_ele_type_str = it->first;
+            }
+            data_cae.add_ele(temp_ele_type_str);
+            cout << "The element " << temp_ele_type_str << " has been built !!!" << endl;
         }
         cout << "a total of " << id_node << " nodal coordinates have been readed." << endl;
         cout << "a total of " << id_ele << " nodal connectivities have been readed." << endl;
         cout << "a total of " << ele_type_idx + 1 << " types of elements have been readed." << endl;
     }
 
-    //读取非协调信息
-    void ReadInfo::readNconformingMessage(data_management& data_cae)
+    // 读取非协调信息
+    void ReadInfo::readNconformingMessage(data_management &data_cae)
     {
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
@@ -170,7 +187,7 @@ namespace CAE
         {
             string node_id;
             int node_id_;
-            //读取细网格单元8节点信息
+            // 读取细网格单元8节点信息
             if (line.find("*BndMesh_F") != string::npos)
             {
                 while (getline(infile, line))
@@ -184,15 +201,15 @@ namespace CAE
                         {
                             if (node_id.find(",") != string::npos)
                             {
-                                node_id.erase(node_id.end() - 1);   // delete the last symbol in the string
+                                node_id.erase(node_id.end() - 1); // delete the last symbol in the string
                             }
-                            node_id_ = atoi(node_id.c_str());       // convert to int type
+                            node_id_ = atoi(node_id.c_str()); // convert to int type
                             data_cae.BndMesh_F.push_back(node_id_);
                         }
                     }
                 }
             }
-            //读取粗网格单元8节点信息
+            // 读取粗网格单元8节点信息
             if (line.find("*BndMesh_C") != string::npos)
             {
                 while (getline(infile, line))
@@ -206,17 +223,17 @@ namespace CAE
                         {
                             if (node_id.find(",") != string::npos)
                             {
-                                node_id.erase(node_id.end() - 1);   // delete the last symbol in the string
+                                node_id.erase(node_id.end() - 1); // delete the last symbol in the string
                             }
-                            node_id_ = atoi(node_id.c_str());       // convert to int type
+                            node_id_ = atoi(node_id.c_str()); // convert to int type
                             data_cae.BndMesh_C.push_back(node_id_);
                         }
                     }
                 }
             }
-            //读取细网格 交界面4节点信息
+            // 读取细网格 交界面4节点信息
             if (line.find("*BndFace_finemesh") != string::npos)
-            {  
+            {
                 int i;
                 i = data_cae.BndMesh_F.size();
                 data_cae.bndFace_finemesh.resize(i, vector<int>(4));
@@ -227,11 +244,11 @@ namespace CAE
                         break;
                     else
                     {
-                        string  x1, x2, x3, x4;
+                        string x1, x2, x3, x4;
                         double x1_, x2_, x3_, x4_;
                         std::istringstream iss(line);
                         iss >> x1 >> x2 >> x3 >> x4;
-                        x1.erase(x1.end() - 1);  
+                        x1.erase(x1.end() - 1);
                         x1_ = stod(x1);
                         x2.erase(x2.end() - 1);
                         x2_ = stod(x2);
@@ -246,9 +263,9 @@ namespace CAE
                     }
                 }
             }
-            //读取粗网格 交界面4节点信息
+            // 读取粗网格 交界面4节点信息
             if (line.find("*BndFace_coarsemesh") != string::npos)
-            {    
+            {
                 int j;
                 j = data_cae.BndMesh_C.size();
                 data_cae.bndFace_coarsemesh.resize(j, vector<int>(4));
@@ -259,11 +276,11 @@ namespace CAE
                         break;
                     else
                     {
-                        string  x1, x2, x3, x4;
+                        string x1, x2, x3, x4;
                         double x1_, x2_, x3_, x4_;
                         std::istringstream iss(line);
                         iss >> x1 >> x2 >> x3 >> x4;
-                        x1.erase(x1.end() - 1);  
+                        x1.erase(x1.end() - 1);
                         x1_ = stod(x1);
                         x2.erase(x2.end() - 1);
                         x2_ = stod(x2);
@@ -282,10 +299,8 @@ namespace CAE
             {
                 break;
             }
-
         }
         infile.close();
-
     }
 
     // 读取载荷信息
@@ -390,7 +405,7 @@ namespace CAE
         cout << "the information of displacement boundary (" << data_cae.dis_bc_set_.size() << ")  have been readed." << endl;
     }
 
-    void ReadInfo::del_blank(string& str)
+    void ReadInfo::del_blank(string &str)
     {
         int index = 0;
         if (!str.empty())
@@ -400,5 +415,19 @@ namespace CAE
                 str.erase(index, 1);
             }
         }
+    }
+
+    int ReadInfo::del_blank(string &str, map<string, int> &ele_map)
+    {
+        int index = 0;
+        if (!str.empty())
+        {
+            while ((index = str.find(' ', index)) != string::npos)
+            {
+                str.erase(index, 1);
+            }
+        }
+        int I_ele_type = ele_map[str];
+        return I_ele_type;
     }
 }
