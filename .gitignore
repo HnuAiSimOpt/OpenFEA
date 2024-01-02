@@ -1,7 +1,0 @@
-AutoBuild/*
-build/*
-buildDebug/*
-.vscode/*
-bin/
-externals/mkl/lib/*.lib
-externals/eigen-3.4.0/*
