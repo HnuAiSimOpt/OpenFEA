@@ -19,9 +19,10 @@ Description: XXX
 #include <set>
 #include "include/Factory.h"
 #include "elements/include/ele_base.h"
+#include "solver/include/solver_pardiso.h"
 
-using std::set;
 using std::map;
+using std::set;
 using std::sort;
 using std::string;
 using std::vector;
@@ -52,6 +53,7 @@ namespace CAE
         double time_total_;                                      // 计算总时间
         double time_step_;                                       // 计算时间步长，为0则采用自动步长
         map<string, int> ELE_TYPES = {{"C3D4", 0}, {"C3D8", 1}}; // 建立单元类型到整型的映射
+        PardisoSolution item_pardiso;                            // paidiso求解器对象
 
     public:
         //  单元初始化
