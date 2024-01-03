@@ -46,23 +46,23 @@ namespace CAE
             MatrixXd& pts1, MatrixXd& pts2, int& e);
         MatrixXd GlobalMap3D(MatrixXd gpoint, MatrixXd nodes);
         LagrangeBR lagrange_basis(MatrixXd& coord);
-        //Ìî³ä½çÃæ¸Õ¶È¾ØÕó
+        //å¡«å……ç•Œé¢åˆšåº¦çŸ©é˜µ
         void InterfacialStifMatrix(data_management& data_cae, elastic_mat& data_mat,
             vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx);
-        //·£²ÎÊı¼ÆËã
+        //ç½šå‚æ•°è®¡ç®—
         double Get_Alpha(data_management& data_cae, elastic_mat& data_mat, MatrixXd& pts1);
-        //¼ÆËãKp£¬Kd
+        //è®¡ç®—Kpï¼ŒKd
         void Calculate_Kp_Kd(MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
             MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
             MatrixXd& Nm1, MatrixXd& Nm2, MatrixXd& B1, MatrixXd& B2,
             MatrixXd& n, MatrixXd& Ce, double& alpha, double& wt1);
-        //¼ÆËã×Ü½çÃæ¸Õ¶È¾ØÕó
+        //è®¡ç®—æ€»ç•Œé¢åˆšåº¦çŸ©é˜µ
         void Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,
             MatrixXd& K21, MatrixXd& K22, vector<int>& F_eper_dof, vector<int>& C_eper_dof,
             MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
             MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
             data_management& data_cae, int& e);
-        //´¢´æ½çÃæ¸Õ¶È¾ØÕó
+        //å‚¨å­˜ç•Œé¢åˆšåº¦çŸ©é˜µ
         void Fill_InterFMatrix(vector<int> j_eper_dof, vector<int> i_eper_dof,
             vector<double>& nz_val, vector<int> row_idx, vector<int>& col_idx, MatrixXd& K_interface);
     };
