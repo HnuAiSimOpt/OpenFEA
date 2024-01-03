@@ -410,6 +410,7 @@ namespace CAE
 		x1 = pts1(0, 0); y1 = pts1(0, 1); z1 = pts1(0, 2);
 		x2 = pts1(1, 0); y2 = pts1(1, 1); z2 = pts1(1, 2);
 		double h = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));//单元尺寸大小
+		double h = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));//单元尺寸大小
 		double E = data_mat.young_modulus, nu = data_mat.poisson_ratio;
 		double lambda = E * nu / (1 - 2 * nu) * (1 + nu);
 		double mu = E / 2 * (1 + nu);
@@ -555,6 +556,7 @@ namespace CAE
 		MatrixXd& K_interface)
 	{
 		// 组装
+		// 组装
 		int ii_dof, jj_dof, loop_size = j_eper_dof.size();
 		for (int mm = 0; mm < loop_size; mm++)
 		{
@@ -571,6 +573,7 @@ namespace CAE
 						for (; row_idx[t] < ii_dof; t++)
 						{
 						} // 使用上三角矩阵
+						} // 使用上三角矩阵
 						nz_val[t] = nz_val[t] + K_interface(mm, nn);
 					}
 				}
@@ -584,6 +587,7 @@ namespace CAE
 	//积分点网格单元向父空间映射
 	MatrixXd NCF_map::GlobalMap3D(MatrixXd gpoint, MatrixXd nodes, int& n_node_mesh)
 	{
+		const int nMax = 10;//d迭代次数改为15  10.11
 		const int nMax = 10;//d迭代次数改为15  10.11
 		const double tol = 1e-14;
 		double tolSquared = tol * tol;

@@ -13,6 +13,7 @@ Description: XXX
 #pragma once
 
 #include "ele_base.h"
+#include "include/C3D8_Gauss.h"
 
 namespace CAE
 {
@@ -36,7 +37,7 @@ namespace CAE
         virtual void build_cons_mat();
 
         // 建立应变矩阵(积分点)
-        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Matrix6d24 &strain_mat, vector<double> &gp_points, double *det_jacobi_point);
+        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat, vector<double> &gp_points, double *det_jacobi_point);
 
         // 建立单元刚度矩阵
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
