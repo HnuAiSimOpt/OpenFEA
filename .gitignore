@@ -3,5 +3,4 @@ build/*
 buildDebug/*
 .vscode/*
 bin/
-externals/mkl/lib/*
-externals/eigen-3.4.0/*
+externals/mkl/lib/*.lib
