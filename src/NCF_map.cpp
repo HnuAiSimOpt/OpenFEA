@@ -22,10 +22,10 @@ namespace CAE
 	void NCF_map::PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat)
 	{
 		int nF_bmesh = data_cae.BndMesh_F.size();
-		MatrixXd nodes1;//½»½çÃæ(Èı½ÇĞÎ¡¢ËÄ±ßĞÎ£©½Úµã±àºÅ
-		//MatrixXd pts1, pts2;//½»½ç´¦´Ö¡¢Ï¸µ¥Ôª½Úµã×ø±ê
+		MatrixXd nodes1;//äº¤ç•Œé¢(ä¸‰è§’å½¢ã€å››è¾¹å½¢ï¼‰èŠ‚ç‚¹ç¼–å·
+		//MatrixXd pts1, pts2;//äº¤ç•Œå¤„ç²—ã€ç»†å•å…ƒèŠ‚ç‚¹åæ ‡
 		
-		//*******µãÔÚÆ½Ãæ*********
+		//*******ç‚¹åœ¨å¹³é¢*********
 		Point A(-1.1059770001, 0, 0.25);
 		Point B(-1.1059770002, 0.1875000, 0.375000000);
 		Point C(-1.1059770005, 0, 0.50);
@@ -48,47 +48,47 @@ namespace CAE
 
 		
 
-		//½»½çÃæµ¥ÔªÑ­»·
-		for (int e = 0; e < nF_bmesh; e++) //½»½çÃæ´¦Ï¸Íø¸ñ¸öÊı
+		//äº¤ç•Œé¢å•å…ƒå¾ªç¯
+		for (int e = 0; e < nF_bmesh; e++) //äº¤ç•Œé¢å¤„ç»†ç½‘æ ¼ä¸ªæ•°
 		{   
-			int id_ele_F = data_cae.BndMesh_F[e] - 1;//Ë÷Òı-1
+			int id_ele_F = data_cae.BndMesh_F[e] - 1;//ç´¢å¼•-1
 			//int id_ele_C = data_cae.BndMesh_C[e] - 1;
 
 			int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
 			GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
 			
-			//½»½ç´¦´Ö¡¢Ï¸µ¥Ôª½Úµã¸öÊı
+			//äº¤ç•Œå¤„ç²—ã€ç»†å•å…ƒèŠ‚ç‚¹ä¸ªæ•°
 			//int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
 			//int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
 			//pts1.resize(n_node_F, 3);
 			//pts2.resize(n_node_C, 3);
 			//GetIntF_ele_Inform(data_cae, pts1, pts2, e);
 
-			//Ò»¸öÃæÉÏµÄ¸ßË¹»ı·Öµã¸öÊı
+			//ä¸€ä¸ªé¢ä¸Šçš„é«˜æ–¯ç§¯åˆ†ç‚¹ä¸ªæ•°
 			//int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
-			//´¢´æÒ»¸öÃæÉÏµÄ¸ßË¹»ı·ÖµãÎïÀí×ø±ê
+			//å‚¨å­˜ä¸€ä¸ªé¢ä¸Šçš„é«˜æ–¯ç§¯åˆ†ç‚¹ç‰©ç†åæ ‡
 			//MatrixXd phy_gps(face_gps_,3);
-			//MatrixXd X(face_gps_,4);//È¨ÖØºÍ·¨ÏòÁ¿
+			//MatrixXd X(face_gps_,4);//æƒé‡å’Œæ³•å‘é‡
 			
-			 // ¼ÆËã½»½çÃæ»ı·ÖµãÎïÀí¿Õ¼ä×ø±ê
+			 // è®¡ç®—äº¤ç•Œé¢ç§¯åˆ†ç‚¹ç‰©ç†ç©ºé—´åæ ‡
 			data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->text_gps_phy_coords(nodes1, text_gps,text_W_1,text_Normal);
 				
-			//¸ßË¹»ı·ÖµãÑ­»· 4×é  
+			//é«˜æ–¯ç§¯åˆ†ç‚¹å¾ªç¯ 4ç»„  
 			
 			//for (int q = 0; q < face_gps_; q++)
 			//{
 			//	
-			//	//»ı·ÖµãÎïÀí¿Õ¼ä×ø±ê
+			//	//ç§¯åˆ†ç‚¹ç‰©ç†ç©ºé—´åæ ‡
 			//	MatrixXd xx = phy_gps.row(q);
 
-			//	//»ı·Öµã·Ö±ğÏò¸¸¿Õ¼äÓ³Éä
+			//	//ç§¯åˆ†ç‚¹åˆ†åˆ«å‘çˆ¶ç©ºé—´æ˜ å°„
 			//	
 			//	MatrixXd X1, X2;
-			//	//-----------------------------------²âÊÔ
+			//	//-----------------------------------æµ‹è¯•
 			//	std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
-			//	//X1 = GlobalMap3D(xx, pts1);//Ï¸Íø¸ñ
+			//	//X1 = GlobalMap3D(xx, pts1);//ç»†ç½‘æ ¼
 			//	std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
-			//	//X2 = GlobalMap3D(xx, pts2);//´ÖÍø¸ñ
+			//	//X2 = GlobalMap3D(xx, pts2);//ç²—ç½‘æ ¼
 			//	//-----------------------------------
 			//	
 			//	//P_GP1.push_back(X1);
@@ -100,7 +100,7 @@ namespace CAE
 		//int a = 10;
 
 		
-		//ĞèÒªÕÒµ½»ı·Öµã¶ÔÓ¦µÄ´ÖÍø¸ñµ¥Ôª±àºÅ
+		//éœ€è¦æ‰¾åˆ°ç§¯åˆ†ç‚¹å¯¹åº”çš„ç²—ç½‘æ ¼å•å…ƒç¼–å·
 
 		int n_gps=text_gps.size();
 
@@ -144,7 +144,7 @@ namespace CAE
 	}
 
 
-	//»ñÈ¡½»½çÃæ´¦£¨ËÄ±ßĞÎ¡¢Èı½ÇĞÎ£©Ãæ½ÚµãĞÅÏ¢
+	//è·å–äº¤ç•Œé¢å¤„ï¼ˆå››è¾¹å½¢ã€ä¸‰è§’å½¢ï¼‰é¢èŠ‚ç‚¹ä¿¡æ¯
 	void NCF_map::GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
 		int& face_nodes,int& e )
 	{   
@@ -165,7 +165,7 @@ namespace CAE
 	//void NCF_map::GetIntF_ele_Inform(data_management& data_cae,MatrixXd& pts1,
 	//	MatrixXd& pts2, int& e)
 	//{
-	//	const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e]-1];//Ë÷ÒıÒª¼õ1
+	//	const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e]-1];//ç´¢å¼•è¦å‡1
 	//	const auto& tps_C = data_cae.node_topos_[data_cae.BndMesh_C[e]-1];
 
 	//	for (int i = 0; i < 8; ++i)
@@ -206,7 +206,7 @@ namespace CAE
 		sctr2[7] = data_cae.node_topos_[data_cae.BndMesh_C[e]][7];
 		
 
-		for (int i = 0; i < 8; i++) //½»½ç´¦ÁùÃæÌåµ¥Ôª½Úµã×ø±ê
+		for (int i = 0; i < 8; i++) //äº¤ç•Œå¤„å…­é¢ä½“å•å…ƒèŠ‚ç‚¹åæ ‡
 		{
 			pts1(i, 0) = data_cae.coords_[sctr1[i]][0];
 			pts1(i, 1) = data_cae.coords_[sctr1[i]][1];
@@ -230,33 +230,33 @@ namespace CAE
 		
 		MatrixXd Ce;
 		Get_Ce(data_mat,Ce);
-		MatrixXd pts1, pts2;//½»½ç´¦Ï¸¡¢´ÖÁùÃæÌåµ¥Ôª½Úµã×ø±ê
-		vector<int> F_eper_dof, C_eper_dof; // ´ÖÏ¸µ¥Ôª½Úµã×ÔÓÉ¶È
-	    //³õÊ¼»¯B,Nm,ñîºÏ¾ØÕó,½çÃæ×Ü¸Õ
+		MatrixXd pts1, pts2;//äº¤ç•Œå¤„ç»†ã€ç²—å…­é¢ä½“å•å…ƒèŠ‚ç‚¹åæ ‡
+		vector<int> F_eper_dof, C_eper_dof; // ç²—ç»†å•å…ƒèŠ‚ç‚¹è‡ªç”±åº¦
+	    //åˆå§‹åŒ–B,Nm,è€¦åˆçŸ©é˜µ,ç•Œé¢æ€»åˆš
 		MatrixXd B1, B2, Nm1, Nm2, Kp11, Kp12, Kp22,Kd11, Kd12, Kd21, Kd22,K11, K12, K21, K22;
-		MatrixXd nodes1;//Ï¸Íø¸ñ½»½çÃæ(Èı½ÇĞÎ¡¢ËÄ±ßĞÎ£©½Úµã±àºÅ
-		MatrixXd phy_gps;//´¢´æÒ»¸öÃæÉÏµÄ¸ßË¹»ı·ÖµãÎïÀí×ø±ê
-		vector<double> W_1;//È¨ÖØ
-		vector<Eigen::Vector3d> Normal;//·¨ÏòÁ¿
-		//·¨ÏòÁ¿¾ØÕó
+		MatrixXd nodes1;//ç»†ç½‘æ ¼äº¤ç•Œé¢(ä¸‰è§’å½¢ã€å››è¾¹å½¢ï¼‰èŠ‚ç‚¹ç¼–å·
+		MatrixXd phy_gps;//å‚¨å­˜ä¸€ä¸ªé¢ä¸Šçš„é«˜æ–¯ç§¯åˆ†ç‚¹ç‰©ç†åæ ‡
+		vector<double> W_1;//æƒé‡
+		vector<Eigen::Vector3d> Normal;//æ³•å‘é‡
+		//æ³•å‘é‡çŸ©é˜µ
 	    MatrixXd n(3, 6);
-		int nF_bmesh = data_cae.BndMesh_F.size();//½»½çÃæ´¦Ï¸Íø¸ñ¸öÊı
-		for (int e = 0; e < nF_bmesh; e++) //Ã¿Ò»×é"´ÖÏ¸Íø¸ñµ¥ÔªµÄ½çÃæ¸Õ¶È¾ØÕó"¼ÆËã
+		int nF_bmesh = data_cae.BndMesh_F.size();//äº¤ç•Œé¢å¤„ç»†ç½‘æ ¼ä¸ªæ•°
+		for (int e = 0; e < nF_bmesh; e++) //æ¯ä¸€ç»„"ç²—ç»†ç½‘æ ¼å•å…ƒçš„ç•Œé¢åˆšåº¦çŸ©é˜µ"è®¡ç®—
 		{  
-			 int id_ele_F = data_cae.BndMesh_F[e] - 1;//Ë÷Òı-1
+			 int id_ele_F = data_cae.BndMesh_F[e] - 1;//ç´¢å¼•-1
 			 int id_ele_C = data_cae.BndMesh_C[e] - 1;
 			 int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
 			 GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
 
-			 //½»½ç´¦´Ö¡¢Ï¸µ¥Ôª½Úµã¸öÊı
+			 //äº¤ç•Œå¤„ç²—ã€ç»†å•å…ƒèŠ‚ç‚¹ä¸ªæ•°
 			 int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
 			 int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
 			 pts1.resize(n_node_F, 3);
 			 pts2.resize(n_node_C, 3);
-			 //»ñÈ¡"´ÖÏ¸µ¥Ôª"½ÚµãĞÅÏ¢
+			 //è·å–"ç²—ç»†å•å…ƒ"èŠ‚ç‚¹ä¿¡æ¯
 			 GetIntF_ele_Inform(pts1, pts2, F_eper_dof, C_eper_dof, data_cae,
 				 e, n_node_F, n_node_C);
-			 //³õÊ¼»¯Ã¿Ò»×é¡°´ÖÏ¸µ¥Ôª¡±µÄ¾ØÕó
+			 //åˆå§‹åŒ–æ¯ä¸€ç»„â€œç²—ç»†å•å…ƒâ€çš„çŸ©é˜µ
 			 Kp11.resize(n_node_F * 3, n_node_F * 3); Kp12.resize(n_node_F * 3, n_node_C * 3);
 			 Kp22.resize(n_node_C * 3, n_node_C * 3);
 			 Kd11.resize(n_node_F * 3, n_node_F * 3);Kd12.resize(n_node_F * 3, n_node_C * 3);
@@ -266,12 +266,12 @@ namespace CAE
 			 Kp11.setZero(); Kp12.setZero(); Kp22.setZero();
 			 Kd11.setZero(); Kd12.setZero(); Kd21.setZero(); Kd22.setZero();
 			 
-			 //Ò»¸öÃæÉÏµÄ¸ßË¹»ı·Öµã¸öÊı
+			 //ä¸€ä¸ªé¢ä¸Šçš„é«˜æ–¯ç§¯åˆ†ç‚¹ä¸ªæ•°
 			 int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
 			 phy_gps.resize(face_gps_, 3);
-			 W_1.resize(face_gps_);//È¨ÖØ
-			 Normal.resize(face_gps_);//·¨ÏòÁ¿
-			 // ¼ÆËã½»½çÃæ»ı·ÖµãÎïÀí¿Õ¼ä×ø±ê¡¢È¨ÖØ¡¢·¨ÏòÁ¿
+			 W_1.resize(face_gps_);//æƒé‡
+			 Normal.resize(face_gps_);//æ³•å‘é‡
+			 // è®¡ç®—äº¤ç•Œé¢ç§¯åˆ†ç‚¹ç‰©ç†ç©ºé—´åæ ‡ã€æƒé‡ã€æ³•å‘é‡
 			 data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->gps_phy_coords(nodes1, phy_gps, W_1, Normal);
 			 
 			 
@@ -293,45 +293,45 @@ namespace CAE
 			 //*************
 
 
-			 //»ı·ÖµãÑ­»· 
+			 //ç§¯åˆ†ç‚¹å¾ªç¯ 
 			 for (int q = 0; q < face_gps_; q++)
 			 {
-				 //»ı·ÖµãÎïÀí¿Õ¼ä×ø±ê
+				 //ç§¯åˆ†ç‚¹ç‰©ç†ç©ºé—´åæ ‡
 				 MatrixXd xx = phy_gps.row(q);
 
-				 //ÅĞ¶Ï»ı·ÖµãÎ»ÓÚÄÄÒ»¸ö´ÖÍø¸ñÃæÉÏ
+				 //åˆ¤æ–­ç§¯åˆ†ç‚¹ä½äºå“ªä¸€ä¸ªç²—ç½‘æ ¼é¢ä¸Š
 
 
-				 //»ı·Öµã·Ö±ğÏò"´ÖÏ¸Íø¸ñ"¸¸¿Õ¼äÓ³Éä
-				 MatrixXd X1, X2; //"´ÖÏ¸Íø¸ñ"»ı·Öµã¸¸¿Õ¼ä×ø±ê
-				 //-----------------------------------²âÊÔ
+				 //ç§¯åˆ†ç‚¹åˆ†åˆ«å‘"ç²—ç»†ç½‘æ ¼"çˆ¶ç©ºé—´æ˜ å°„
+				 MatrixXd X1, X2; //"ç²—ç»†ç½‘æ ¼"ç§¯åˆ†ç‚¹çˆ¶ç©ºé—´åæ ‡
+				 //-----------------------------------æµ‹è¯•
 				 std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
-				 X1 = GlobalMap3D(xx, pts1, n_node_F);//Ï¸Íø¸ñ
+				 X1 = GlobalMap3D(xx, pts1, n_node_F);//ç»†ç½‘æ ¼
 				 std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
-				 X2 = GlobalMap3D(xx, pts2, n_node_C);//´ÖÍø¸ñ
+				 X2 = GlobalMap3D(xx, pts2, n_node_C);//ç²—ç½‘æ ¼
 				 //-----------------------------------
 
 				 Calculate_B_Nm(X1, pts1, B1, Nm1, n_node_F);
 				 Calculate_B_Nm(X2, pts2, B2, Nm2, n_node_C);
 
-				 n.setZero();//½»½çÃæÏ¸Íø¸ñ·¨ÏòÁ¿·½Ïò
+				 n.setZero();//äº¤ç•Œé¢ç»†ç½‘æ ¼æ³•å‘é‡æ–¹å‘
 				 n(0, 0) = Normal[q](0);  n(0, 3) = Normal[q](1); n(0, 5) = Normal[q](2);
 				 n(1, 1) = Normal[q](1);  n(1, 3) = Normal[q](0); n(1, 4) = Normal[q](2);
 				 n(2, 2) = Normal[q](2);  n(2, 4) = Normal[q](1); n(2, 5) = Normal[q](0);
-				 //È¨ÖØ
+				 //æƒé‡
 				 double wt1 = W_1[q];
-				 //¼ÆËã·£²ÎÊı
+				 //è®¡ç®—ç½šå‚æ•°
 				 double alpha = Get_Alpha(data_cae, data_mat, pts1);
-				 //¼ÆËãKp,Kd
+				 //è®¡ç®—Kp,Kd
 				 Calculate_Kp_Kd(Kp11, Kp12, Kp22, Kd11, Kd12, Kd21, Kd22,
 					 Nm1, Nm2, B1, B2, n, Ce, alpha, wt1);
 
 			 }
 
-			 //¼ÆËã½çÃæ×Ü¸Õ
+			 //è®¡ç®—ç•Œé¢æ€»åˆš
 			 Calculate_InterFMatrix(K11, K12, K21, K22, Kd11, Kd12, Kd21, Kd22,
 				 Kp11, Kp12, Kp22, n_node_F, n_node_C);
-			 //½çÃæ¸Õ¶È¾ØÕó´¢´æÎªCSR
+			 //ç•Œé¢åˆšåº¦çŸ©é˜µå‚¨å­˜ä¸ºCSR
 			 Fill_InterFMatrix(F_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K11);
 			 Fill_InterFMatrix(F_eper_dof, C_eper_dof, nz_val, row_idx, col_idx, K12);
 			 Fill_InterFMatrix(C_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K21);
@@ -343,7 +343,7 @@ namespace CAE
 			//{
 			   // for (int j = 0; j < 12; j++)
 			   // {
-			   //	 std::cout <<n<<":"<< K12(i, j) << endl; // Êä³ö¾ØÕóÔªËØÖµ
+			   //	 std::cout <<n<<":"<< K12(i, j) << endl; // è¾“å‡ºçŸ©é˜µå…ƒç´ å€¼
 			   //	 n++;
 			   // }
 			//}
@@ -352,7 +352,7 @@ namespace CAE
 	}
 
 
-	//Ce¼ÆËã
+	//Ceè®¡ç®—
 	void NCF_map::Get_Ce(elastic_mat& data_mat, MatrixXd& Ce)
 	{
 		double em = data_mat.young_modulus;
@@ -360,7 +360,7 @@ namespace CAE
 		double fac = (em * (1.0 - nu)) / ((1.0 + nu) * (1.0 - 2.0 * nu));
 		double fac_a = fac * nu / (1.0 - nu);
 		double fac_b = fac * (1.0 - 2.0 * nu) / (2.0 * (1.0 - nu));
-		// ±¾¹¹¾ØÕó¸³Öµ
+		// æœ¬æ„çŸ©é˜µèµ‹å€¼
 		Ce.resize(6, 6);
 		Ce << fac, fac_a, fac_a, 0., 0., 0.,
 			fac_a, fac, fac_a, 0., 0., 0.,
@@ -372,7 +372,7 @@ namespace CAE
 	}
 
 
-	//¼ÆËãB¡¢Nm
+	//è®¡ç®—Bã€Nm
 	void NCF_map::Calculate_B_Nm(MatrixXd& p_gps, MatrixXd& nodes, MatrixXd& B,
 		MatrixXd& Nm,int& n_node_mesh)
 	{
@@ -403,13 +403,13 @@ namespace CAE
 
 
 
-	//·£²ÎÊı¼ÆËã
+	//ç½šå‚æ•°è®¡ç®—
 	double NCF_map::Get_Alpha(data_management& data_cae, elastic_mat& data_mat, MatrixXd& pts1)
 	{
 		double x1, y1, z1, x2, y2, z2;
 		x1 = pts1(0, 0); y1 = pts1(0, 1); z1 = pts1(0, 2);
 		x2 = pts1(1, 0); y2 = pts1(1, 1); z2 = pts1(1, 2);
-		double h = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));//µ¥Ôª³ß´ç´óĞ¡
+		double h = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));//å•å…ƒå°ºå¯¸å¤§å°
 		double E = data_mat.young_modulus, nu = data_mat.poisson_ratio;
 		double lambda = E * nu / (1 - 2 * nu) * (1 + nu);
 		double mu = E / 2 * (1 + nu);
@@ -419,7 +419,7 @@ namespace CAE
 	}
 
 
-	//¼ÆËãKp£¬Kd
+	//è®¡ç®—Kpï¼ŒKd
 	void NCF_map::Calculate_Kp_Kd(MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
 		MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
 		MatrixXd& Nm1, MatrixXd& Nm2, MatrixXd& B1, MatrixXd& B2,
@@ -452,7 +452,7 @@ namespace CAE
 	void NCF_map::GetIntF_ele_Inform(MatrixXd& pts1,MatrixXd& pts2,vector<int>& F_eper_dof,
 		vector<int>& C_eper_dof,data_management& data_cae, int& e, int& n_node_F, int& n_node_C)
 	{
-		const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e] - 1];//Ë÷ÒıÒª¼õ1
+		const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e] - 1];//ç´¢å¼•è¦å‡1
 		const auto& tps_C = data_cae.node_topos_[data_cae.BndMesh_C[e] - 1];
 		for (int i = 0; i < n_node_F; ++i)
 		{
@@ -476,8 +476,8 @@ namespace CAE
 
 		for (int i = 0; i < n_node_F; i++)
 		{  
-			// Ï¸Íø¸ñ×ÔÓÉ¶È
-			int ncf_F = data_cae.BndMesh_F[e] - 1;//Ï¸Íø¸ñµ¥Ôª±àºÅ´Ó0¿ªÊ¼
+			// ç»†ç½‘æ ¼è‡ªç”±åº¦
+			int ncf_F = data_cae.BndMesh_F[e] - 1;//ç»†ç½‘æ ¼å•å…ƒç¼–å·ä»0å¼€å§‹
 			int item_dof_F = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_F][i] - 1];
 			F_eper_dof[3 * i] = 3 * item_dof_F;
 			F_eper_dof[3 * i + 1] = 3 * item_dof_F + 1;
@@ -485,8 +485,8 @@ namespace CAE
 			
 		}
 		for (int i = 0; i < n_node_C; i++)
-		{  //´ÖÍø¸ñ×ÔÓÉ¶È
-			int ncf_C = data_cae.BndMesh_C[e] - 1;//´ÖÍø¸ñµ¥Ôª±àºÅ´Ó0¿ªÊ¼
+		{  //ç²—ç½‘æ ¼è‡ªç”±åº¦
+			int ncf_C = data_cae.BndMesh_C[e] - 1;//ç²—ç½‘æ ¼å•å…ƒç¼–å·ä»0å¼€å§‹
 			int item_dof_C = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_C][i] - 1];
 			C_eper_dof[3 * i] = 3 * item_dof_C;
 			C_eper_dof[3 * i + 1] = 3 * item_dof_C + 1;
@@ -495,7 +495,7 @@ namespace CAE
 		}
 	}
 
-	//¼ÆËã×Ü½çÃæ¸Õ¶È¾ØÕó
+	//è®¡ç®—æ€»ç•Œé¢åˆšåº¦çŸ©é˜µ
 	void NCF_map::Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,MatrixXd& K21, MatrixXd& K22,
 		MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
 		MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22, int& n_node_F, int& n_node_C)
@@ -554,7 +554,7 @@ namespace CAE
 		vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx,
 		MatrixXd& K_interface)
 	{
-		// ×é×°
+		// ç»„è£…
 		int ii_dof, jj_dof, loop_size = j_eper_dof.size();
 		for (int mm = 0; mm < loop_size; mm++)
 		{
@@ -570,7 +570,7 @@ namespace CAE
 					{
 						for (; row_idx[t] < ii_dof; t++)
 						{
-						} // Ê¹ÓÃÉÏÈı½Ç¾ØÕó
+						} // ä½¿ç”¨ä¸Šä¸‰è§’çŸ©é˜µ
 						nz_val[t] = nz_val[t] + K_interface(mm, nn);
 					}
 				}
@@ -581,10 +581,10 @@ namespace CAE
 	}
 
 	
-	//»ı·ÖµãÍø¸ñµ¥ÔªÏò¸¸¿Õ¼äÓ³Éä
+	//ç§¯åˆ†ç‚¹ç½‘æ ¼å•å…ƒå‘çˆ¶ç©ºé—´æ˜ å°„
 	MatrixXd NCF_map::GlobalMap3D(MatrixXd gpoint, MatrixXd nodes, int& n_node_mesh)
 	{
-		const int nMax = 10;//dµü´ú´ÎÊı¸ÄÎª15  10.11
+		const int nMax = 10;//dè¿­ä»£æ¬¡æ•°æ”¹ä¸º15  10.11
 		const double tol = 1e-14;
 		double tolSquared = tol * tol;
 		//double tolSquared = tol ;
@@ -593,7 +593,7 @@ namespace CAE
 		
 		/*int rows = nodes.rows();
 		int cols = nodes.cols();*/
-		//ÒÆ¶¯×ø±êµ½ÖĞĞÄ
+		//ç§»åŠ¨åæ ‡åˆ°ä¸­å¿ƒ
 		for (int j = 0; j < 3; j++)
 		{
 			for (int i = 0; i < n_node_mesh; i++)
@@ -626,9 +626,9 @@ namespace CAE
 		while (dSi > tolSquared && n < nMax)
 		{
 
-			//µ÷º¯ÊıÇóĞÎº¯Êı¼°Æ«µ¼
+			//è°ƒå‡½æ•°æ±‚å½¢å‡½æ•°åŠåå¯¼
 			LagrangeBR result_out = lagrange_basis(Xi, n_node_mesh);
-			//´«³öĞÎº¯Êı¼°Æ«µ¼
+			//ä¼ å‡ºå½¢å‡½æ•°åŠåå¯¼
 			MatrixXd N, dNdxi;
 			dNdxi = result_out.dNdxi_out;
 			N = result_out.N_out;
@@ -668,7 +668,7 @@ namespace CAE
 			I1[0] = 0.5 - 0.5 * xi; I1[1] = 0.5 - 0.5 * eta; I1[2] = 0.5 - 0.5 * zeta;
 			I2[0] = 0.5 + 0.5 * xi; I2[1] = 0.5 + 0.5 * eta; I2[2] = 0.5 + 0.5 * zeta;
 
-			MatrixXd N(1, 8);//×ªÖÃºóµÄN
+			MatrixXd N(1, 8);//è½¬ç½®åçš„N
 			N(0, 0) = I1[0] * I1[1] * I1[2];
 			N(0, 1) = I2[0] * I1[1] * I1[2];
 			N(0, 2) = I2[0] * I2[1] * I1[2];
@@ -712,7 +712,7 @@ namespace CAE
 		}
 		else if(n_node_mesh==4)
 		{
-			MatrixXd N(1, 4);//×ªÖÃºóµÄN
+			MatrixXd N(1, 4);//è½¬ç½®åçš„N
 			//N.resize(1, 8);
 			N(0, 0) = 1 - xi - eta - zeta;
 			N(0, 1) = xi;

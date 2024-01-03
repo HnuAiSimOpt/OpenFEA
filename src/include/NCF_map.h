@@ -35,13 +35,13 @@ namespace CAE
     public:
         //MatrixXd GP1, GP2;
 
-        //vector<MatrixXd> P_GP1;//¸¸¿Õ¼ä»ı·Öµã
-        //vector<MatrixXd> P_GP2;//¸¸¿Õ¼ä»ı·Öµã
-        //vector<double> W_1;//È¨ÖØ
-        //vector<Eigen::Vector3d> Normal;//·¨ÏòÁ¿
+        //vector<MatrixXd> P_GP1;//çˆ¶ç©ºé—´ç§¯åˆ†ç‚¹
+        //vector<MatrixXd> P_GP2;//çˆ¶ç©ºé—´ç§¯åˆ†ç‚¹
+        //vector<double> W_1;//æƒé‡
+        //vector<Eigen::Vector3d> Normal;//æ³•å‘é‡
         
         //vector<Eigen::MatrixXd> text_gps ;
-        vector<double> text_W_1;//È¨ÖØ
+        vector<double> text_W_1;//æƒé‡
         vector<Eigen::Vector3d> text_Normal;
 
         vector<vector<double>> text_gps;
@@ -54,9 +54,9 @@ namespace CAE
         struct Point 
         {
             double x, y, z;
-            // Ä¬ÈÏ¹¹Ôìº¯Êı
+            // é»˜è®¤æ„é€ å‡½æ•°
             Point() : x(0.0), y(0.0), z(0.0) {}
-            // ´ø²ÎÊıµÄ¹¹Ôìº¯Êı
+            // å¸¦å‚æ•°çš„æ„é€ å‡½æ•°
            Point(double x_val, double y_val, double z_val) : x(x_val), y(y_val), z(z_val) {}
         };
 
@@ -79,28 +79,28 @@ namespace CAE
             int& n_node_F, int& n_node_C);
         MatrixXd GlobalMap3D(MatrixXd gpoint, MatrixXd nodes, int& n_node_mesh);
         LagrangeBR lagrange_basis(MatrixXd& coord, int& n_node_mesh);
-        //Ìî³ä½çÃæ¸Õ¶È¾ØÕó
+        //å¡«å……ç•Œé¢åˆšåº¦çŸ©é˜µ
         void InterfacialStifMatrix(data_management& data_cae, elastic_mat& data_mat,
             vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx);
-        //Ce¼ÆËã
+        //Ceè®¡ç®—
         void Get_Ce(elastic_mat& data_mat, MatrixXd& Ce);
-        //¼ÆËãB¡¢Nm
+        //è®¡ç®—Bã€Nm
         void Calculate_B_Nm(MatrixXd& p_gps, MatrixXd& nodes, MatrixXd& B, MatrixXd& Nm, int& n_node_face);
-        //·£²ÎÊı¼ÆËã
+        //ç½šå‚æ•°è®¡ç®—
         double Get_Alpha(data_management& data_cae, elastic_mat& data_mat, MatrixXd& pts1);
-        //¼ÆËãKp£¬Kd
+        //è®¡ç®—Kpï¼ŒKd
         void Calculate_Kp_Kd(MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22,
             MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
             MatrixXd& Nm1, MatrixXd& Nm2, MatrixXd& B1, MatrixXd& B2,
             MatrixXd& n, MatrixXd& Ce, double& alpha, double& wt1);
-        //¼ÆËãµ¥Ôª½Úµã×ÔÓÉ¶È
+        //è®¡ç®—å•å…ƒèŠ‚ç‚¹è‡ªç”±åº¦
        // void Get_ele_dof(vector<int>& F_eper_dof, vector<int>& C_eper_dof,
             //data_management& data_cae, int& e, int& n_node_F, int& n_node_C);
-        //¼ÆËã×Ü½çÃæ¸Õ¶È¾ØÕó
+        //è®¡ç®—æ€»ç•Œé¢åˆšåº¦çŸ©é˜µ
         void Calculate_InterFMatrix(MatrixXd& K11, MatrixXd& K12,MatrixXd& K21, MatrixXd& K22,
             MatrixXd& Kd11, MatrixXd& Kd12, MatrixXd& Kd21, MatrixXd& Kd22,
             MatrixXd& Kp11, MatrixXd& Kp12, MatrixXd& Kp22, int& n_node_F, int& n_node_C);
-        //´¢´æ½çÃæ¸Õ¶È¾ØÕó
+        //å‚¨å­˜ç•Œé¢åˆšåº¦çŸ©é˜µ
         void Fill_InterFMatrix(vector<int>& j_eper_dof, vector<int>& i_eper_dof,
             vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx,
             MatrixXd& K_interface);
