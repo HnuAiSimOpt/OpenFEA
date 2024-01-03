@@ -78,6 +78,11 @@ namespace CAE
         virtual void gps_phy_coords( Eigen::Ref<Eigen::MatrixXd> nodes1,
             Eigen::Ref<Eigen::MatrixXd> phy_gps, vector<double>& W_1,
             vector<Eigen::Vector3d>& Normal) {};
+
+        virtual void text_gps_phy_coords(Eigen::Ref<Eigen::MatrixXd> nodes1,
+            vector<vector<double>>& text_gps, vector<double>& text_W_1,
+            vector<Eigen::Vector3d>& text_Normal) {};
+
     };
     CREAT_FACTORY(ele_base);
 }

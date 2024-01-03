@@ -166,12 +166,13 @@ namespace CAE
     //[*******非协调部分********]
     void assamble_stiffness::NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat)
     {   
+        NCF_map map_ncfGP;
+        //先取得交界面细网格面上积分点物理坐标
+        map_ncfGP.PhySpaceGPs(data_cae, data_mat);
         //非协调刚度矩阵CSR格式
         NCF_build_CSR(data_cae);
-        //填充稀疏矩阵（与FEA方法共用一个函数）
+        //填充稀疏矩阵（与FEA共用一个函数）
         fill_CSR_sparse_mat(data_cae, data_mat);
-        NCF_map map_ncfGP;
-        //map_ncfGP.PhySpaceGPs(data_cae, data_mat);
         map_ncfGP.InterfacialStifMatrix(data_cae, data_mat, nz_val, row_idx, col_idx);
     }
 
@@ -260,23 +261,16 @@ namespace CAE
         cout << "The CSR index has been built" << endl;
     }
     
+
     void assamble_stiffness::Storematrix_columns(vector<set<int>>& columns,
         vector<int>& A_eper_dof, vector<int>& B_eper_dof)
     {
-        //int dof_row, dof_col;
         for (int dof_row : A_eper_dof)
         {
-            //if (id_dofs > 0)
-           
-                //dof_row = id_dofs ;
-                for (int dof_col : B_eper_dof)
-                {
-                    //if (id_id_dofs > 0)
-                       // dof_col = id_id_dofs;
-                        columns[dof_col].insert(dof_row); 
-                   
-                }
-           
+           for (int dof_col : B_eper_dof)
+           {
+             columns[dof_col].insert(dof_row); 
+           }
         }
     }
     

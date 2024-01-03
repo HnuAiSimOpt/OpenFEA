@@ -27,6 +27,11 @@ namespace CAE
 {
     class NCF_map
     {
+
+    
+
+
+
     public:
         //MatrixXd GP1, GP2;
 
@@ -34,13 +39,27 @@ namespace CAE
         //vector<MatrixXd> P_GP2;//父空间积分点
         //vector<double> W_1;//权重
         //vector<Eigen::Vector3d> Normal;//法向量
+        
+        //vector<Eigen::MatrixXd> text_gps ;
+        vector<double> text_W_1;//权重
+        vector<Eigen::Vector3d> text_Normal;
 
-
-
-
-
+        vector<vector<double>> text_gps;
 
     public:
+        
+           
+
+
+        struct Point 
+        {
+            double x, y, z;
+            // 默认构造函数
+            Point() : x(0.0), y(0.0), z(0.0) {}
+            // 带参数的构造函数
+           Point(double x_val, double y_val, double z_val) : x(x_val), y(y_val), z(z_val) {}
+        };
+
         
         struct LagrangeBR
         {
@@ -49,7 +68,10 @@ namespace CAE
             
         };
 
-       // void PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat);
+        void PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat);
+
+        double CalculateArea(const Point& A, const Point& B, const Point& C);
+
         void GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
             int& face_nodes, int& e);
         void GetIntF_ele_Inform(MatrixXd& pts1, MatrixXd& pts2, vector<int>& F_eper_dof,

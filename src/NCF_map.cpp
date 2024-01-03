@@ -17,66 +17,132 @@ Description: XXX
 
 namespace CAE
 {
-	/*
+	
+
 	void NCF_map::PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat)
 	{
-		int n_interF = data_cae.BndMesh_F.size();
+		int nF_bmesh = data_cae.BndMesh_F.size();
 		MatrixXd nodes1;//交界面(三角形、四边形）节点编号
-		MatrixXd pts1, pts2;//交界处粗、细单元节点坐标
+		//MatrixXd pts1, pts2;//交界处粗、细单元节点坐标
+		
+		//*******点在平面*********
+		Point A(-1.1059770001, 0, 0.25);
+		Point B(-1.1059770002, 0.1875000, 0.375000000);
+		Point C(-1.1059770005, 0, 0.50);
+
+		Point D(-1.105977, 0.062500000, 0.375000000);
+
+		double s = CalculateArea(A, B, C);
+
+		double s1 = CalculateArea(D, A, B);
+		double s2 = CalculateArea(D, B, C);
+		double s3 = CalculateArea(D, C, A);
+		
+		double b = (s1+s2+s3) / s;
 		
 		
+		double c=s;
+		
+
+
+
+		
+
 		//交界面单元循环
-		for (int e = 0; e < n_interF; e++) //交界面处细网格个数
+		for (int e = 0; e < nF_bmesh; e++) //交界面处细网格个数
 		{   
 			int id_ele_F = data_cae.BndMesh_F[e] - 1;//索引-1
-			int id_ele_C = data_cae.BndMesh_C[e] - 1;
+			//int id_ele_C = data_cae.BndMesh_C[e] - 1;
 
 			int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
 			GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
 			
 			//交界处粗、细单元节点个数
-			int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
-			int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
-			pts1.resize(n_node_F, 3);
-			pts2.resize(n_node_C, 3);
-			GetIntF_ele_Inform(data_cae, pts1, pts2, e);
+			//int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
+			//int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
+			//pts1.resize(n_node_F, 3);
+			//pts2.resize(n_node_C, 3);
+			//GetIntF_ele_Inform(data_cae, pts1, pts2, e);
 
 			//一个面上的高斯积分点个数
-			int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
+			//int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
 			//储存一个面上的高斯积分点物理坐标
-			MatrixXd phy_gps(face_gps_,3);
+			//MatrixXd phy_gps(face_gps_,3);
 			//MatrixXd X(face_gps_,4);//权重和法向量
 			
 			 // 计算交界面积分点物理空间坐标
-			data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->gps_phy_coords(nodes1, phy_gps,W_1,Normal);
+			data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->text_gps_phy_coords(nodes1, text_gps,text_W_1,text_Normal);
 				
 			//高斯积分点循环 4组  
 			
-			for (int q = 0; q < face_gps_; q++)
-			{
-				
-				//积分点物理空间坐标
-				MatrixXd xx = phy_gps.row(q);
+			//for (int q = 0; q < face_gps_; q++)
+			//{
+			//	
+			//	//积分点物理空间坐标
+			//	MatrixXd xx = phy_gps.row(q);
 
-				//积分点分别向父空间映射
-				
-				MatrixXd X1, X2;
-				//-----------------------------------测试
-				std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
-				X1 = GlobalMap3D(xx, pts1);//细网格
-				std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
-				X2 = GlobalMap3D(xx, pts2);//粗网格
-				//-----------------------------------
-				
-				P_GP1.push_back(X1);
-				P_GP2.push_back(X2);
-				
+			//	//积分点分别向父空间映射
+			//	
+			//	MatrixXd X1, X2;
+			//	//-----------------------------------测试
+			//	std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
+			//	//X1 = GlobalMap3D(xx, pts1);//细网格
+			//	std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
+			//	//X2 = GlobalMap3D(xx, pts2);//粗网格
+			//	//-----------------------------------
+			//	
+			//	//P_GP1.push_back(X1);
+			//	//P_GP2.push_back(X2);
+			//	
 
-			}
+			//}
+		}
+		//int a = 10;
+
+		
+		//需要找到积分点对应的粗网格单元编号
+
+		int n_gps=text_gps.size();
+
+		for (int i = 0; i < n_gps; i++)
+		{
+			Point G(text_gps[i][0], text_gps[i][1], text_gps[i][2]);
+
+
+
+
+
+
+
+
 		}
 
+
+
 	}
-	*/
+	
+
+	double NCF_map::CalculateArea(const Point& A, const Point& B, const Point& C)
+	{
+		// Calculate vectors AB and AC
+		double ABx = B.x - A.x;
+		double ABy = B.y - A.y;
+		double ABz = B.z - A.z;
+
+		double ACx = C.x - A.x;
+		double ACy = C.y - A.y;
+		double ACz = C.z - A.z;
+
+		// Calculate cross product of vectors AB and AC
+		double crossX = ABy * ACz - ABz * ACy;
+		double crossY = ABz * ACx - ABx * ACz;
+		double crossZ = ABx * ACy - ABy * ACx;
+
+		// Calculate magnitude of cross product and divide by 2 to get triangle area
+		double area = 0.5 * sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+		return area;
+	}
+
 
 	//获取交界面处（四边形、三角形）面节点信息
 	void NCF_map::GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
@@ -160,6 +226,8 @@ namespace CAE
 	void NCF_map::InterfacialStifMatrix(data_management& data_cae, elastic_mat& data_mat,
 		vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx)
 	{
+
+		
 		MatrixXd Ce;
 		Get_Ce(data_mat,Ce);
 		MatrixXd pts1, pts2;//交界处细、粗六面体单元节点坐标
@@ -205,6 +273,25 @@ namespace CAE
 			 Normal.resize(face_gps_);//法向量
 			 // 计算交界面积分点物理空间坐标、权重、法向量
 			 data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->gps_phy_coords(nodes1, phy_gps, W_1, Normal);
+			 
+			 
+			 //text****************
+			 vector<double> p(3);
+			 vector<vector<double>> np(3, vector<double>(3));
+			
+			 p[0] = phy_gps(0, 0);
+			 p[1] = phy_gps(0, 1);
+			 p[2] = phy_gps(0, 2);
+			 for (int i = 0; i < 3; i++)
+			 {
+				 for (int j = 0; j < 3; j++)
+				 {
+					 np[i][j] = nodes1(i, j);
+				 }
+
+			 }
+			 //*************
+
 
 			 //积分点循环 
 			 for (int q = 0; q < face_gps_; q++)

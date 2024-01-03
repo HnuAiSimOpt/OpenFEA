@@ -202,4 +202,59 @@ namespace CAE
 
     }
 
+    
+    void tetra_ele_elastic::text_gps_phy_coords(Eigen::Ref<Eigen::MatrixXd> nodes1,
+        vector<vector<double>>& text_gps, vector<double>& text_W_1,
+        vector<Eigen::Vector3d>& text_Normal)
+    {
+        // hammer积分，权重为1/2
+        double hm_values = 1. / 3;
+        Eigen::MatrixXd hps(1, 2); //积分点
+        hps << hm_values, hm_values;
+
+        Eigen::MatrixXd dNdxi_1(2, 3);
+        Eigen::MatrixXd N_1(1, 3);
+        Eigen::MatrixXd result(1, 3);
+        for (int q = 0; q < 1; q++)
+        {
+            dNdxi_1(0, 0) = -1;
+            dNdxi_1(0, 1) = 1;
+            dNdxi_1(0, 2) = 0;
+            dNdxi_1(1, 0) = -1;
+            dNdxi_1(1, 1) = 0;
+            dNdxi_1(1, 2) = 1;
+
+            N_1(0, 0) = 1 - hps(q, 0) - hps(q, 1);
+            N_1(0, 1) = hps(q, 0);
+            N_1(0, 2) = hps(q, 1);
+
+            Eigen::MatrixXd Jac = dNdxi_1 * nodes1;
+            Eigen::Vector3d a1 = Jac.row(0);
+            Eigen::Vector3d a2 = Jac.row(1);
+            Eigen::Vector3d a3 = a1.cross(a2);
+            double norm_a3 = a3.norm();
+            Eigen::Vector3d unit_a3 = a3.normalized();
+            
+            result = N_1 * nodes1;
+
+
+            /*vector<double> result1(3);
+            result1[0] = result(0, 0);
+            result1[1] = result(0, 1);
+            result1[2] = result(0, 2);
+            
+            text_gps.push_back(result1);*/
+            
+            text_W_1.push_back( norm_a3);
+            text_Normal.push_back(unit_a3);
+            //text_gps.push_back( N_1 * nodes1);
+
+            text_gps.emplace_back(vector<double>{result(0, 0), result(0, 1), result(0, 2)});
+
+
+
+        }
+
+    }
+
 }
