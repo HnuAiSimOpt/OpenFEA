@@ -7,7 +7,10 @@
 import numpy as np
 import math
 import sys
+import os
 from scipy.sparse import coo_matrix
+from scipy.sparse.linalg import spsolve
+from show_result import show_dis
 
 
 def get_dof(e_node_id):
@@ -43,10 +46,49 @@ class GeoNL3D:
         # 初始化参数
         self.ne_ = len(element)
         self.nd_ = len(node)
-        dis_nl = np.zeros(2 * self.nd_)
+        Unl = np.zeros(2 * self.nd_)
+        d_Unl = np.zeros(2 * self.nd_)
         # 计算切线刚度矩阵
-        f_int, KT = self.get_global_stiff_f_int(node, element, dis_nl)
-        #
+        loop, max_iter = 0, 100
+        f_ext, free_dof = self.pre_pro(load, fixed, load_axis, load_value)
+        save_path = ".\\NL"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        while loop < max_iter:
+            f_int, KT = self.get_global_stiff_f_int(node, element, Unl)
+            R = f_ext - f_int
+            KT = KT[free_dof, :][:, free_dof]
+            R = R[free_dof, 0]
+            d_Unl_free = spsolve(KT, R)
+            d_Unl[free_dof] = d_Unl_free
+            # 更新
+            Unl = Unl + d_Unl
+            loop = loop + 1
+            print("\nit.:{0}".format(loop))
+            save_path_png = save_path + "\\step_(" + str(loop) + ").png"
+            show_dis(node[:, 0], node[:, 1], Unl[::2], Unl[1::2], save_path_png)
+
+    def pre_pro(self, load, fixed, load_axis, load_value):
+        # 载荷
+        f_ext = np.zeros((2 * self.nd_, 1))
+        if load_axis == 1:
+            for id_ in range(len(load)):
+                node_id = load[id_] - 1
+                f_ext[2 * node_id] = load_value
+        if load_axis == 2:
+            for id_ in range(len(load)):
+                node_id = load[id_] - 1
+                f_ext[2 * node_id + 1] = load_value
+        # 无约束自由度
+        fix_dof = []
+        for id_ in range(len(fixed)):
+            node_id = fixed[id_] - 1
+            fix_dof.append(2 * node_id)  # X 方向
+            fix_dof.append(2 * node_id + 1)  # Y 方向
+        fix_dof = np.asarray(fix_dof)
+        all_dof = np.arange(2 * self.nd_)
+        free_dof = np.setdiff1d(all_dof, fix_dof)
+        return f_ext, free_dof
 
     def build_sp_idx(self, element):
         n_dof_ele, n_value = 8, 64
@@ -70,11 +112,14 @@ class GeoNL3D:
         #
         n_k_value = 64
         value_kt = np.zeros(self.ne_ * n_k_value)
-        f_int = np.zeros((3 * self.nd_, 1))
+        f_int = np.zeros((2 * self.nd_, 1))
         for i in range(self.ne_):
             # 点集坐标
             points_e = node[element[i] - 1]
-            pre_dis_e = np.vstack((pre_dis_nl[2 * (element[i] - 1)], pre_dis_nl[2 * (element[i] - 1) + 1]))
+            e_dof = get_dof(element[i])
+            pre_dis_e = np.array(
+                [[pre_dis_nl[e_dof[0]], pre_dis_nl[e_dof[2]], pre_dis_nl[e_dof[4]], pre_dis_nl[e_dof[6]]],
+                 [pre_dis_nl[e_dof[1]], pre_dis_nl[e_dof[3]], pre_dis_nl[e_dof[5]], pre_dis_nl[e_dof[7]]]])
             # 计算性函数的偏导，高斯积分点的雅可比矩阵行列式，应力转换矩阵
             self.get_dN(points_e)
             self.get_trans_mat(pre_dis_e)
@@ -89,9 +134,8 @@ class GeoNL3D:
             value_kt[n_k_value * i: n_k_value * (i + 1)] = KT_e.reshape([n_k_value, 1], order='F').flatten()
             # 计算内力
             f_int_e = self.get_f_int()
-            e_dof = get_dof(element[i])
             f_int[e_dof] = f_int[e_dof] + f_int_e
-        KT = coo_matrix((value_kt, (self.Kt_row, self.Kt_col)), shape=(3 * self.nd_, 3 * self.nd_)).tocsc()
+        KT = coo_matrix((value_kt, (self.Kt_row, self.Kt_col)), shape=(2 * self.nd_, 2 * self.nd_)).tocsc()
         return f_int, KT
 
     def get_linear_stiff(self):
@@ -128,9 +172,10 @@ class GeoNL3D:
             name = 'point_' + str(i + 1)
             det_jacobi = self.det_jacobi[name]
             #
-            BL = self.BL0_[name] + self.BL0_[name]
-            # PK-II 应力
-            self.pk2s_[name] = BL @ dis_vec
+            BL = self.BL0_[name] + self.BL1_[name]
+            # TODO PK-II 应力
+            strain = BL @ dis_vec
+            self.pk2s_[name] = self.D0_ @ strain
             pk2s_mat[0, 0], pk2s_mat[0, 1] = self.pk2s_[name][0], self.pk2s_[name][2]
             pk2s_mat[1, 0], pk2s_mat[1, 1] = self.pk2s_[name][2], self.pk2s_[name][1]
             pk2s_mat[2, 2], pk2s_mat[2, 3] = self.pk2s_[name][0], self.pk2s_[name][2]
@@ -148,7 +193,7 @@ class GeoNL3D:
             name = 'point_' + str(i + 1)
             det_jacobi = self.det_jacobi[name]
             #
-            BL = self.BL0_[name] + self.BL0_[name]
+            BL = self.BL0_[name] + self.BL1_[name]
             pk2s = self.pk2s_[name]
             f_int_e_i = BL.T @ pk2s
             f_int_e = f_int_e + det_jacobi * f_int_e_i.reshape((8, 1))
@@ -188,6 +233,7 @@ class GeoNL3D:
             self.det_jacobi[name] = det_jacobi
 
     def get_trans_mat(self, dis):
+        ux, uy = dis[0, :].reshape((4, 1)), dis[1, :].reshape((4, 1))
         for i in range(4):
             # 形函数偏导，雅可比行列式
             name = 'point_' + str(i + 1)
@@ -195,23 +241,23 @@ class GeoNL3D:
             dN_i = self.dN_[name]
             dNdx, dNdy = dN_i[0, :].reshape((4, 1)), dN_i[1, :].reshape((4, 1))
             #
-            ux, uy = dis[0, :].reshape((4, 1)), dis[1, :].reshape((4, 1))
             Lxx, Lxy, Lyx, Lyy = dNdx.T @ ux, dNdx.T @ uy, dNdy.T @ ux, dNdy.T @ uy
             #
             BL0, BL1, BNL = np.zeros((3, 8)), np.zeros((3, 8)), np.zeros((4, 8))
             for j in range(4):
-                #
                 BL0[0, 2 * j] = dN_i[0, j]
                 BL0[1, 2 * j + 1] = dN_i[1, j]
                 BL0[2, 2 * j], BL0[2, 2 * j + 1] = dN_i[1, j], dN_i[0, j]
                 #
                 BL1[0, 2 * j], BL1[0, 2 * j + 1] = Lxx * dN_i[0, j], Lyx * dN_i[0, j]
                 BL1[1, 2 * j], BL1[1, 2 * j + 1] = Lxy * dN_i[1, j], Lyy * dN_i[1, j]
-                BL1[2, 2 * j] = Lxx * dN_i[1, j] + Lxy * dN_i[1, j]
-                BL1[2, 2 * j + 1] = Lyx * dN_i[0, j] + Lyy * dN_i[0, j]
+                BL1[2, 2 * j] = Lxx * dN_i[1, j] + Lxy * dN_i[0, j]
+                BL1[2, 2 * j + 1] = Lyx * dN_i[1, j] + Lyy * dN_i[0, j]
                 #
-                BNL[0, 2 * j], BNL[1, 2 * j] = dN_i[0, j], dN_i[1, j]
-                BNL[2, 2 * j + 1], BNL[2, 2 * j + 1] = dN_i[0, j], dN_i[1, j]
+                BNL[0, 2 * j] = dN_i[0, j]
+                BNL[1, 2 * j] = dN_i[1, j]
+                BNL[2, 2 * j + 1] = dN_i[0, j]
+                BNL[3, 2 * j + 1] = dN_i[1, j]
             self.BL0_[name] = BL0
             self.BL1_[name] = BL1
             self.BNL_[name] = BNL

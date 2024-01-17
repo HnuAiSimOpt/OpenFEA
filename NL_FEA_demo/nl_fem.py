@@ -5,7 +5,7 @@
 # Description: XXX
 # -------------------------------------------------------------------------
 from read_inp import *
-from geo_nonlinear_fem.fem_geo_nl import *
+from fem_geo_nl import *
 
 
 path = ".\\geo_model\\2d\\Job-NL.inp"
