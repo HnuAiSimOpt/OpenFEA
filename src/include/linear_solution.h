@@ -13,10 +13,10 @@ Description: XXX
 
 #include <iostream>
 #include <vector>
-#include "include/data_management.h"
-#include "include/assemble.h"
-#include "solver/include/solver_superlu.h"
-#include "solver/include/solver_pardiso.h"
+#include "data_management.h"
+#include "assemble.h"
+#include "../solver/include/solver_superlu.h"
+#include "../solver/include/solver_pardiso.h"
 
 using std::string;
 using std::vector;

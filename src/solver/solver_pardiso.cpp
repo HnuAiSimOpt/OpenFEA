@@ -93,6 +93,7 @@ namespace CAE
             exit(3);
         }
         std::cout << "Phase 33 has been finished ......\n";
+        return true;
     }
 
     void pardiso_solver_func(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, vector<double> &b, vector<double> &x)

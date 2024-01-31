@@ -17,7 +17,7 @@ Description: read a calculation file
 #include <iostream>
 #include <string>
 #include <vector>
-#include "include/data_management.h"
+#include "data_management.h"
 
 using std::string;
 using std::vector;
@@ -37,6 +37,9 @@ namespace CAE
         ReadInfo(string path) : path_(path){};
         // ~ReadInfo();
 
+        void readInputFile(data_management &data_cae);
+        
+    private:
         // 读取单元、节点总数
         void read_ele_node_num(data_management &data_cae);
 
@@ -50,10 +53,10 @@ namespace CAE
         void readNconformingMessage(data_management& data_cae);
 
         // 读取载荷信息 
-        void read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae);
+        void read_load_bcs(data_management &data_cae);
 
         // 读取约束信息
-        void read_dis_bcs(string dis_set_keyword, data_management &data_cae);
+        void read_dis_bcs(data_management &data_cae);
         void del_blank(string& str);
         int del_blank(string &str, map<string, int> &ele_map);
     };

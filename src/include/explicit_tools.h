@@ -14,8 +14,8 @@ Description: XXX
 #include "Eigen/Dense"
 #include "Eigen/SVD"
 #include <vector>
-#include "include/data_management.h"
-#include "elements/include/ele_base.h"
+#include "data_management.h"
+#include "../elements/include/ele_base.h"
 using std::vector;
 using Eigen::MatrixXd;
 

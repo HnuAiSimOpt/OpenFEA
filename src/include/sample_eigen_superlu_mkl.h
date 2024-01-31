@@ -22,10 +22,10 @@ Description: XXX
 #endif
 
 #include <iostream>
-#include <Eigen/Dense>
+#include <../../../externals/eigen-3.4.0/Eigen/Dense>
 #include "slu_ddefs.h"
-#include <mkl.h>
-#include <mkl_pardiso.h>
+#include <../../../externals/mkl/include/mkl.h>
+#include <../../../externals/mkl/include/mkl_pardiso.h>
 
 using namespace std;
 using namespace Eigen;

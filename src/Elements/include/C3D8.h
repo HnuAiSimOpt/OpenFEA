@@ -13,7 +13,7 @@ Description: XXX
 #pragma once
 
 #include "ele_base.h"
-#include "include/C3D8_Gauss.h"
+#include "C3D8_Gauss.h"
 
 namespace CAE
 {

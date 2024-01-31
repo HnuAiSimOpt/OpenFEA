@@ -13,7 +13,7 @@ Description: XXX
 #pragma once
 
 #include "ele_base.h"
-#include "include/C3D4_hammer.h"
+#include "C3D4_hammer.h"
 
 namespace CAE
 {

@@ -16,9 +16,9 @@ Description: XXX
 #include <vector>
 #include <set>
 #include <map>
-#include "Eigen/Dense"
-#include "include/data_management.h"
-#include "include/NCF_map.h"
+#include "../../../externals/eigen-3.4.0/Eigen/Dense"
+#include "data_management.h"
+#include "NCF_map.h"
 
 using std::cout;
 using std::endl;
@@ -30,6 +30,7 @@ namespace CAE
 {
     using Eigen::MatrixXd;
 
+    class SFEM3D;
     class assamble_stiffness
     {
     public:
@@ -43,11 +44,6 @@ namespace CAE
     public:
         // 建立压缩稀疏行（Compressed Sparse Row，CSR）索引
         void build_CSR(data_management &data_cae);
-        //组装非协调刚度矩阵
-        void NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat);
-        void NCF_build_CSR(data_management& data_cae);
-        void Storematrix_columns(vector<set<int>>& columns,vector<int>& A_eper_dof,
-            vector<int>& B_eper_dof);
 
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度
         void build_ele_dofs(vector<int>& item_ele_dofs, data_management& data_cae, int ele_id, int num_nodes);
@@ -58,5 +54,20 @@ namespace CAE
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度和节点坐标
         void build_ele_dofs_coors(vector<int>& item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors,
             data_management& data_cae, int ele_id, int num_nodes);
+
+        //[*******非协调部分********]
+        void NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat);
+
+        void NCF_build_CSR(data_management& data_cae);
+
+        void Storematrix_columns(vector<set<int>>& columns,vector<int>& A_eper_dof,
+            vector<int>& B_eper_dof);
+
+        //[*******光滑有限元部分********]
+        void SFEM_build_CSR(SFEM3D *sfemData);
+
+        void iNs_dofs(vector<int> &item_ele_dofs, SFEM3D *sfemData, int iNs);
+
+        void SFEM_fill_CSR_sparse_mat(SFEM3D *sfemData, elastic_mat &data_mat);
     };
 }

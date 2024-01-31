@@ -14,6 +14,32 @@ Description: read a calculation file
 
 namespace CAE
 {
+     void ReadInfo::readInputFile(data_management& data_cae)
+    {
+        // 读取计算文件
+        // 关键字
+        string load_set_keyword = "Set-load";
+        string load_value_keyword = "Cload";
+        string dis_set_keyword = "Set-fix";
+
+        // 读取单元、节点总数
+        // item_info.read_ele_node_num(data_cae_);
+        this->read_ele_node_num(data_cae);
+
+        // 读取几何信息
+        this->read_geo_mesh(data_cae);
+        // this->check_geo_info(data_cae);
+
+        // 读取非协调信息
+        this->readNconformingMessage(data_cae);
+
+        // 读取载荷边界信息
+        this->read_load_bcs(data_cae);
+
+        // 读取位移边界信息
+        this->read_dis_bcs(data_cae);
+    }
+    
     // 读取单元、节点总数
     void ReadInfo::read_ele_node_num(data_management &data_cae)
     {
@@ -304,8 +330,10 @@ namespace CAE
     }
 
     // 读取载荷信息
-    void ReadInfo::read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae)
+    void ReadInfo::read_load_bcs(data_management &data_cae)
     {
+        string load_set_keyword = "Set-load";
+        string load_value_keyword = "Cload";
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
@@ -365,8 +393,9 @@ namespace CAE
     }
 
     // 读取约束信息
-    void ReadInfo::read_dis_bcs(string dis_set_keyword, data_management &data_cae)
+    void ReadInfo::read_dis_bcs(data_management &data_cae)
     {
+         string dis_set_keyword = "Set-fix";
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;

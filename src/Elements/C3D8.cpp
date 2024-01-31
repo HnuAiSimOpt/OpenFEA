@@ -13,6 +13,7 @@ Description: XXX
 #pragma once
 
 #include "include/C3D8.h"
+#include <cfloat>
 
 namespace CAE
 {

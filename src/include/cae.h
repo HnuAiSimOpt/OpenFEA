@@ -13,21 +13,35 @@ Description: XXX
 #pragma once
 
 #include <iostream>
-#include "include/elastic_mat.h"
-#include "include/data_management.h"
-#include "include/data2cae.h"
-#include "include/set_bcs.h"
-#include "include/assemble.h"
-#include "include/data2vtk.h"
-#include "include/explicit_tools.h"
-#include "include/linear_solution.h"
+#include "elastic_mat.h"
+#include "data_management.h"
+#include "data2cae.h"
+#include "set_bcs.h"
+#include "assemble.h"
+#include "data2vtk.h"
+#include "explicit_tools.h"
+#include "linear_solution.h"
+
 
 using namespace std;
 namespace CAE
 {
+        struct controlPara
+    {
+        string work_path;            //exe文件所在路径
+        string file_name;           //文件路径
+        int file_type = 1;          //文件类型  1:inp文件     2:fem文件
+
+        int analysis_type = 1;      //求解类型  1:隐式        2:显示
+
+        bool sfem_flag = true;      //光滑有限元标志
+        bool reanalysis_flag = false;//重分析标志
+    };
+
     class CAE_process
     {
     public:
+        controlPara  option;
         string path_;
         elastic_mat mat_;
         data_management data_cae_;
@@ -38,13 +52,19 @@ namespace CAE
         CAE_process(string path, elastic_mat mat) : path_(path), mat_(mat){};
         // ~CAE_process();
 
-        // 读取计算文件
-        void pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword);
 
-        // 执行结构响应分析
-        void implict_analysis(string result_path, string path_abaqus);
+    public://初始化
+        void Init(int nargs, char* argv[]);
+        private://初始化步骤
+            void processCmdLine(int nargs, char* argv[]);
+            void readFile();
 
-        // 执行结构动态响应分析
-        void explicit_analysis(string result_path, string path_abaqus);
+    public://求解
+        void Solve();
+        private:
+            void implict_analysis(string result_path, string path_abaqus);      //隐式分析
+            void implict_SFEManalysis(string result_path, string path_abaqus);  //光滑有限元
+            void explicit_analysis(string result_path, string path_abaqus);     //显式分析
+
     };
 }

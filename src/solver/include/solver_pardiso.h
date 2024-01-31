@@ -20,8 +20,8 @@ Description: XXX
 
 #include <iostream>
 #include <vector>
-#include <mkl.h>
-#include <mkl_pardiso.h>
+#include "../../../externals/mkl/include/mkl.h"
+#include "../../../externals/mkl/include/mkl_pardiso.h"
 
 using std::vector;
 

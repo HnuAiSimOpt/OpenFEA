@@ -12,6 +12,7 @@ Description: XXX
 
 #include <Eigen/Dense>
 #include "include/assemble.h"
+#include "include/SFEM3D.h"
 
 namespace CAE
 {
@@ -170,7 +171,6 @@ namespace CAE
         }
     }
     
-
     //[*******非协调部分********]
     void assamble_stiffness::NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat)
     {   
@@ -182,8 +182,6 @@ namespace CAE
         map_ncfGP.PhySpaceGPs(data_cae, data_mat);
         map_ncfGP.InterfacialStifMatrix(data_cae, data_mat, nz_val, row_idx, col_idx);
     }
-
-
 
     void assamble_stiffness::NCF_build_CSR(data_management& data_cae)
     {
@@ -289,6 +287,126 @@ namespace CAE
         }
     }
     
-  
+    //[*******光滑有限元部分********]
+    void assamble_stiffness::SFEM_build_CSR(SFEM3D* sfemData)
+    {
+        //系统方程数目
+        int num_free_node = sfemData->data_cae->nd_ - sfemData->data_cae->dis_bc_set_.size();
+        vector<set<int>> col_data(3 * num_free_node);
+        vector<int> item_ele_dofs;
+
+        // 遍历节点积分域，储存所有自由度
+        for (int iNs = 1; iNs <= sfemData->ns; iNs++){
+
+            //积分域自由度
+            iNs_dofs(item_ele_dofs, sfemData, iNs);
+
+            // 删除负自由度，即被约束自由度
+            for (auto it = item_ele_dofs.begin(); it != item_ele_dofs.end();)
+            {
+                if ((*it) < 0)
+                {
+                    it = item_ele_dofs.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+            // 压缩稀疏矩阵
+            for (int id_dofs_row : item_ele_dofs)
+            {
+                for (int id_dofs_col : item_ele_dofs)
+                {
+                    col_data[id_dofs_col].insert(id_dofs_row);
+                }
+            }
+        }
+
+        // 建立CSR索引格式
+        num_nz_val = 0;
+        for (int id_dof = 0; id_dof < 3 * num_free_node; id_dof++)
+        {
+            num_nz_val += col_data[id_dof].size(); // 计算每个单元非零元数目
+        }
+        // 分配行索引容量
+        row_idx.resize(num_nz_val);
+        // 分配列索引容量
+        col_idx.resize(3 * num_free_node + 1);
+        // 建立列索引
+        int item_idx_csr = 0;
+        col_idx[0] = 0;
+        for (int i = 0; i < 3 * num_free_node; i++)
+        {
+            for (int row : col_data[i])
+            {
+                row_idx[item_idx_csr] = row;
+                item_idx_csr++;
+            }
+            col_idx[i + 1] = item_idx_csr;
+        }
+        cout << "The CSR index has been built" << endl;
+    }
+    
+    void assamble_stiffness::iNs_dofs(vector<int>& item_ele_dofs, SFEM3D* sfemData, int iNs)
+    {
+        //根据积分域节点数量确定自由度数量
+        int num_nodes = sfemData->nodeArNode[iNs].size();
+        item_ele_dofs.assign(3 * num_nodes, 0);
+
+        int item_dof;
+        for (int i = 0; i < num_nodes; i++)
+        {
+            item_dof = sfemData->data_cae->resort_free_nodes_[sfemData->nodeArNode[iNs][i] - 1];
+
+            item_ele_dofs[3 * i] = 3 * item_dof;
+            item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
+            item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
+        }
+    }
+
+    void assamble_stiffness::SFEM_fill_CSR_sparse_mat(SFEM3D* sfemData, elastic_mat& data_mat)
+    {
+        // 声明内存
+        nz_val.resize(num_nz_val);
+
+        // 初始化单元坐标，刚度矩阵
+        int num_nodes;
+        vector<int> item_ele_dofs;
+
+
+        for (int iNs = 1; iNs <= sfemData->ns; iNs++) {
+        
+            // 获取该积分域的自由度
+            iNs_dofs(item_ele_dofs, sfemData, iNs);
+
+            // 计算积分域刚度矩阵
+            vector<vector<double>> ke;
+            sfemData->stiffness_Ns(ke, iNs, data_mat);
+            // 组装
+            int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
+            for (int mm = 0; mm < loop_size; mm++)
+            {
+                jj_dof = item_ele_dofs[mm];
+                if (jj_dof >= 0)
+                {
+                    int start = col_idx[jj_dof];
+                    for (int nn = 0; nn < loop_size; nn++)
+                    {
+                        int t = start;
+                        ii_dof = item_ele_dofs[nn];
+                        if (ii_dof >= 0)
+                        {
+                            for (; row_idx[t] < ii_dof; t++)
+                            {
+                            } // 使得 t 对应的行索引 对应 ii_dof
+                            nz_val[t] = nz_val[t] + ke[mm][nn];
+                        }
+                    }
+                }
+            }
+        }
+        cout << "The CSR index has been filled" << endl;
+    }
     ;
 }

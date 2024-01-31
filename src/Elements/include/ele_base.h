@@ -12,11 +12,11 @@ Description: XXX
 
 #pragma once
 
-#include "Eigen/Dense"
-#include "Eigen/SVD"
+#include "../../../externals/eigen-3.4.0/Eigen/Dense"
+#include "../../../externals/eigen-3.4.0/Eigen/SVD"
 #include <vector>
-#include "../include/elastic_mat.h"
-#include "../include/Factory.h"
+#include "../../include/elastic_mat.h"
+#include "../../include/Factory.h"
 
 typedef Eigen::Matrix<double, 3, 3> Matrix3d3;
 typedef Eigen::Matrix<double, 3, 4> Matrix3d4;

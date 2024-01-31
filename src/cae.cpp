@@ -11,27 +11,89 @@ Description: XXX
 **************************************************************************/
 
 #include "include/cae.h"
+#include "include/SFEM3D.h"
+#include "include/Reader_fem.h"
 
 namespace CAE
 {
-    void CAE_process::pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword)
+    void CAE_process::Init(int nargs, char* argv[])
     {
-        ReadInfo item_info(path_);
+        this->mat_.young_modulus = 21000.0;
+        this->mat_.poisson_ratio = 0.3;
+        //处理命令行
+        processCmdLine(nargs, argv);
 
-        // 读取单元、节点总数
-        item_info.read_ele_node_num(data_cae_);
+        //读入求解文件
+        readFile();
 
-        // 读取几何信息
-        item_info.read_geo_mesh(data_cae_);
+        // 重分析 处理
+        //ca_pre_process(data_cae_);
+    }
 
-        //读取非协调信息
-        item_info.readNconformingMessage(data_cae_);
+    void CAE_process::processCmdLine(int nargs, char* argv[])
+    {
+        //第一个命令为工作目录
+         char* work_path = argv[0];
+        option.work_path = string(work_path);
 
-        // 读取载荷边界信息
-        item_info.read_load_bcs(load_set_keyword, load_value_keyword, data_cae_);
+        if(nargs > 1){
+            char* file_name = argv[1];
+            option.file_name = string(file_name);     
+        }
+    
+        option.file_name = "D:\\OpenFEA\\OpenFEA\\sample_model\\1.fem";
+        if (option.file_name.find(".inp") == option.file_name.size() - 4) {
+            option.file_type = 1;
+        }
+        else if (option.file_name.find(".fem") == option.file_name.size() - 4) {
+            option.file_type = 2;
+        }  
 
-        // 读取位移边界信息
-        item_info.read_dis_bcs(dis_set_keyword, data_cae_);
+        //依次处理后续命令符
+        char* sz;
+        for (int i = 2; i < nargs; i++) {
+            sz = argv[i];
+            if (strcmp(sz, "-imp") == 0) {
+                option.analysis_type = 1;
+            }
+            else if (strcmp(sz, "-exp") == 0) {
+                option.analysis_type = 2;
+            }
+            else if (strcmp(sz, "-sfem") == 0) {
+                option.sfem_flag = true;
+            }
+            else if (strcmp(sz, "-re") == 0) {
+                option.reanalysis_flag = true;
+            }
+        }
+
+
+    }
+    
+    void CAE_process::readFile()
+    {
+        if (option.file_type == 1) {//inp文件读取
+            ReadInfo item_info(option.file_name);
+            item_info.readInputFile(this->data_cae_);
+        }
+        else if (option.file_type == 2) {//fem文件读取后续整合
+             CAE::Reader_fem reader(option.file_name);
+             reader.readInputFile(this->data_cae_);
+        }
+    }
+
+    void CAE_process::Solve()
+    {
+        // 执行结构响应分析
+        string result_path = "E:\\CADCAE_BY_ME\\output\\dis_CA_modefy.vtk";
+        string path_abaqus = "E:\\CADCAE_BY_ME\\model\\dis_CA_modefy.txt";
+
+        if (!option.sfem_flag) {
+            this->implict_analysis(result_path, path_abaqus);
+        }
+        else {
+            this->implict_SFEManalysis(result_path, path_abaqus);
+        }
     }
 
     // 执行结构响应分析
@@ -64,7 +126,7 @@ namespace CAE
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
         data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
-        string type_solver = "Pardiso_class"; // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
+        string type_solver = "SuperLU"; // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
         solution_api(item_assam, data_cae_, type_solver);
 
         // 输出物理场
@@ -74,6 +136,47 @@ namespace CAE
         item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
     }
 
+    // 执行结构光滑有限元分析
+    void CAE_process::implict_SFEManalysis(string result_path, string path_abaqus)
+    {
+        //=====建立光滑有限元相关数据=====
+        SFEM3D SFEMData(&data_cae_);
+        SFEMData.build();
+
+        set_BCs item_bcs;
+
+        // 设置边界条件
+        item_bcs.build_free_index(data_cae_);
+
+        // 建立单载荷向量
+        item_bcs.build_single_load(data_cae_);
+
+        // 组装刚度矩阵
+        assamble_stiffness item_assam;
+
+     
+        item_assam.SFEM_build_CSR(&SFEMData);
+
+
+        item_assam.SFEM_fill_CSR_sparse_mat(&SFEMData, mat_);
+
+
+        // 求解
+        int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
+        data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
+        string type_solver = "SuperLU"; // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
+        solution_api(item_assam, data_cae_, type_solver);
+
+        // 输出物理场
+        data_process item_output;
+        item_output.fill_full_dis(data_cae_);
+        double scale_dis = 1.0;
+        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
+
+        // 重分析
+        // ca_build_rom(data_cae_);
+    }
+    
     // 执行结构动态响应分析
     void CAE_process::explicit_analysis(string result_path, string path_abaqus)
     {

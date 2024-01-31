@@ -17,9 +17,9 @@ Description: XXX
 #include <algorithm>
 #include <map>
 #include <set>
-#include "include/Factory.h"
-#include "elements/include/ele_base.h"
-#include "solver/include/solver_pardiso.h"
+#include "Factory.h"
+#include "../elements/include/ele_base.h"
+#include "../solver/include/solver_pardiso.h"
 
 using std::map;
 using std::set;
