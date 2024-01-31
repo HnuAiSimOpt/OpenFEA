@@ -24,7 +24,7 @@ void main()
         // 材料属性赋值
         CAE::elastic_mat mat_item{2.1e9, 0.3, 7800};
         // 材料路径
-        std::string path = "E:\\CADCAE_BY_ME\\OpenFEA_CA\\output\\Job-1.inp";
+        std::string path = "E:\\CADCAE_BY_ME\\OpenFEA_CA\\output\\full.inp";
         // 关键字
         string load_set_keyword = "Set-load";
         string load_value_keyword = "Cload";
@@ -34,8 +34,8 @@ void main()
         // 读取计算文件
         cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
         // 执行结构响应分析
-        string result_path = "E:\\CADCAE_BY_ME\\OpenFEA_CA\\output\\dis_C3D4.vtk";
-        string path_abaqus = "C:\\Users\\Yoon\\Desktop\\code\\output\\Abaqus_U_C3D4.txt";
+        string result_path = "E:\\CADCAE_BY_ME\\OpenFEA_CA\\output\\ca_solution.vtk";
+        string path_abaqus = "E:\\CADCAE_BY_ME\\OpenFEA_CA\\output\\ca_solution.txt";
         cae_item.implict_analysis(result_path, path_abaqus);
     }
     else if (case_num == 2)

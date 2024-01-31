@@ -13,6 +13,7 @@ Description: XXX
 #pragma once
 
 #include <iostream>
+#include <ctime>
 #include "include/elastic_mat.h"
 #include "include/data_management.h"
 #include "include/data2cae.h"

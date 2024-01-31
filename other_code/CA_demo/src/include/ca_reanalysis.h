@@ -42,13 +42,16 @@ namespace CAE
     void ca_SVD(vector<vector<double>> &ca_rom_n, vector<vector<double>> &ca_rom_SVD);
 
     // 求解降阶后的模型
-    void ca_solve(data_management &data_cae, assamble_stiffness &item_k);
+    void ca_solve(data_management &data_cae, assamble_stiffness &item_k, vector<double> &solution);
 
     // 稀疏矩阵与列向量 乘法
     void Sparese_dot_vector(assamble_stiffness &item_delt_k, vector<double> &rom_vec_i_0, vector<double> &rom_vec_1);
 
     // 计算约简后的系数矩阵
     void ca_reduced_K(assamble_stiffness &item_k, vector<vector<double>> &ca_rom_n, vector<vector<double>> &rk);
+
+    // 提取节点位移
+    void get_real_dis(data_management &data_cae, vector<double> &dis, vector<double> &full_dis);
 
     // 向量与向量的乘法，返回标量
     double ca_vec_dot_vec(vector<double> &vec_1, vector<double> &vec_2);

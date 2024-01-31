@@ -183,17 +183,17 @@ namespace CAE
             vector<double> item_temp(row, 0.);
             Sparese_dot_vector(item_delt_k, ca_rom[i - 1], item_temp);
             //
+            int phase_33 = data_cae.item_pardiso.pardiso_solution(item_temp, ca_rom[i]);
+            //
             for (int j = 0; j < row; j++)
             {
-                item_temp[j] = -1. * item_temp[j];
+                ca_rom[i][j] = -1. * ca_rom[i][j];
             }
-            //
-            int phase_33 = data_cae.item_pardiso.pardiso_solution(item_temp, ca_rom[i]);
         }
         // SVD
         vector<vector<double>> ca_rom_SVD;
         ca_SVD(ca_rom, ca_rom_SVD);
-        data_cae.ca_rom_n_ = ca_rom_SVD;
+        data_cae.ca_rom_n_ = ca_rom;
         cout << "SVD has been completed !!!\n";
     }
 
@@ -227,7 +227,7 @@ namespace CAE
     }
 
     // 求解降阶后的模型
-    void ca_solve(data_management &data_cae, assamble_stiffness &item_k)
+    void ca_solve(data_management &data_cae, assamble_stiffness &item_k, vector<double> &solution)
     {
         // 计算缩减后的 系数矩阵
         vector<vector<double>> rk;
@@ -256,7 +256,7 @@ namespace CAE
         superlu_solver(nz_val, row_idx, col_idx, rf, rx);
         //
         int row = int(data_cae.ca_rom_n_[0].size());
-        vector<double> solution(row, 0.);
+        solution.resize(row);
         for (int i = 0; i < row; i++)
         {
             double sum = 0.;
@@ -266,16 +266,6 @@ namespace CAE
             }
             solution[i] = sum;
         }
-        // 写入 TXT
-        fstream f;
-        f.open("data.txt", ios::out);
-        for (int i = 0; i < data_cae.part_nd_[0]; i++)
-        {
-            string s1 = to_string(solution[i]);
-            f << s1 <<"\n";
-        }
-        f.close();
-        cout<<"ending !!!\n";
     }
 
     // 稀疏矩阵与列向量 乘法
@@ -318,6 +308,31 @@ namespace CAE
             }
         }
     }
+
+
+    // 提取节点位移
+    void get_real_dis(data_management &data_cae, vector<double> &dis, vector<double> &full_dis)
+    {
+        full_dis.resize(3*data_cae.nd_);
+        for (int i = 0; i < data_cae.nd_; i++)
+        {
+            int resort_node = data_cae.resort_free_nodes_[i];
+            if (resort_node >= 0)
+            {
+                full_dis[3 * i] = data_cae.single_dis_vec_[3 * resort_node];
+                full_dis[3 * i + 1] = data_cae.single_dis_vec_[3 * resort_node + 1];
+                full_dis[3 * i + 2] = data_cae.single_dis_vec_[3 * resort_node + 2];
+            }
+            else
+            {
+                full_dis[3 * i] = 0.0;
+                full_dis[3 * i + 1] = 0.0;
+                full_dis[3 * i + 2] = 0.0;
+            }
+        }
+        cout << "the full displacement has been filled." << endl;
+    }
+
 
     // 向量与向量的乘法，返回标量
     double ca_vec_dot_vec(vector<double> &vec_1, vector<double> &vec_2)

@@ -74,15 +74,43 @@ namespace CAE
         // 输出物理场
         data_process item_output;
         item_output.fill_full_dis(data_cae_);
-        double scale_dis = 1.0;
-        item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
+        // double scale_dis = 1.0;
+        // item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
 
         // 重分析
+        clock_t start, end;     //定义clock_t变量
         int n_basis = 4;
+        vector<double> ca_solution;
         assamble_stiffness item_assam_delt_K;
+        // 刚度矩阵变化量 计时
+        start = clock();
         ca_get_delt_stiffness(data_cae_, item_assam, item_assam_delt_K, mat_); // 计算delt_K
+        end = clock();
+        cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the amount of change in the stiffness matrix"<<endl; 
+        // 构造组合近似降阶模型计时
+        start = clock();
         ca_build_rom(data_cae_, item_assam_delt_K, n_basis);                   // 计算组合近似降阶模型
-        ca_solve(data_cae_, item_assam);                                // 求解降阶后的模型
+        end = clock();
+        cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the CA model"<<endl; 
+        // 求解计时
+        start = clock();
+        ca_solve(data_cae_, item_assam, ca_solution);                          // 求解降阶后的模型
+        end = clock();
+        cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to solve the reduced model"<<endl; 
+        // 提取节点位移
+        vector<double> full_dis;
+        get_real_dis(data_cae_, ca_solution, full_dis);
+        cout<<ca_solution.size()<<endl;
+        // 写入 TXT
+        fstream f;
+        f.open(path_abaqus, ios::out);
+        for (int i = 0; i < 3*data_cae_.part_nd_[0]; i++)
+        {
+            string s1 = to_string(full_dis[i]);
+            f << s1 <<"\n";
+        }
+        f.close();
+        cout<<"ending !!!\n";
     }
 
     // 执行结构动态响应分析
