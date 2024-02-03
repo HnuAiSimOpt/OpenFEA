@@ -32,9 +32,12 @@ namespace CAE
 
     void SFEM3D::eleData()
     {
-        //检查是否所有单元都是四面体TODO
-        for(int i =0; i < data_cae->ne_;i++){
-             std::cout << "Only C3D4 ELement for 3D SFEM ......\n";
+        //检查是否所有单元都是四面体
+        for(int i = 0; i < data_cae->ne_;i++){
+            int typeIndex = data_cae->ele_list_idx_[i];
+            if(typeIndex !=0 ){
+                std::cout << "Only C3D4 ELement for 3D SFEM ......\n";
+            }
         }
 
         SurfaceNode surfaceJudge;
@@ -107,9 +110,11 @@ namespace CAE
         for(int i = 0; i < data_cae->ne_; i++){
             int _position = 0;
     		for (auto n : data_cae->node_topos_[i]) {
-    			nodeElement[n].push_back(i);//记录节点所在单元
-                nodePosition[n].push_back(_position);//记录节点在单元内部的位置(从0开始)
-                _position++;
+    			if(n != 0){
+                    nodeElement[n].push_back(i);//记录节点所在单元
+                    nodePosition[n].push_back(_position);//记录节点在单元内部的位置(从0开始)
+                    _position++;
+                }
     		}
         }
 
@@ -118,7 +123,9 @@ namespace CAE
             set<int> _arNode;//临时使用set过滤重复节点
             for(int ie : node.second){//历遍此节点所在的所有单元
                 for (auto n : data_cae->node_topos_[ie]){//此单元的节点
-                    _arNode.insert(n);
+                    if(n != 0){
+                        _arNode.insert(n);
+                    }
                 }
             }
             for(int n:_arNode){//将set中的数据存入vector

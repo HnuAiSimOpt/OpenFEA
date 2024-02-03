@@ -41,7 +41,7 @@ namespace CAE
             option.file_name = string(file_name);     
         }
     
-        option.file_name = "D:\\OpenFEA\\OpenFEA\\sample_model\\1.fem";
+        option.file_name = "D:\\Code\\OpenFEA\\sample_model\\Job-3.inp";
         if (option.file_name.find(".inp") == option.file_name.size() - 4) {
             option.file_type = 1;
         }
