@@ -213,23 +213,17 @@ namespace CAE
             Eigen::Vector3d unit_a3 = a3.normalized();
             
             result = N_1 * nodes1;
-
+            text_W_1.push_back( norm_a3);
+            text_Normal.push_back(unit_a3);
+            text_gps.emplace_back(vector<double>{result(0, 0), result(0, 1), result(0, 2)});
 
             /*vector<double> result1(3);
             result1[0] = result(0, 0);
             result1[1] = result(0, 1);
             result1[2] = result(0, 2);
-            
+
             text_gps.push_back(result1);*/
-            
-            text_W_1.push_back( norm_a3);
-            text_Normal.push_back(unit_a3);
             //text_gps.push_back( N_1 * nodes1);
-
-            text_gps.emplace_back(vector<double>{result(0, 0), result(0, 1), result(0, 2)});
-
-
-
         }
 
     }

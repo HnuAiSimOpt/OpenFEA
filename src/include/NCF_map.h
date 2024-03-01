@@ -27,40 +27,37 @@ namespace CAE
 {
     class NCF_map
     {
-
-    
-
-
-
     public:
         //MatrixXd GP1, GP2;
-
         //vector<MatrixXd> P_GP1;//父空间积分点
         //vector<MatrixXd> P_GP2;//父空间积分点
         //vector<double> W_1;//权重
         //vector<Eigen::Vector3d> Normal;//法向量
-        
         //vector<Eigen::MatrixXd> text_gps ;
         vector<double> text_W_1;//权重
         vector<Eigen::Vector3d> text_Normal;
-
         vector<vector<double>> text_gps;
 
     public:
         
-           
-
-
         struct Point 
         {
             double x, y, z;
             // 默认构造函数
-            Point() : x(0.0), y(0.0), z(0.0) {}
+            Point() {}
             // 带参数的构造函数
            Point(double x_val, double y_val, double z_val) : x(x_val), y(y_val), z(z_val) {}
+
+           // 成员函数用于设置对象的属性值
+          /* void setValues(double x_val, double y_val, double z_val)
+           {
+               x = x_val;
+               y = y_val;
+               z = z_val;
+           }*/
+
         };
 
-        
         struct LagrangeBR
         {
             MatrixXd N_out;
@@ -74,6 +71,9 @@ namespace CAE
 
         void GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
             int& face_nodes, int& e);
+        
+        void GetInt_Cface_Inform(data_management& data_cae, MatrixXd& nodes1,
+            int& face_nodes);
         void GetIntF_ele_Inform(MatrixXd& pts1, MatrixXd& pts2, vector<int>& F_eper_dof,
             vector<int>& C_eper_dof, data_management& data_cae, int& e, 
             int& n_node_F, int& n_node_C);

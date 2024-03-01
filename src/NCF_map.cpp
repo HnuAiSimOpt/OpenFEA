@@ -17,107 +17,99 @@ Description: XXX
 
 namespace CAE
 {
-	
-
 	void NCF_map::PhySpaceGPs(data_management& data_cae, elastic_mat& data_mat)
 	{
 		int nF_bmesh = data_cae.BndMesh_F.size();
-		MatrixXd nodes1;//交界面(三角形、四边形）节点编号
-		//MatrixXd pts1, pts2;//交界处粗、细单元节点坐标
+		MatrixXd nodes1;//交界面(三角形、四边形）细网格节点坐标
+		MatrixXd nodesC;//交界面(三角形、四边形）粗网格节点坐标
 		
-		//*******点在平面*********
-		Point A(-1.1059770001, 0, 0.25);
-		Point B(-1.1059770002, 0.1875000, 0.375000000);
-		Point C(-1.1059770005, 0, 0.50);
-
-		Point D(-1.105977, 0.062500000, 0.375000000);
-
-		double s = CalculateArea(A, B, C);
-
-		double s1 = CalculateArea(D, A, B);
-		double s2 = CalculateArea(D, B, C);
-		double s3 = CalculateArea(D, C, A);
-		
-		double b = (s1+s2+s3) / s;
-		
-		
-		double c=s;
-		
-
-
-
-		
+		//确定平面的三个点
+		Point A,B,C;
 
 		//交界面单元循环
 		for (int e = 0; e < nF_bmesh; e++) //交界面处细网格个数
 		{   
-			int id_ele_F = data_cae.BndMesh_F[e] - 1;//索引-1
+			int id_ele_F = data_cae.BndMesh_F[e] - 1;
 			//int id_ele_C = data_cae.BndMesh_C[e] - 1;
-
 			int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
 			GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
-			
-			//交界处粗、细单元节点个数
-			//int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
-			//int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
-			//pts1.resize(n_node_F, 3);
-			//pts2.resize(n_node_C, 3);
-			//GetIntF_ele_Inform(data_cae, pts1, pts2, e);
-
-			//一个面上的高斯积分点个数
-			//int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
-			//储存一个面上的高斯积分点物理坐标
-			//MatrixXd phy_gps(face_gps_,3);
-			//MatrixXd X(face_gps_,4);//权重和法向量
-			
 			 // 计算交界面积分点物理空间坐标
 			data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->text_gps_phy_coords(nodes1, text_gps,text_W_1,text_Normal);
-				
-			//高斯积分点循环 4组  
-			
-			//for (int q = 0; q < face_gps_; q++)
-			//{
-			//	
-			//	//积分点物理空间坐标
-			//	MatrixXd xx = phy_gps.row(q);
 
-			//	//积分点分别向父空间映射
-			//	
-			//	MatrixXd X1, X2;
-			//	//-----------------------------------测试
-			//	std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
-			//	//X1 = GlobalMap3D(xx, pts1);//细网格
-			//	std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
-			//	//X2 = GlobalMap3D(xx, pts2);//粗网格
-			//	//-----------------------------------
-			//	
-			//	//P_GP1.push_back(X1);
-			//	//P_GP2.push_back(X2);
-			//	
+			//重排细网格
+			int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
+			for (int p = 0; p < face_gps_; p++)
+			{
+				data_cae.F_mesh.push_back(id_ele_F+1);
+			}
 
-			//}
 		}
-		//int a = 10;
 
-		
-		//需要找到积分点对应的粗网格单元编号
+		/*1.拿到粗网格面节点信息
+			2.只需要遍历粗网格面的节点
+			3.nodeC中存入 交界面 粗网格 节点坐标
+			4.重新编写inp文件
+	    */
 
+		//找到"积分点"对应的"粗网格单元"编号,存入C_mesh
 		int n_gps=text_gps.size();
-
+		int nC_bmesh = data_cae.bndFace_coarsemesh.size();
+		
+		const double epsilon = 1e-10;// 定义容差值***********
 		for (int i = 0; i < n_gps; i++)
-		{
+		{   
+			//积分点物理空间坐标
 			Point G(text_gps[i][0], text_gps[i][1], text_gps[i][2]);
 
+			//开始寻找粗网格面
+			for (int n = 0; n < nC_bmesh; n++)
+			{
+				int id_ele_C = data_cae.BndMesh_C[n] - 1;//索引-1
+				int C_face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->face_node;
+				//GetInt_Cface_Inform(data_cae, nodesC, C_face_nodes_);
+				nodesC.resize(C_face_nodes_, 3);
+				for (int k = 0; k < C_face_nodes_; ++k)
+				{
+					//int node_index = data_cae.bndFace_finemesh[e][i] - 1;
+					int node_index = data_cae.bndFace_coarsemesh[n][k] - 1;
+					//已解决：bndFace_coarsemesh[n][i]与BndMesh_C[n] *****n对应不起来****
+					for (int j = 0; j < 3; ++j)
+					{
+						nodesC(k, j) = data_cae.coords_[node_index][j];
+					}
+				}
+				A.x = nodesC(0, 0); A.y = nodesC(0, 1); A.z = nodesC(0, 2);
+				B.x = nodesC(1, 0); B.y = nodesC(1, 1); B.z = nodesC(1, 2);
+				C.x = nodesC(2, 0); C.y = nodesC(2, 1); C.z = nodesC(2, 2);
+				double s = CalculateArea(A, B, C);
+				double s1 = CalculateArea(G, A, B);
+				double s2 = CalculateArea(G, B, C);
+				double s3 = CalculateArea(G, C, A);
 
-
-
-
-
-
-
+				//text***********
+				/*if (id_ele_C == 5650)
+				{
+					cout << "C_mesh:" << id_ele_C + 1 << endl;
+				}
+				double temp_v = (s1 + s2 + s3) / s;
+				*/
+				//text********
+				
+				//条件判断需要设置一个容差，非常重要！！！
+				if (abs(1.0 - (s1 + s2 + s3) / s) < epsilon)
+				{
+					//C_mesh.push_back(id_ele_C+1);//满足条件，找到积分点对应的粗网格,储存起来
+					data_cae.C_mesh.push_back(id_ele_C + 1);//此处为了组装刚度矩阵进行重排
+					//text***********
+					//cout << "  id gps:" << i << " C_mesh_id: " << id_ele_C + 1  <<endl;
+					//text***********
+					break;
+				}
+			}
 		}
-
-
+		//text------------------
+		//int a = 0;
+		//text------------------
 
 	}
 	
@@ -144,7 +136,7 @@ namespace CAE
 	}
 
 
-	//获取交界面处（四边形、三角形）面节点信息
+	//获取交界面处（四边形、三角形）细网格 面节点坐标
 	void NCF_map::GetIntF_face_Inform(data_management& data_cae, MatrixXd& nodes1,
 		int& face_nodes,int& e )
 	{   
@@ -156,33 +148,55 @@ namespace CAE
 			{
 				nodes1(i, j) = data_cae.coords_[node_index][j];
 			}
+		}
+	}
+
+
+	//获取交界面处（四边形、三角形）粗网格 面节点坐标
+	void NCF_map::GetInt_Cface_Inform(data_management& data_cae, MatrixXd& nodes1,
+		int& face_nodes)
+	{
+		int n = 0;
+		nodes1.resize(face_nodes, 3);
+		for (int i = 0; i < face_nodes; ++i)
+		{
+			//int node_index = data_cae.bndFace_finemesh[e][i] - 1;
+			int node_index = data_cae.bndFace_coarsemesh[n][i] - 1;
+			
+			
+			for (int j = 0; j < 3; ++j)
+			{
+				nodes1(i, j) = data_cae.coords_[node_index][j];
+			}
 
 		}
-		
+
 
 	}
 
-	//void NCF_map::GetIntF_ele_Inform(data_management& data_cae,MatrixXd& pts1,
-	//	MatrixXd& pts2, int& e)
-	//{
-	//	const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e]-1];//索引要减1
-	//	const auto& tps_C = data_cae.node_topos_[data_cae.BndMesh_C[e]-1];
-
-	//	for (int i = 0; i < 8; ++i)
-	//	{
-	//		const auto& coord_sctr1 = data_cae.coords_[tps_F[i] - 1];
-	//		const auto& coord_sctr2 = data_cae.coords_[tps_C[i] - 1];
-
-	//		for (int j = 0; j < 3; ++j)
-	//		{
-	//			pts1(i, j) = coord_sctr1[j];
-	//			pts2(i, j) = coord_sctr2[j];
-	//		}
-	//	}
-	//	
-	//}
 
 	/*
+	void NCF_map::GetIntF_ele_Inform(data_management& data_cae,MatrixXd& pts1,
+		MatrixXd& pts2, int& e)
+	{
+		const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e]-1];
+		const auto& tps_C = data_cae.node_topos_[data_cae.BndMesh_C[e]-1];
+
+		for (int i = 0; i < 8; ++i)
+		{
+			const auto& coord_sctr1 = data_cae.coords_[tps_F[i] - 1];
+			const auto& coord_sctr2 = data_cae.coords_[tps_C[i] - 1];
+
+			for (int j = 0; j < 3; ++j)
+			{
+				pts1(i, j) = coord_sctr1[j];
+				pts2(i, j) = coord_sctr2[j];
+			}
+		}
+		
+	}
+
+	
 	void NCF_map::GetIntF_ele_Inform(data_management& data_cae, vector<int>& sctr1, vector<int>& sctr2,
 		MatrixXd& pts1, MatrixXd& pts2, int& e)
 	{
@@ -227,7 +241,6 @@ namespace CAE
 		vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx)
 	{
 
-		
 		MatrixXd Ce;
 		Get_Ce(data_mat,Ce);
 		MatrixXd pts1, pts2;//交界处细、粗六面体单元节点坐标
@@ -235,21 +248,27 @@ namespace CAE
 	    //初始化B,Nm,耦合矩阵,界面总刚
 		MatrixXd B1, B2, Nm1, Nm2, Kp11, Kp12, Kp22,Kd11, Kd12, Kd21, Kd22,K11, K12, K21, K22;
 		MatrixXd nodes1;//细网格交界面(三角形、四边形）节点编号
+		
 		MatrixXd phy_gps;//储存一个面上的高斯积分点物理坐标
 		vector<double> W_1;//权重
 		vector<Eigen::Vector3d> Normal;//法向量
+		
+		
 		//法向量矩阵
 	    MatrixXd n(3, 6);
-		int nF_bmesh = data_cae.BndMesh_F.size();//交界面处细网格个数
+		//int nF_bmesh = data_cae.BndMesh_F.size();//交界面处细网格个数
+		int nF_bmesh = data_cae.F_mesh.size();
 		for (int e = 0; e < nF_bmesh; e++) //每一组"粗细网格单元的界面刚度矩阵"计算
 		{  
-			 int id_ele_F = data_cae.BndMesh_F[e] - 1;//索引-1
-			 int id_ele_C = data_cae.BndMesh_C[e] - 1;
+			 //int id_ele_F = data_cae.BndMesh_F[e] - 1;//索引-1
+			 int id_ele_F = data_cae.F_mesh[e] - 1;//索引-1
 			 int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
 			 GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
 
 			 //交界处粗、细单元节点个数
 			 int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
+			 //int id_ele_C = data_cae.BndMesh_C[e] - 1;
+			 int id_ele_C = data_cae.C_mesh[e] - 1;// 重排后的粗网格单元索引****
 			 int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
 			 pts1.resize(n_node_F, 3);
 			 pts2.resize(n_node_C, 3);
@@ -274,9 +293,8 @@ namespace CAE
 			 // 计算交界面积分点物理空间坐标、权重、法向量
 			 data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->gps_phy_coords(nodes1, phy_gps, W_1, Normal);
 			 
-			 
 			 //text****************
-			 vector<double> p(3);
+			/* vector<double> p(3);
 			 vector<vector<double>> np(3, vector<double>(3));
 			
 			 p[0] = phy_gps(0, 0);
@@ -288,10 +306,12 @@ namespace CAE
 				 {
 					 np[i][j] = nodes1(i, j);
 				 }
-
-			 }
+			 }*/
 			 //*************
 
+			 /*vector<double> text_W_1;
+			 vector<Eigen::Vector3d> text_Normal;
+			 vector<vector<double>> text_gps;*/
 
 			 //积分点循环 
 			 for (int q = 0; q < face_gps_; q++)
@@ -299,16 +319,14 @@ namespace CAE
 				 //积分点物理空间坐标
 				 MatrixXd xx = phy_gps.row(q);
 
-				 //判断积分点位于哪一个粗网格面上
-
-
 				 //积分点分别向"粗细网格"父空间映射
 				 MatrixXd X1, X2; //"粗细网格"积分点父空间坐标
-				 //-----------------------------------测试
-				 std::cout << "F_mesh number :" << data_cae.BndMesh_F[e] << std::endl;
 				 X1 = GlobalMap3D(xx, pts1, n_node_F);//细网格
-				 std::cout << "C_mesh number :" << data_cae.BndMesh_C[e] << std::endl;
 				 X2 = GlobalMap3D(xx, pts2, n_node_C);//粗网格
+
+				 //-----------------------------------测试
+				 //std::cout << "F_mesh number :" << data_cae.F_mesh[e] << std::endl;
+				 //std::cout << "C_mesh number :" << data_cae.C_mesh[e] << std::endl;
 				 //-----------------------------------
 
 				 Calculate_B_Nm(X1, pts1, B1, Nm1, n_node_F);
@@ -325,7 +343,6 @@ namespace CAE
 				 //计算Kp,Kd
 				 Calculate_Kp_Kd(Kp11, Kp12, Kp22, Kd11, Kd12, Kd21, Kd22,
 					 Nm1, Nm2, B1, B2, n, Ce, alpha, wt1);
-
 			 }
 
 			 //计算界面总刚
@@ -337,20 +354,19 @@ namespace CAE
 			 Fill_InterFMatrix(C_eper_dof, F_eper_dof, nz_val, row_idx, col_idx, K21);
 			 Fill_InterFMatrix(C_eper_dof, C_eper_dof, nz_val, row_idx, col_idx, K22);
 			 //text*******************
-			//int n = 0;
-			//std::cout << std::fixed << std::setprecision(6);
-			//for (int i = 0; i < 12; i++)
-			//{
-			   // for (int j = 0; j < 12; j++)
-			   // {
-			   //	 std::cout <<n<<":"<< K12(i, j) << endl; // 输出矩阵元素值
-			   //	 n++;
-			   // }
-			//}
+			/*int n = 0;
+			 std::cout << std::fixed << std::setprecision(6);
+			for (int i = 0; i < 12; i++)
+			{
+			    for (int j = 0; j < 12; j++)
+			    {
+			   	 std::cout <<n<<":"<< K12(i, j) << endl; 
+			   	 n++;
+			    }
+			}*/
 		}
 
 	}
-
 
 	//Ce计算
 	void NCF_map::Get_Ce(elastic_mat& data_mat, MatrixXd& Ce)
@@ -410,7 +426,7 @@ namespace CAE
 		x1 = pts1(0, 0); y1 = pts1(0, 1); z1 = pts1(0, 2);
 		x2 = pts1(1, 0); y2 = pts1(1, 1); z2 = pts1(1, 2);
 		double h = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));//单元尺寸大小
-		double h = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));//单元尺寸大小
+		
 		double E = data_mat.young_modulus, nu = data_mat.poisson_ratio;
 		double lambda = E * nu / (1 - 2 * nu) * (1 + nu);
 		double mu = E / 2 * (1 + nu);
@@ -454,7 +470,8 @@ namespace CAE
 		vector<int>& C_eper_dof,data_management& data_cae, int& e, int& n_node_F, int& n_node_C)
 	{
 		const auto& tps_F = data_cae.node_topos_[data_cae.BndMesh_F[e] - 1];//索引要减1
-		const auto& tps_C = data_cae.node_topos_[data_cae.BndMesh_C[e] - 1];
+		//const auto& tps_C = data_cae.node_topos_[data_cae.BndMesh_C[e] - 1];
+		const auto& tps_C = data_cae.node_topos_[data_cae.C_mesh[e] - 1];//重排的粗网格****
 		for (int i = 0; i < n_node_F; ++i)
 		{
 			const auto& coord_sctr1 = data_cae.coords_[tps_F[i] - 1];
@@ -478,7 +495,8 @@ namespace CAE
 		for (int i = 0; i < n_node_F; i++)
 		{  
 			// 细网格自由度
-			int ncf_F = data_cae.BndMesh_F[e] - 1;//细网格单元编号从0开始
+			//int ncf_F = data_cae.BndMesh_F[e] - 1;//细网格单元编号从0开始
+			int ncf_F = data_cae.F_mesh[e] - 1;//细网格单元编号从0开始
 			int item_dof_F = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_F][i] - 1];
 			F_eper_dof[3 * i] = 3 * item_dof_F;
 			F_eper_dof[3 * i + 1] = 3 * item_dof_F + 1;
@@ -487,7 +505,8 @@ namespace CAE
 		}
 		for (int i = 0; i < n_node_C; i++)
 		{  //粗网格自由度
-			int ncf_C = data_cae.BndMesh_C[e] - 1;//粗网格单元编号从0开始
+			//int ncf_C = data_cae.BndMesh_C[e] - 1;//粗网格单元编号从0开始
+			int ncf_C = data_cae.C_mesh[e] - 1;//重排的粗网格****
 			int item_dof_C = data_cae.resort_free_nodes_[data_cae.node_topos_[ncf_C][i] - 1];
 			C_eper_dof[3 * i] = 3 * item_dof_C;
 			C_eper_dof[3 * i + 1] = 3 * item_dof_C + 1;
@@ -556,7 +575,6 @@ namespace CAE
 		MatrixXd& K_interface)
 	{
 		// 组装
-		// 组装
 		int ii_dof, jj_dof, loop_size = j_eper_dof.size();
 		for (int mm = 0; mm < loop_size; mm++)
 		{
@@ -572,23 +590,22 @@ namespace CAE
 					{
 						for (; row_idx[t] < ii_dof; t++)
 						{
-						} // 使用上三角矩阵
-						} // 使用上三角矩阵
+						} 
+					} // 使用上三角矩阵
 						nz_val[t] = nz_val[t] + K_interface(mm, nn);
-					}
+
 				}
 			}
 		}
-
-
 	}
+
 
 	
 	//积分点网格单元向父空间映射
 	MatrixXd NCF_map::GlobalMap3D(MatrixXd gpoint, MatrixXd nodes, int& n_node_mesh)
 	{
 		const int nMax = 10;//d迭代次数改为15  10.11
-		const int nMax = 10;//d迭代次数改为15  10.11
+		
 		const double tol = 1e-14;
 		double tolSquared = tol * tol;
 		//double tolSquared = tol ;
@@ -717,7 +734,6 @@ namespace CAE
 		else if(n_node_mesh==4)
 		{
 			MatrixXd N(1, 4);//转置后的N
-			//N.resize(1, 8);
 			N(0, 0) = 1 - xi - eta - zeta;
 			N(0, 1) = xi;
 			N(0, 2) = eta;
@@ -736,6 +752,6 @@ namespace CAE
 		return result;
 	}
 
-	;
+ ;
 
 }

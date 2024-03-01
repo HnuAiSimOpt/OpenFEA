@@ -20,6 +20,7 @@ Description: XXX
 #include "include/data_management.h"
 #include "include/NCF_map.h"
 
+
 using std::cout;
 using std::endl;
 using std::map;

@@ -167,7 +167,7 @@ namespace CAE
     void assamble_stiffness::NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat)
     {   
         NCF_map map_ncfGP;
-        //先取得交界面细网格面上积分点物理坐标
+        //先取得交界面 细网格面上 积分点物理坐标
         map_ncfGP.PhySpaceGPs(data_cae, data_mat);
         //非协调刚度矩阵CSR格式
         NCF_build_CSR(data_cae);
@@ -213,19 +213,24 @@ namespace CAE
         }
         
         //开始插入非协调界面单元的节点信息[****非协调界面处不能有约束****
-        int nF_bmesh = data_cae.BndMesh_F.size();
+        //int nF_bmesh = data_cae.BndMesh_F.size();
+        int nF_bmesh = data_cae.F_mesh.size();//重排后的细网格单元索引*****
         vector<int> F_ele_dofs;
         vector<int> C_ele_dofs;
         for (int e = 0; e < nF_bmesh; e++) //交界面处细网格个数
         {
             //交界处六面体单元节点及坐标
-            int F_id_ele = data_cae.BndMesh_F[e]-1;//单元索引
+            //int F_id_ele = data_cae.BndMesh_F[e]-1;//单元索引
+            int F_id_ele = data_cae.F_mesh[e] - 1;//单元索引  重排后的细网格单元索引*****
             // 识别单元类型
             int F_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[F_id_ele]]->nnode_;
             build_ele_dofs(F_ele_dofs, data_cae, F_id_ele, F_num_nodes);
             
          
-            int C_id_ele = data_cae.BndMesh_C[e]- 1;//单元索引
+            //int C_id_ele = data_cae.BndMesh_C[e]- 1;//单元索引
+
+            int C_id_ele = data_cae.C_mesh[e] - 1;//重排后的粗网格单元索引*********************
+            
             int C_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[C_id_ele]]->nnode_;
             build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes);
            
