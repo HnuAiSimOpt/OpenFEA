@@ -195,4 +195,52 @@ namespace CAE
         }
     }
 
+    // 交界面积分点物理空间坐标（非协调）
+    void hex_ele_elastic::gps_phy_coords(Eigen::Ref<Eigen::MatrixXd> nodes1,
+        Eigen::Ref<Eigen::MatrixXd> phy_gps, vector<double>& W_1,
+        vector<Eigen::Vector3d>& Normal)
+    {
+        // 交界面(四边形)积分 权重为1
+        double gp_values = 1. / sqrt(3.);
+        Eigen::MatrixXd gps(4, 2);//高斯积分点
+        gps << gp_values, gp_values,
+            gp_values, -gp_values,
+            -gp_values, gp_values,
+            -gp_values, -gp_values;
+
+        Eigen::MatrixXd dNdxi_1(2, 4);
+        Eigen::MatrixXd N_1(1, 4);
+        for (int q = 0; q < 4; q++)
+        {
+            dNdxi_1(0, 0) = -0.25 * (1 - gps(q, 1));
+            dNdxi_1(0, 1) = 0.25 * (1 - gps(q, 1));
+            dNdxi_1(0, 2) = 0.25 * (1 + gps(q, 1));
+            dNdxi_1(0, 3) = -0.25 * (1 + gps(q, 1));
+            dNdxi_1(1, 0) = -0.25 * (1 - gps(q, 0));
+            dNdxi_1(1, 1) = -0.25 * (1 + gps(q, 0));
+            dNdxi_1(1, 2) = 0.25 * (1 + gps(q, 0));
+            dNdxi_1(1, 3) = 0.25 * (1 - gps(q, 0));
+				
+            N_1(0, 0) = 0.25 * (1 - gps(q, 0)) * (1 - gps(q, 1));
+            N_1(0, 1) = 0.25 * (1 + gps(q, 0)) * (1 - gps(q, 1));
+            N_1(0, 2) = 0.25 * (1 + gps(q, 0)) * (1 + gps(q, 1));
+            N_1(0, 3) = 0.25 * (1 - gps(q, 0)) * (1 + gps(q, 1));
+
+            Eigen::MatrixXd Jac = dNdxi_1 * nodes1;
+            Eigen::Vector3d a1 = Jac.row(0);
+            Eigen::Vector3d a2 = Jac.row(1);
+            Eigen::Vector3d a3 = a1.cross(a2);
+            double norm_a3 = a3.norm();
+            Eigen::Vector3d unit_a3 = a3.normalized();
+
+            phy_gps.row(q) = N_1 * nodes1;
+            W_1[q]=norm_a3;
+            Normal[q]=unit_a3;
+            
+        }
+
+    }
+    
+
+
 }
