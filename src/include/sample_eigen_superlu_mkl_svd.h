@@ -12,7 +12,7 @@ Description: XXX
 
 #pragma once
 
-#define min(x,y) (((x) < (y)) ? (x) : (y))
+#define min(x, y) (((x) < (y)) ? (x) : (y))
 
 // Define the format to printf MKL_INT values
 #if !defined(MKL_ILP64)
@@ -37,3 +37,5 @@ bool sample_superlu();
 bool sample_mkl();
 
 bool sample_pardiso();
+
+

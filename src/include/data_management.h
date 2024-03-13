@@ -21,18 +21,33 @@ Description: XXX
 #include "elements/include/ele_base.h"
 #include "solver/include/solver_pardiso.h"
 
+
 using std::map;
 using std::set;
 using std::sort;
 using std::string;
 using std::vector;
 
+
 namespace CAE
 {
+    // 避免data_mana和assamble交叉引用
+    class assamble_stiffness_save
+    {
+    public:
+        int num_row;                                              // 稀疏矩阵行数
+        int num_col;                                              // 稀疏矩阵列数
+        int num_nz_val;                                           // 稀疏矩阵非零元素个数
+        vector<double> nz_val;                                    // 储存每个非零元素值的值
+        vector<int> row_idx;                                      // 储存每个非零元素值的行索引
+        vector<int> col_idx;                                      // 储存每行第一个非零元素值的列索引
+    };
+
     class data_management
     {
     public:
         int ne_, nd_;                                            // 单元，节点总数
+        map<int, int> coords_idx_;                               // 节点编号索引(文件编号：coords_的行索引）
         vector<vector<double>> coords_;                          // 节点坐标
         vector<vector<int>> node_topos_;                         // 节点拓扑关系
         vector<int> BndMesh_F;                                   // 非协调细网格单元编号(读inp）
@@ -57,6 +72,9 @@ namespace CAE
         map<string, int> ELE_TYPES = {{"C3D4", 0}, {"C3D8", 1}}; // 建立单元类型到整型的映射
         PardisoSolution item_pardiso;                            // paidiso求解器对象
 
+        // for CA
+        assamble_stiffness_save item_assam_implicit;             // 完整隐式分析的总刚
+        vector<vector<double>> ca_rom_n_;                        // 组合近似-降阶模型
     public:
         //  单元初始化
         void ele_inite(elastic_mat &data_mat);

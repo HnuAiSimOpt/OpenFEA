@@ -16,7 +16,7 @@ Description: XXX
 #include "Eigen/Dense"
 #include "Eigen/SVD"
 #include <vector>
-#include "include/data_management.h"
+#include "data_management.h"
 #include <iostream>
 using std::vector;
 using Eigen::MatrixXd;

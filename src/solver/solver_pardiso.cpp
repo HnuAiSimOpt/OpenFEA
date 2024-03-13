@@ -95,6 +95,26 @@ namespace CAE
         std::cout << "Phase 33 has been finished ......\n";
     }
 
+        bool PardisoSolution::pardiso_solution(vector<double> &b, vector<double> &x)
+    {
+        /* ---------------------------------------------------------------------------------------------------------------
+        回代
+        ---------------------------------------------------------------------------------------------------------------- */
+        rhs = b.data();
+        solution = x.data();
+        MKL_INT error = 0; /* Initialize error flag */
+        MKL_INT phase = 33;
+        iparm[7] = 2; /* Max numbers of iterative refinement steps. */
+        PARDISO(pt, &maxfct, &mnum, &mtype, &phase,
+            &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, rhs, solution, &error);
+        if (error != 0)
+        {
+            printf("\nERROR during solution: " IFORMAT, error);
+            exit(3);
+        }
+        std::cout << "Phase 33 has been finished ......\n";
+    }
+
     void pardiso_solver_func(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, vector<double> &b, vector<double> &x)
     {
         /*

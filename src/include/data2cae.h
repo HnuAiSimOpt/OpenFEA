@@ -56,6 +56,9 @@ namespace CAE
         void read_dis_bcs(string dis_set_keyword, data_management &data_cae);
         void del_blank(string& str);
         int del_blank(string &str, map<string, int> &ele_map);
+
+        // 重分析处理数据
+        void CA_data_convert(data_management &data_cae_Im, data_management &data_cae);
     };
 
 }

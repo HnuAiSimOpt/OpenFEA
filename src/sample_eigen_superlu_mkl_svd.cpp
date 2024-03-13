@@ -12,7 +12,7 @@ Description: XXX
 
 #pragma once
 
-#include "include/sample_eigen_superlu_mkl.h"
+#include "include/sample_eigen_superlu_mkl_svd.h"
 
 bool sample_eigen()
 {
@@ -375,4 +375,5 @@ bool sample_pardiso()
     PARDISO(pt, &maxfct, &mnum, &mtype, &phase,
             &n, &ddum, ia, ja, &idum, &nrhs,
             iparm, &msglvl, &ddum, &ddum, &error);
+    return true;
 }

@@ -43,6 +43,8 @@ namespace CAE
         bool pardiso_decomposition();
         // 求解
         bool pardiso_solution();
+        // 求解
+        bool pardiso_solution(vector<double> &b, vector<double> &x);
 
     private:
         /* -------------------------- */

@@ -13,14 +13,16 @@ Description: XXX
 #pragma once
 
 #include <iostream>
-#include "include/elastic_mat.h"
-#include "include/data_management.h"
-#include "include/data2cae.h"
-#include "include/set_bcs.h"
-#include "include/assemble.h"
-#include "include/data2vtk.h"
-#include "include/explicit_tools.h"
-#include "include/linear_solution.h"
+#include <ctime>
+#include "./elastic_mat.h"
+#include "./data_management.h"
+#include "./data2cae.h"
+#include "./set_bcs.h"
+#include "./assemble.h"
+#include "./data2vtk.h"
+#include "./explicit_tools.h"
+#include "./linear_solution.h"
+#include "./ca_reanalysis.h"
 
 using namespace std;
 namespace CAE
@@ -43,6 +45,12 @@ namespace CAE
 
         // 执行结构响应分析
         void implict_analysis(string result_path, string path_abaqus);
+
+        // 读取重分析网格并做重复节点处理
+        void CA_pre_process(data_management& data_cae_Im);
+
+        // 执行重分析
+        void CA_ReAnalysis(data_management& data_cae_Im, string result_path, string path_abaqus);
 
         // 执行结构动态响应分析
         void explicit_analysis(string result_path, string path_abaqus);

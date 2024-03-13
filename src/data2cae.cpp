@@ -101,7 +101,7 @@ namespace CAE
             if (node_record)
             {
                 string id, x, y, z;
-                double x_, y_, z_;
+                double id_, x_, y_, z_;
                 std::istringstream iss(line);
                 iss >> id >> x >> y >> z;
                 x.erase(x.end() - 1); // 删除字符串最后的符号
@@ -109,9 +109,12 @@ namespace CAE
                 y.erase(y.end() - 1);
                 y_ = stod(y);
                 z_ = stod(z);
+                id.erase(id.end() - 1);
+                id_ = stod(id);
                 data_cae.coords_[id_node][0] = x_;
                 data_cae.coords_[id_node][1] = y_;
                 data_cae.coords_[id_node][2] = z_;
+                data_cae.coords_idx_[id_] = id_node;
                 id_node = id_node + 1;
             }
             /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
@@ -438,4 +441,28 @@ namespace CAE
         int I_ele_type = ele_map[str];
         return I_ele_type;
     }
-}
+
+    void CAE::ReadInfo::CA_data_convert(data_management &data_cae_Im, data_management &data_cae)
+    {
+        // 只读不改data_cae_Im，构建一个新的data_cae
+        /* 
+        预留修改坐标处理
+        修改模型的节点坐标我读进来了，因为我只知道删除，所以下面直接把旧模型的节点坐标复制到新的，新的相当于没用上
+        如果是修改坐标的情况你看下要怎么处理。
+        data_managment中加入了这个成员，存储修改节点信息。
+        map<int, int> coords_idx_;// 节点编号索引(文件编号：coords_的行索引）
+        */
+        data_cae.coords_ = data_cae_Im.coords_;
+        data_cae.nd_ = data_cae.coords_.size();
+        // 自由度索引
+        data_cae.resort_free_nodes_ = data_cae_Im.resort_free_nodes_;
+        // 荷载列阵
+        data_cae.single_load_vec_ = data_cae_Im.single_load_vec_;
+        // 无约束自由度的位移向量
+        data_cae.single_dis_vec_ = data_cae_Im.single_dis_vec_;
+        // paidiso求解器对象
+        data_cae.item_pardiso = data_cae_Im.item_pardiso;
+        // 查看CA代码仅用到上面几个量，其它量并未拷贝，如后续有需求可加上
+    }
+
+}// namespace
