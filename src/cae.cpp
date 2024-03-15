@@ -58,7 +58,6 @@ namespace CAE
         else
         {  //是非协调
             item_assam.NCF_assembleStiffness(data_cae_, mat_);
-            
         }
         
         // 求解
@@ -104,29 +103,44 @@ namespace CAE
         clock_t start, end;     //定义clock_t变量
         int n_basis = 4;
         vector<double> ca_solution;
-        assamble_stiffness item_assam_delt_K;
-        assamble_stiffness item_assam_implicit;
-        item_assam_implicit.num_row = data_cae_.item_assam_implicit.num_row;
-        item_assam_implicit.num_col = data_cae_.item_assam_implicit.num_col;
-        item_assam_implicit.num_nz_val = data_cae_.item_assam_implicit.num_nz_val;
-        item_assam_implicit.nz_val = std::move(data_cae_.item_assam_implicit.nz_val);
-        item_assam_implicit.row_idx = std::move(data_cae_.item_assam_implicit.row_idx);
-        item_assam_implicit.col_idx = std::move(data_cae_.item_assam_implicit.col_idx);
+        assamble_stiffness delt_K;
+        assamble_stiffness ref_K;
+        assamble_stiffness current_K;
+        // 参考刚度矩阵
+        ref_K.num_row = data_cae_.item_assam_implicit.num_row;
+        ref_K.num_col = data_cae_.item_assam_implicit.num_col;
+        ref_K.num_nz_val = data_cae_.item_assam_implicit.num_nz_val;
+        ref_K.nz_val = std::move(data_cae_.item_assam_implicit.nz_val);
+        ref_K.row_idx = std::move(data_cae_.item_assam_implicit.row_idx);
+        ref_K.col_idx = std::move(data_cae_.item_assam_implicit.col_idx);
+        // 当前刚度矩阵
+        current_K.num_row = data_cae_.item_assam_implicit.num_row;
+        current_K.num_col = data_cae_.item_assam_implicit.num_col;
+        current_K.num_nz_val = data_cae_.item_assam_implicit.num_nz_val;
+        current_K.nz_val.resize(current_K.num_nz_val);
+        std::fill(current_K.nz_val.begin(), current_K.nz_val.end(), 0.);
+        current_K.row_idx.assign(ref_K.row_idx.begin(), ref_K.row_idx.end());
+        current_K.col_idx.assign(ref_K.col_idx.begin(), ref_K.col_idx.end());
         // 刚度矩阵变化量 计时
         start = clock();
-        ca_get_delt_stiffness(data_cae_, item_assam_implicit, item_assam_delt_K, mat_, del_topo); // 计算delt_K
+        ca_get_delt_stiffness(data_cae_, ref_K, delt_K, mat_, del_topo); // 计算delt_K
+        // 填充当前刚度矩阵的值
+        for(int i = 0; i < current_K.num_nz_val; i++)
+        {
+            current_K.nz_val[i] = ref_K.nz_val[i] + delt_K.nz_val[i];
+        }
         end = clock();
         cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the amount of change in the stiffness matrix"<<endl; 
         // 构造组合近似降阶模型计时
         start = clock();
-        ca_build_rom(data_cae_, item_assam_delt_K, n_basis);                   // 计算组合近似降阶模型
+        ca_build_rom(data_cae_, delt_K, n_basis);                   // 计算组合近似降阶模型
         end = clock();
         cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the CA model"<<endl; 
         data_cae_.single_dis_vec_.clear();
         data_cae_.single_full_dis_vec_.clear();
         // 求解计时
         start = clock();
-        ca_solve(data_cae_, item_assam_implicit, ca_solution);                          // 求解降阶后的模型
+        ca_solve(data_cae_, current_K, ca_solution);                          // 求解降阶后的模型
         end = clock();
         cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to solve the reduced model"<<endl; 
         // 提取节点位移
@@ -134,15 +148,15 @@ namespace CAE
         get_real_dis(data_cae_, ca_solution, full_dis);
         cout<<ca_solution.size()<<endl;
         // 写入 TXT
-        fstream f;
-        f.open(path_abaqus, ios::out);
-        for (int i = 0; i < 3 * data_cae_.nd_; i++)
-        {
-            string s1 = to_string(full_dis[i]);
-            f << s1 <<"\n";
-        }
-        f.close();
-        cout<<"ending !!!\n";
+        // fstream f;
+        // f.open(path_abaqus, ios::out);
+        // for (int i = 0; i < 3 * data_cae_.nd_; i++)
+        // {
+        //     string s1 = to_string(full_dis[i]);
+        //     f << s1 <<"\n";
+        // }
+        // f.close();
+        // cout<<"ending !!!\n";
 
         // 输出物理场
         data_process item_output;

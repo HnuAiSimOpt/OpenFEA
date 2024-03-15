@@ -27,10 +27,9 @@ namespace CAE
         // delt_K = K - K0, 所以取负号
         for (int i = 0; i < item_k.num_nz_val; i++)
         {
-            item_delt_k.nz_val[i] = -1. * item_delt_k.nz_val[i];
-            //if (item_delt_k.nz_val[i] != 0) {
-            //    std::cout << item_delt_k.nz_val[i] << endl;
-            //}
+            if (item_delt_k.nz_val[i] != 0) {
+               item_delt_k.nz_val[i] = -1. * item_delt_k.nz_val[i];
+            }
         }
     }
 
@@ -107,8 +106,10 @@ namespace CAE
     // 建立组合近似降阶模型
     void ca_build_rom(data_management &data_cae, assamble_stiffness &item_delt_k, int n)
     {
+        // 声明 ca 模型
         int row = int(data_cae.single_dis_vec_.size());
         vector<vector<double>> ca_rom(n, vector<double>(row, 0.));
+        // 初始化 第一列
         ca_rom[0].assign(data_cae.single_dis_vec_.begin(), data_cae.single_dis_vec_.end());
         for (int i = 1; i < n; i++)
         {

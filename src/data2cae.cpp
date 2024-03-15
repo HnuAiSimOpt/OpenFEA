@@ -232,17 +232,17 @@ namespace CAE
                 }
             }
 
-            //读取细网格 交界面（四边形、三角形）节点信息
-              std::vector<string> facenode_temp;
+            // 读取细网格 交界面（四边形、三角形）节点信息
+            std::vector<string> facenode_temp;
             if (line.find("*BndFace_finemesh") != string::npos)
-            {  
+            {
                 facenode_temp = split_str(line, "=");
                 int face_nnode;
                 del_blank(facenode_temp[1]);
                 face_nnode = std::stoi(facenode_temp[1]);
-                
-                 int r = data_cae.BndMesh_F.size();
-                 data_cae.bndFace_finemesh.resize(r, vector<int>(face_nnode));
+
+                int r = data_cae.BndMesh_F.size();
+                data_cae.bndFace_finemesh.resize(r, vector<int>(face_nnode));
 
                 int id_node = 0;
                 while (getline(infile, line))
@@ -251,7 +251,7 @@ namespace CAE
                     {
                         break;
                     }
-                        
+
                     std::istringstream iss(line);
                     vector<string> tempN_a;
                     string tempN;
@@ -260,7 +260,7 @@ namespace CAE
                         del_blank(tempN);
                         tempN_a.push_back(tempN);
                     }
-                    
+
                     for (int i = 0; i < face_nnode; i++)
                     {
                         data_cae.bndFace_finemesh[id_node][i] = atoi(tempN_a[i].c_str());
@@ -302,7 +302,7 @@ namespace CAE
                     id_node++;
                 }
             }
-            
+
             if (line.find("*End Nconforming") != string::npos)
             {
                 break;
@@ -439,7 +439,7 @@ namespace CAE
         return I_ele_type;
     }
 
-    void ReadInfo::CA_read_del(string CA_del_set_keyword, vector<int>& del_topo)
+    void ReadInfo::CA_read_del(string CA_del_set_keyword, vector<int> &del_topo)
     {
         std::ifstream infile(path_.c_str(), std::ios::in);
         if (!infile)
@@ -455,7 +455,8 @@ namespace CAE
         {
             if (line.find(CA_del_set_keyword) != string::npos)
             {
-                if (line.find("generate") != string::npos) {
+                if (line.find("generate") != string::npos)
+                {
                     getline(infile, line);
                     std::istringstream iss(line);
                     string start, end, step;
@@ -464,14 +465,15 @@ namespace CAE
                     start_ = atoi(start.c_str()) - 1;
                     end_ = atoi(end.c_str()) - 1;
                     step_ = atoi(step.c_str());
-
+                    // 
                     del_topo.resize((int)((end_ - start_) / step_) + 1);
-                    for (int idx = 0; idx < del_topo.size(); idx++) {
+                    for (int idx = 0; idx < del_topo.size(); idx++)
+                    {
                         del_topo[idx] = start_ + idx * step_;
                     }
-
                 }
-                else {
+                else
+                {
                     while (getline(infile, line))
                     {
                         if (line.find("*") != string::npos)
@@ -491,33 +493,36 @@ namespace CAE
                         }
                     }
                 }
-                
             }
             if (line.find("*End Assembly") != string::npos)
             {
                 break;
             }
         }
-
     }
 
-    void CAE::ReadInfo::CA_data_convert(data_management& data_cae, vector<int>& del_topo, bool* node_del_idx, bool* topo_del_idx)
+    void CAE::ReadInfo::CA_data_convert(data_management &data_cae, vector<int> &del_topo, bool *node_del_idx, bool *topo_del_idx)
     {
-        for (int i = 0; i < data_cae.node_topos_.size(); i++) {
+        for (int i = 0; i < data_cae.node_topos_.size(); i++)
+        {
             topo_del_idx[i] = 1;
         }
-        for (int i = 0; i < del_topo.size(); i++) {
+        for (int i = 0; i < del_topo.size(); i++)
+        {
             topo_del_idx[i] = 0;
         }
         int num_nodes;
-        for (int i = 0; i < data_cae.node_topos_.size(); i++) {
-            if (topo_del_idx[i]) {
+        for (int i = 0; i < data_cae.node_topos_.size(); i++)
+        {
+            if (topo_del_idx[i])
+            {
                 num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->nnode_;
-                for (int j = 0; j < num_nodes; j++) {
+                for (int j = 0; j < num_nodes; j++)
+                {
                     node_del_idx[data_cae.node_topos_[i][j] - 1] = 1;
                 }
             }
         }
     }
 
-}// namespace
+} // namespace
