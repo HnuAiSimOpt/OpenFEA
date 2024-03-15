@@ -75,7 +75,7 @@ void main()
         string CA_result_path = "E:\\WH_CAE\\for_CA\\sample_model\\CA\\CA_Job-cafull.vtk";
         string CA_path_abaqus = "E:\\WH_CAE\\for_CA\\sample_model\\CA\\CA_Job-cafull.txt";
         bool Is_Update = false;// 是否将原模型更新为修改后的模型
-        cae_item.CA_ReAnalysis(CA_result_path, CA_path_abaqus, del_topo, Is_Update);// 提交完整隐式分析的data_managrment
+        cae_item.CA_ReAnalysis(CA_result_path, CA_path_abaqus, del_topo, Is_Update);
     }
     else if(case_num == 102){
         // TODO 
