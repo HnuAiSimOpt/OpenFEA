@@ -37,5 +37,8 @@ namespace CAE
 
         // 导出 位移场 VTK
         void export_dis_2_vtk(data_management &data_cae, string path, double scale_dis, string path_abaqus = " ", bool read_flag = false);
+    
+        // 导出 位移场 VTK-CA
+        void CA_export_dis_2_vtk(data_management &data_cae, vector<int>& del_topo, string result_path, double scale_dis, vector<double>& full_dis);
     };
 }

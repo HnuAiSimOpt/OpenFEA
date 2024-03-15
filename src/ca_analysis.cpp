@@ -14,79 +14,8 @@ Description: XXX
 namespace CAE
 {
 
-    // // 重分析信息预处理
-    // void ca_pre_process(data_management &data_cae)
-    // {
-    //     // 节点坐标
-    //     vector<vector<int>> node_overlap;
-    //     int kkk = 0;
-    //     for (auto part_node : data_cae.parts_coods_)
-    //     {
-    //         if (kkk == 0)
-    //         {
-    //             data_cae.coords_.insert(data_cae.coords_.end(), part_node.begin(), part_node.end());
-    //             kkk += 1;
-    //         }
-    //         else
-    //         {
-    //             int nn = data_cae.coords_.size();
-    //             int kk = data_cae.coords_.size() + 1;
-    //             for (int i = 0; i < part_node.size(); i++)
-    //             {
-    //                 part_node[i][0] += 140.;
-    //                 part_node[i][1] += 8.;
-    //                 if (part_node[i][1] == 0. || part_node[i][1] == 42.)
-    //                 {
-    //                     for (int j = 0; j < nn; j++)
-    //                     {
-    //                         if (data_cae.coords_[j][0] == part_node[i][0])
-    //                         {
-    //                             if (data_cae.coords_[j][1] == part_node[i][1])
-    //                             {
-    //                                 if (data_cae.coords_[j][2] == part_node[i][2])
-    //                                 {
-    //                                     vector<int> temp = {i, j + 1};
-    //                                     node_overlap.push_back(temp);
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //                 else
-    //                 {
-    //                     vector<double> temp_ = {part_node[i][0], part_node[i][1], part_node[i][2]};
-    //                     data_cae.coords_.push_back(temp_);
-    //                     vector<int> temp = {i, kk};
-    //                     node_overlap.push_back(temp);
-    //                     kk += 1;
-    //                 }
-    //             }
-    //             // std::cout<<part_node.size()<<"  "<<node_overlap.size()<<std::endl;
-    //         }
-    //     }
-    //     data_cae.nd_ = data_cae.coords_.size();
-    //     // print
-    //     std::cout << "Node: " << data_cae.nd_ << std::endl;
-    //     // 拓扑关系
-    //     auto part_topo = data_cae.parts_node_topos_[0][0];
-    //     data_cae.node_topos_.insert(data_cae.node_topos_.end(), part_topo.begin(), part_topo.end());
-    //     //
-    //     auto part_topo_ = data_cae.parts_node_topos_[1][0];
-    //     for (int i = 0; i < part_topo_.size(); i++)
-    //     {
-    //         vector<int> temp_ = {node_overlap[part_topo_[i][0] - 1][1], node_overlap[part_topo_[i][1] - 1][1], node_overlap[part_topo_[i][2] - 1][1], node_overlap[part_topo_[i][3] - 1][1]};
-    //         data_cae.node_topos_.push_back(temp_);
-    //     }
-    //     data_cae.ne_ = data_cae.node_topos_.size();
-    //     // print
-    //     std::cout << "Element:" << data_cae.ne_ << std::endl;
-    //     // 单元类型
-    //     for (auto e_type : data_cae.parts_ele_type_)
-    //         data_cae.ele_list_idx_.insert(data_cae.ele_list_idx_.end(), e_type.begin(), e_type.end());
-    // }
-
     // 计算delt K
-    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat)
+    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat, vector<int>& del_topo)
     {
         // 赋值 模板刚度矩阵的 CSR 索引
         item_delt_k.nz_val.resize(item_k.num_nz_val);
@@ -94,11 +23,14 @@ namespace CAE
         item_delt_k.row_idx.assign(item_k.row_idx.begin(), item_k.row_idx.end());
         item_delt_k.col_idx.assign(item_k.col_idx.begin(), item_k.col_idx.end());
         // 填充 非零元素
-        ca_fill_CSR_sparse_mat(data_cae, data_mat, item_delt_k);
+        ca_fill_CSR_sparse_mat(data_cae, data_mat, item_delt_k, del_topo);
         // delt_K = K - K0, 所以取负号
         for (int i = 0; i < item_k.num_nz_val; i++)
         {
             item_delt_k.nz_val[i] = -1. * item_delt_k.nz_val[i];
+            //if (item_delt_k.nz_val[i] != 0) {
+            //    std::cout << item_delt_k.nz_val[i] << endl;
+            //}
         }
     }
 
@@ -126,7 +58,7 @@ namespace CAE
     }
 
     // 基于CSR索引格式填充稀疏矩阵
-    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k)
+    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k, vector<int>& del_topo)
     {
         // 初始化单元
         data_cae.ele_inite(data_mat);
@@ -135,8 +67,9 @@ namespace CAE
         vector<int> item_ele_dofs;
         MatrixXd item_ele_coors;
         MatrixXd stiffness_matrix;
-        for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
+        for (int i = 0; i < del_topo.size(); i++)
         {
+            int id_ele = del_topo[i];
             // 获取该单元的节点数量
             int node_num_ele = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
             // 查找节点自由度及坐标
@@ -319,13 +252,9 @@ namespace CAE
             int resort_node = data_cae.resort_free_nodes_[i];
             if (resort_node >= 0)
             {
-                // 这里是不是忘了改，最终结果不是保存在dis里面吗 - To jichao
-                // full_dis[3 * i] = data_cae.single_dis_vec_[3 * resort_node];
-                // full_dis[3 * i + 1] = data_cae.single_dis_vec_[3 * resort_node + 1];
-                // full_dis[3 * i + 2] = data_cae.single_dis_vec_[3 * resort_node + 2];
-                full_dis[3 * i] = dis[3 * resort_node];
-                full_dis[3 * i + 1] = dis[3 * resort_node + 1];
-                full_dis[3 * i + 2] = dis[3 * resort_node + 2];
+                 full_dis[3 * i] = dis[3 * resort_node];
+                 full_dis[3 * i + 1] = dis[3 * resort_node + 1];
+                 full_dis[3 * i + 2] = dis[3 * resort_node + 2];
             }
             else
             {

@@ -83,36 +83,38 @@ namespace CAE
         data_cae_.item_assam_implicit.col_idx = std::move(item_assam.col_idx);
     }
 
-    void CAE_process::CA_pre_process(data_management &data_cae_Im)
+    void CAE_process::CA_pre_process(string CA_del_set_keyword, vector<int>& del_topo)
     {
         // 读取网格信息
         ReadInfo item_info(path_);
-        // 读取单元、节点总数
-        item_info.read_ele_node_num(data_cae_);
-        // 读取几何信息
-        item_info.read_geo_mesh(data_cae_);
 
-        // 处理网格数据
-        item_info.CA_data_convert(data_cae_Im, data_cae_);
+        // 读取删除单元拓扑信息
+        item_info.CA_read_del(CA_del_set_keyword, del_topo);
+        // TODO：
+        // 1、读取修改节点信息
+        // 2、读取增加节点及单元拓扑信息
+
+        // 处理CA数据
+        // item_info.CA_data_convert(data_cae_, del_topo, node_del_idx, topo_del_idx);
     }
 
-    void CAE_process::CA_ReAnalysis(data_management &data_cae_Im, string result_path, string path_abaqus)
+    void CAE_process::CA_ReAnalysis(string result_path, string path_abaqus, vector<int>& del_topo, bool Is_Update)
     {
-         // 重分析
+        // 重分析
         clock_t start, end;     //定义clock_t变量
         int n_basis = 4;
         vector<double> ca_solution;
         assamble_stiffness item_assam_delt_K;
         assamble_stiffness item_assam_implicit;
-        item_assam_implicit.num_row = data_cae_Im.item_assam_implicit.num_row;
-        item_assam_implicit.num_col = data_cae_Im.item_assam_implicit.num_col;
-        item_assam_implicit.num_nz_val = data_cae_Im.item_assam_implicit.num_nz_val;
-        item_assam_implicit.nz_val = std::move(data_cae_Im.item_assam_implicit.nz_val);
-        item_assam_implicit.row_idx = std::move(data_cae_Im.item_assam_implicit.row_idx);
-        item_assam_implicit.col_idx = std::move(data_cae_Im.item_assam_implicit.col_idx);
+        item_assam_implicit.num_row = data_cae_.item_assam_implicit.num_row;
+        item_assam_implicit.num_col = data_cae_.item_assam_implicit.num_col;
+        item_assam_implicit.num_nz_val = data_cae_.item_assam_implicit.num_nz_val;
+        item_assam_implicit.nz_val = std::move(data_cae_.item_assam_implicit.nz_val);
+        item_assam_implicit.row_idx = std::move(data_cae_.item_assam_implicit.row_idx);
+        item_assam_implicit.col_idx = std::move(data_cae_.item_assam_implicit.col_idx);
         // 刚度矩阵变化量 计时
         start = clock();
-        ca_get_delt_stiffness(data_cae_, item_assam_implicit, item_assam_delt_K, mat_); // 计算delt_K
+        ca_get_delt_stiffness(data_cae_, item_assam_implicit, item_assam_delt_K, mat_, del_topo); // 计算delt_K
         end = clock();
         cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the amount of change in the stiffness matrix"<<endl; 
         // 构造组合近似降阶模型计时
@@ -120,6 +122,8 @@ namespace CAE
         ca_build_rom(data_cae_, item_assam_delt_K, n_basis);                   // 计算组合近似降阶模型
         end = clock();
         cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the CA model"<<endl; 
+        data_cae_.single_dis_vec_.clear();
+        data_cae_.single_full_dis_vec_.clear();
         // 求解计时
         start = clock();
         ca_solve(data_cae_, item_assam_implicit, ca_solution);                          // 求解降阶后的模型
@@ -132,25 +136,23 @@ namespace CAE
         // 写入 TXT
         fstream f;
         f.open(path_abaqus, ios::out);
-        for (int i = 0; i < 3*data_cae_.nd_; i++)
+        for (int i = 0; i < 3 * data_cae_.nd_; i++)
         {
             string s1 = to_string(full_dis[i]);
             f << s1 <<"\n";
         }
         f.close();
         cout<<"ending !!!\n";
-        /*  for test  */ 
-        //data_process item_output;
-        //double scale_dis = 1.0;
-        //data_cae_.node_topos_ = data_cae_Im.node_topos_;
-        //data_cae_.ne_ = data_cae_.node_topos_.size();
-        //data_cae_.ele_list_idx_ = data_cae_Im.ele_list_idx_;
-        //data_cae_.ele_list_ = data_cae_Im.ele_list_;
-        //data_cae_.single_full_dis_vec_.resize(full_dis.size());
-        //for (int i = 0; i < full_dis.size(); i++) {
-        //    data_cae_.single_full_dis_vec_[i] = full_dis[i] - data_cae_Im.single_full_dis_vec_[i];
-        //}
-        //item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
+
+        // 输出物理场
+        data_process item_output;
+        double scale_dis = 1.0;
+        item_output.CA_export_dis_2_vtk(data_cae_, del_topo, result_path, scale_dis, full_dis);
+
+        if (Is_Update) {
+            // TODO:留个接口，将原模型更新为修改后的模型（节点、拓扑、刚度、位移等）
+            // 可能以后CAD/CAE会用到
+        }
     }
 
     // 执行结构动态响应分析

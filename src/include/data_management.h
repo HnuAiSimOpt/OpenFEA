@@ -47,8 +47,9 @@ namespace CAE
     {
     public:
         int ne_, nd_;                                            // 单元，节点总数
-        map<int, int> coords_idx_;                               // 节点编号索引(文件编号：coords_的行索引）
+        //map<int, int> coords_idx_;                               // 节点编号索引(文件编号：coords_的行索引）
         vector<vector<double>> coords_;                          // 节点坐标
+        //vector<int> node_topo_idx_;                              // 文件中单元编号
         vector<vector<int>> node_topos_;                         // 节点拓扑关系
         vector<int> BndMesh_F;                                   // 非协调细网格单元编号(读inp）
         vector<int> BndMesh_C;                                   // 非协调粗网格单元编号(读inp）

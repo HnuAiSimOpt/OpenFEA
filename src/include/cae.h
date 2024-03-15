@@ -47,10 +47,10 @@ namespace CAE
         void implict_analysis(string result_path, string path_abaqus);
 
         // 读取重分析网格并做重复节点处理
-        void CA_pre_process(data_management& data_cae_Im);
+        void CA_pre_process(string CA_del_set_keyword, vector<int>& del_topo);
 
         // 执行重分析
-        void CA_ReAnalysis(data_management& data_cae_Im, string result_path, string path_abaqus);
+        void CA_ReAnalysis(string result_path, string path_abaqus, vector<int>& del_topo, bool Is_Update);
 
         // 执行结构动态响应分析
         void explicit_analysis(string result_path, string path_abaqus);

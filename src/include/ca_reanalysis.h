@@ -30,10 +30,10 @@ namespace CAE
     void ca_build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors, data_management &data_cae, int ele_id, int num_nodes);
 
     // 计算delt K
-    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat);
+    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat, vector<int>& del_topo);
 
     // 基于CSR索引格式填充稀疏矩阵
-    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k);
+    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k, vector<int>& del_topo);
 
     // 建立组合近似降阶模型
     void ca_build_rom(data_management &data_cae, assamble_stiffness &item_delt_k, int n);
