@@ -44,7 +44,6 @@ namespace CAE
     // 建立单元刚度矩阵
     void hex_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
-        // TODO 后期加入关键词或者参数，控制 积分方式选择
         build_ele_stiff_mat_gauss(node_coords, stiffness_matrix, C_matrix_);
     }
 

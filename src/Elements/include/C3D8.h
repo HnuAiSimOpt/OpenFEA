@@ -50,7 +50,7 @@ namespace CAE
         // 建立应变矩阵(积分点)
         virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat, vector<double> &gp_points, double *det_jacobi_point);
 
-        // 建立单元刚度矩阵
+        // 建立单元刚度矩阵 type 1：线弹性；type 2：几何非线性
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
         // 建立单元密度矩阵

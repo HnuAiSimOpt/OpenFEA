@@ -107,20 +107,9 @@ namespace CAE
             // 查找节点自由度及坐标
             item_ele_coors.resize(node_num_ele, 3);
             build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, node_num_ele);
-            //temp
-            //cout << item_ele_coors(3, 2)<<endl;
             // 计算单元刚度矩阵
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
-            //temp
-           /* for (int i = 0; i < 24; i++)
-            {
-                for (int j = 0; j < 24; j++)
-                {
-                    cout << stiffness_matrix(i, j) << endl;
-                }
-            }*/
-            
             // 组装
             int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
             for (int mm = 0; mm < loop_size; mm++)

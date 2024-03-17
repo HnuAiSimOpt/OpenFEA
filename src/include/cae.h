@@ -12,12 +12,14 @@ Description: XXX
 
 #pragma once
 
+#include <math.h>
 #include <iostream>
 #include "include/elastic_mat.h"
 #include "include/data_management.h"
 #include "include/data2cae.h"
 #include "include/set_bcs.h"
 #include "include/assemble.h"
+#include "include/nl_assemble.h"
 #include "include/data2vtk.h"
 #include "include/explicit_tools.h"
 #include "include/linear_solution.h"
