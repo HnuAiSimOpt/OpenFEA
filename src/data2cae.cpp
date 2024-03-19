@@ -369,7 +369,7 @@ namespace CAE
         }
         infile.close();
         cout << "the information of load boundary (" << data_cae.load_set_.size() << ") have been readed." << endl;
-        cout << "the fixed DOF is " << data_cae.load_dof_ << ", and the value is " << data_cae.load_value_ << endl;
+        cout << "the loaded DOF is " << data_cae.load_dof_ << ", and the value is " << data_cae.load_value_ << endl;
     }
 
     // 读取约束信息

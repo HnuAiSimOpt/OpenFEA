@@ -13,22 +13,33 @@ Description: XXX
 #pragma once
 
 #include "ele_base.h"
-#include "include/C3D8_Gauss.h"
 
 namespace CAE
 {
-    class hex_ele_elastic : public ele_base
+    class tetra_ele_elastic : public ele_base
     {
     public:
-        double det_jacobi_; // 雅可比矩阵行列式（中心积分点）
+        double det_jacobi_; // 雅可比矩阵行列式(中心积分点)
         elastic_mat matrial_struc_;
         Matrix6d6 C_matrix_;
+        Matrix6d12 strain_mat;
 
     public:
         // 构造函数，析构函数
-
-        hex_ele_elastic() { type_ = "C3D8R"; nnode_ = 8; node_dof_ = 3; ngps_ = 8; face_node = 4; face_gps = 4; };
-        hex_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc) { type_ = "C3D8R"; nnode_ = 8; node_dof_ = 3; ngps_ = 8; face_node = 4; face_gps = 4;};
+        tetra_ele_elastic()
+        {
+            type_ = "C3D4";
+            node_dof_ = 3;
+            nnode_ = 4;
+            ngps_ = 1;
+        };
+        tetra_ele_elastic(elastic_mat matrial_struc) : matrial_struc_(matrial_struc)
+        {
+            type_ = "C3D4";
+            node_dof_ = 3;
+            nnode_ = 4;
+            ngps_ = 1;
+        };
 
         // 材料赋属性
         void set_matrial(elastic_mat matrial_struc) override { matrial_struc_ = matrial_struc; };
@@ -37,30 +48,20 @@ namespace CAE
         virtual void build_cons_mat();
 
         // 建立应变矩阵(积分点)
-        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat, vector<double> &gp_points, double *det_jacobi_point);
+        virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat);
 
-        // 建立单元刚度矩阵 type 1：线弹性；type 2：几何非线性
+        // 建立单元刚度矩阵
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
-        // 建立单元密度矩阵
+        // 建立单元质量矩阵
         void build_ele_mass(const vector<int> &node_topos, const vector<vector<double>> &coords, vector<double> &Mass) override;
-
-        // 建立形函数
-        void build_shape_fun(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::MatrixXd &shape_fun, vector<double> &gp_points, double &det_jacobi_point);
 
         // 计算单元内力
         void cal_in_force(const vector<int> &node_topos, const vector<vector<double>> &real_coords, const vector<double> &disp_d,
                           vector<double> &stress, vector<double> &strain, vector<double> &InFroce) override;
 
         // 计算单元时间步长
-
-        void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) override;
-
-        // 交界面积分点物理空间坐标（非协调）
-        void gps_phy_coords( Eigen::Ref<Eigen::MatrixXd> nodes1,
-            Eigen::Ref<Eigen::MatrixXd> phy_gps, vector<double>& W_1,
-            vector<Eigen::Vector3d>& Normal) override;
-        
-
+        void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double &time_step) override;
     };
+
 }

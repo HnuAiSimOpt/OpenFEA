@@ -44,8 +44,14 @@ namespace CAE
     // 建立单元刚度矩阵
     void tetra_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
-        // TODO 后期加入关键词或者参数，控制 积分方式选择
         build_ele_stiff_mat_hammer(node_coords, stiffness_matrix, C_matrix_);
+    }
+
+    // 建立切线单元刚度矩阵（几何非线性）
+    void tetra_ele_elastic::build_ele_nl_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> node_dis,
+                                                   Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, Eigen::Ref<Eigen::MatrixXd> inter_force)
+    {
+        build_ele_nl_stiff_mat_hammer(node_coords, node_dis, stiffness_matrix, inter_force, C_matrix_);
     }
 
     // 建立单元质量矩阵

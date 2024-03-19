@@ -20,11 +20,12 @@ namespace CAE
         int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
         vector<set<int>> col_data(3 * num_free_node);
         vector<int> item_ele_dofs;
+        
         // 遍历单元，储存所有自由度
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
-            int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
+            int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele] - 1]->nnode_;
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
             build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
             // 删除负自由度，即被约束自由度
@@ -103,7 +104,7 @@ namespace CAE
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 获取该单元的节点数量
-            int node_num_ele = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
+            int node_num_ele = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele] - 1]->nnode_;
             // 查找节点自由度及坐标
             item_ele_coors.resize(node_num_ele, 3);
             build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, node_num_ele);
@@ -111,16 +112,7 @@ namespace CAE
             //cout << item_ele_coors(3, 2)<<endl;
             // 计算单元刚度矩阵
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
-            data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
-            //temp
-           /* for (int i = 0; i < 24; i++)
-            {
-                for (int j = 0; j < 24; j++)
-                {
-                    cout << stiffness_matrix(i, j) << endl;
-                }
-            }*/
-            
+            data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]-1]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
             // 组装
             int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
             for (int mm = 0; mm < loop_size; mm++)
@@ -174,13 +166,12 @@ namespace CAE
     //[*******非协调部分********]
     void assamble_stiffness::NCF_assembleStiffness(data_management& data_cae, elastic_mat& data_mat)
     {   
-        NCF_map map_ncfGP;
-        //先取得交界面 细网格面上 积分点物理坐标
-        map_ncfGP.PhySpaceGPs(data_cae, data_mat);
         //非协调刚度矩阵CSR格式
         NCF_build_CSR(data_cae);
-        //填充稀疏矩阵（与FEA共用一个函数）
+        //填充稀疏矩阵（与FEA方法共用一个函数）
         fill_CSR_sparse_mat(data_cae, data_mat);
+        NCF_map map_ncfGP;
+        map_ncfGP.PhySpaceGPs(data_cae, data_mat);
         map_ncfGP.InterfacialStifMatrix(data_cae, data_mat, nz_val, row_idx, col_idx);
     }
 
@@ -221,27 +212,22 @@ namespace CAE
         }
         
         //开始插入非协调界面单元的节点信息[****非协调界面处不能有约束****
-        //int nF_bmesh = data_cae.BndMesh_F.size();
-        int nF_bmesh = data_cae.F_mesh.size();//重排后的细网格单元索引*****
-        vector<int> F_ele_dofs;
-        vector<int> C_ele_dofs;
+        int nF_bmesh = data_cae.BndMesh_F.size();
         for (int e = 0; e < nF_bmesh; e++) //交界面处细网格个数
         {
             //交界处六面体单元节点及坐标
-            //int F_id_ele = data_cae.BndMesh_F[e]-1;//单元索引
-            int F_id_ele = data_cae.F_mesh[e] - 1;//单元索引  重排后的细网格单元索引*****
+            vector<int> F_ele_dofs;
+            int F_id_ele = data_cae.BndMesh_F[e]-1;//单元索引
             // 识别单元类型
             int F_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[F_id_ele]]->nnode_;
             build_ele_dofs(F_ele_dofs, data_cae, F_id_ele, F_num_nodes);
             
-         
-            //int C_id_ele = data_cae.BndMesh_C[e]- 1;//单元索引
-
-            int C_id_ele = data_cae.C_mesh[e] - 1;//重排后的粗网格单元索引*********************
-            
+            vector<int> C_ele_dofs;
+            int C_id_ele = data_cae.BndMesh_C[e]- 1;//单元索引
             int C_num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[C_id_ele]]->nnode_;
             build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes);
            
+
             Storematrix_columns(col_data, F_ele_dofs, F_ele_dofs);
             Storematrix_columns(col_data, F_ele_dofs, C_ele_dofs);
             Storematrix_columns(col_data, C_ele_dofs, F_ele_dofs);
@@ -274,16 +260,24 @@ namespace CAE
         cout << "The CSR index has been built" << endl;
     }
     
-
     void assamble_stiffness::Storematrix_columns(vector<set<int>>& columns,
         vector<int>& A_eper_dof, vector<int>& B_eper_dof)
     {
-        for (int dof_row : A_eper_dof)
+        int dof_row, dof_col;
+        for (int id_dofs : A_eper_dof)
         {
-           for (int dof_col : B_eper_dof)
-           {
-             columns[dof_col].insert(dof_row); 
-           }
+            if (id_dofs > 0)
+            {
+                dof_row = id_dofs ;
+                for (int id_id_dofs : B_eper_dof)
+                {
+                    if (id_id_dofs > 0)
+                    {
+                        dof_col = id_id_dofs;
+                        columns[dof_col].insert(dof_row); 
+                    }
+                }
+            }
         }
     }
     

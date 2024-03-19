@@ -44,35 +44,40 @@ namespace CAE
     {
     public:
         // 构造函数，析构函数
-        ele_base() {};
+        ele_base(){};
+
     public:
-        std::string type_;//单元类型名字
-        int nnode_;//该单元拥有节点数量
-        int node_dof_;//该单元每个节点自由度数
-        int ngps_;//积分点数量
+        std::string type_; // 单元类型名字
+        int nnode_;        // 该单元拥有节点数量
+        int node_dof_;     // 该单元每个节点自由度数
+        int ngps_;         // 积分点数量
         int face_node;//单元一个面上的节点数（非协调部分）
         int face_gps;//单元一个面上的积分点数（非协调部分）
         // 赋值材料属性
-        virtual void set_matrial(elastic_mat data_mat) {};
+        virtual void set_matrial(elastic_mat data_mat){};
 
         // 建立本构矩阵
-        virtual void build_cons_mat() {};
+        virtual void build_cons_mat(){};
 
         // 建立应变矩阵
-        virtual void build_strain_mat() {};
+        virtual void build_strain_mat(){};
 
         // 建立单元刚度矩阵
-        virtual void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) {};
-    
+        virtual void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix){};
+
+        // 建立切线单元刚度矩阵（几何非线性）
+        virtual void build_ele_nl_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> node_dis,
+                                            Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, Eigen::Ref<Eigen::MatrixXd> inter_force){};
+
         // 建立质量列阵
-        virtual void build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass) {};
+        virtual void build_ele_mass(const vector<int> &node_topos, const vector<vector<double>> &coords, vector<double> &Mass){};
 
         // 计算单元内力
-        virtual void cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d,
-                                  vector<double>& stress, vector<double>& strain, vector<double>& InFroce) {};
-    
+        virtual void cal_in_force(const vector<int> &node_topos, const vector<vector<double>> &real_coords, const vector<double> &disp_d,
+                                  vector<double> &stress, vector<double> &strain, vector<double> &InFroce){};
+
         // 计算单元时间步长
-        virtual void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step) {};
+        virtual void update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double &time_step){};
 
         // 交界面积分点物理空间坐标（非协调）
         virtual void gps_phy_coords( Eigen::Ref<Eigen::MatrixXd> nodes1,
