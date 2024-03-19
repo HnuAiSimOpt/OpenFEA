@@ -20,7 +20,7 @@ Description: XXX
 #include "./data2cae.h"
 #include "./set_bcs.h"
 #include "./assemble.h"
-#include "include/nl_assemble.h"
+#include "./nl_assemble.h"
 #include "./data2vtk.h"
 #include "./explicit_tools.h"
 #include "./linear_solution.h"
@@ -56,5 +56,10 @@ namespace CAE
 
         // 执行结构动态响应分析
         void explicit_analysis(string result_path, string path_abaqus);
+
+
+        // 转存刚度矩阵
+        void Save_stiffness(assamble_stiffness& item_assam);// 线性
+        void Save_stiffness(assamble_nl_stiffness& item_assam);// 非线性
     };
 }

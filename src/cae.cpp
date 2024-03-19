@@ -90,6 +90,7 @@ namespace CAE
             {
                 data_cae_.single_dis_vec_[i] = current_dis_vec[i];
             }
+            Save_stiffness(item_nl_assam);
         }
         else
         {
@@ -110,6 +111,7 @@ namespace CAE
             data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
             string type_solver = "Pardiso_class"; // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
             solution_api(item_assam, data_cae_, type_solver);
+            Save_stiffness(item_assam);
         }
 
         // 输出物理场
@@ -118,14 +120,7 @@ namespace CAE
         double scale_dis = 1.0;
         item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
 
-        // 存储刚度矩阵，用于重分析
-        // TODO:存成文件？pum是否能访问上一次分析的data_managrement?
-        data_cae_.item_assam_implicit.num_row = item_assam.num_row;
-        data_cae_.item_assam_implicit.num_col = item_assam.num_col;
-        data_cae_.item_assam_implicit.num_nz_val = item_assam.num_nz_val;
-        data_cae_.item_assam_implicit.nz_val = std::move(item_assam.nz_val);
-        data_cae_.item_assam_implicit.row_idx = std::move(item_assam.row_idx);
-        data_cae_.item_assam_implicit.col_idx = std::move(item_assam.col_idx);
+
     }
 
     void CAE_process::CA_pre_process(string CA_del_set_keyword, vector<int>& del_topo)
@@ -368,5 +363,27 @@ namespace CAE
         }
         // finish solve
         std::cout << "Explicit finished\n";
+    }
+    void CAE_process::Save_stiffness(assamble_stiffness& item_assam)
+    {
+        // 存储刚度矩阵，用于重分析
+        // TODO:存成文件？pum是否能访问上一次分析的data_managrement?
+        data_cae_.item_assam_implicit.num_row = item_assam.num_row;
+        data_cae_.item_assam_implicit.num_col = item_assam.num_col;
+        data_cae_.item_assam_implicit.num_nz_val = item_assam.num_nz_val;
+        data_cae_.item_assam_implicit.nz_val = std::move(item_assam.nz_val);
+        data_cae_.item_assam_implicit.row_idx = std::move(item_assam.row_idx);
+        data_cae_.item_assam_implicit.col_idx = std::move(item_assam.col_idx);
+    }
+    void CAE_process::Save_stiffness(assamble_nl_stiffness& item_assam)
+    {
+        // 存储刚度矩阵，用于重分析
+        // TODO:存成文件？pum是否能访问上一次分析的data_managrement?
+        data_cae_.item_assam_implicit.num_row = item_assam.num_row;
+        data_cae_.item_assam_implicit.num_col = item_assam.num_col;
+        data_cae_.item_assam_implicit.num_nz_val = item_assam.num_nz_val;
+        data_cae_.item_assam_implicit.nz_val = std::move(item_assam.nz_val);
+        data_cae_.item_assam_implicit.row_idx = std::move(item_assam.row_idx);
+        data_cae_.item_assam_implicit.col_idx = std::move(item_assam.col_idx);
     }
 }
