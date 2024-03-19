@@ -18,7 +18,7 @@ Description: XXX
 
 void main()
 {
-    int case_num = 204;
+    int case_num = 1;
     if (case_num == 1)
     {
         // 材料属性赋值

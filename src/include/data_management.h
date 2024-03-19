@@ -70,7 +70,7 @@ namespace CAE
         double time_step_;                                       // 计算时间步长，为0则采用自动步长
         map<string, int> ELE_TYPES = {{"C3D4", 0}, {"C3D8", 1}}; // 建立单元类型到整型的映射
         PardisoSolution item_pardiso;                            // paidiso求解器对象
-        bool NLFEA = false;                                       // 是否开启非线性计算
+        bool NLFEA = true;                                       // 是否开启非线性计算
         double res_lmit = 1.0e-6;                                // 默认非线性的残差收敛标准
 
         // for CA
