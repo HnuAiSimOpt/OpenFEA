@@ -226,47 +226,57 @@ namespace CAE
         {
             fout << data_cae.single_full_dis_vec_[3 * i + 2] << "\n";
         }
+        // 合位移
+        fout << "\nSCALARS u_magnitude double 1\n"
+             << "LOOKUP_TABLE  table4\n";
+        for (int i = 0; i < num_node; i++)
+        {
+            double u_ = sqrt(data_cae.single_full_dis_vec_[3 * i + 2] * data_cae.single_full_dis_vec_[3 * i + 2] +
+                             data_cae.single_full_dis_vec_[3 * i + 1] * data_cae.single_full_dis_vec_[3 * i + 1] +
+                             data_cae.single_full_dis_vec_[3 * i] * data_cae.single_full_dis_vec_[3 * i]);
+            fout << u_ << "\n";
+        }
         // Abaqus dis
         if (read_flag)
         {
             // X
             fout << "\nSCALARS Abaqus_x double 1\n"
-                 << "LOOKUP_TABLE  table4\n";
+                 << "LOOKUP_TABLE  table5\n";
             for (int i = 0; i < num_node; i++)
             {
                 fout << abaqus_dis[3 * i] << "\n";
             }
             // Y
             fout << "\nSCALARS Abaqus_y double 1\n"
-                 << "LOOKUP_TABLE  table5\n";
+                 << "LOOKUP_TABLE  table6\n";
             for (int i = 0; i < num_node; i++)
             {
                 fout << abaqus_dis[3 * i + 1] << "\n";
             }
             // Z
             fout << "\nSCALARS Abaqus_z double 1\n"
-                 << "LOOKUP_TABLE  table6\n";
+                 << "LOOKUP_TABLE  table7\n";
             for (int i = 0; i < num_node; i++)
             {
                 fout << abaqus_dis[3 * i + 2] << "\n";
             }
             // Error in X
             fout << "\nSCALARS Error_ux double 1\n"
-                 << "LOOKUP_TABLE  table7\n";
+                 << "LOOKUP_TABLE  table8\n";
             for (int i = 0; i < num_node; i++)
             {
                 fout << abs(data_cae.single_full_dis_vec_[3 * i + 0] - abaqus_dis[3 * i + 0]) << "\n";
             }
             // Error in Y
             fout << "\nSCALARS Error_uy double 1\n"
-                 << "LOOKUP_TABLE  table8\n";
+                 << "LOOKUP_TABLE  table9\n";
             for (int i = 0; i < num_node; i++)
             {
                 fout << abs(data_cae.single_full_dis_vec_[3 * i + 1] - abaqus_dis[3 * i + 1]) << "\n";
             }
             // Error in Z
             fout << "\nSCALARS Error_uz double 1\n"
-                 << "LOOKUP_TABLE  table9\n";
+                 << "LOOKUP_TABLE  table10\n";
             for (int i = 0; i < num_node; i++)
             {
                 fout << abs(data_cae.single_full_dis_vec_[3 * i + 2] - abaqus_dis[3 * i + 2]) << "\n";

@@ -53,6 +53,10 @@ namespace CAE
         // 建立单元刚度矩阵 type 1：线弹性；type 2：几何非线性
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
 
+        // 建立切线单元刚度矩阵（几何非线性）
+        void build_ele_nl_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> node_dis,
+                                    Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, Eigen::Ref<Eigen::MatrixXd> inter_force) override;
+
         // 建立单元密度矩阵
         void build_ele_mass(const vector<int> &node_topos, const vector<vector<double>> &coords, vector<double> &Mass) override;
 

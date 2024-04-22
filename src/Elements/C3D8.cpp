@@ -35,10 +35,10 @@ namespace CAE
     }
 
     // 建立应变矩阵(积分点)
-    void hex_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat, vector<double>& gp_points, double* det_jacobi_point)
+    void hex_ele_elastic::build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat, vector<double> &gp_points, double *det_jacobi_point)
     {
         // TODO 后期加入关键词或者参数，控制 积分方式选择
-        (* det_jacobi_point) = build_strain_mat_gauss(node_coords, strain_mat, gp_points);
+        (*det_jacobi_point) = build_strain_mat_gauss(node_coords, strain_mat, gp_points);
     }
 
     // 建立单元刚度矩阵
@@ -47,7 +47,15 @@ namespace CAE
         build_ele_stiff_mat_gauss(node_coords, stiffness_matrix, C_matrix_);
     }
 
-    void hex_ele_elastic::build_ele_mass(const vector<int>& node_topos, const vector<vector<double>>& coords, vector<double>& Mass)
+    // 建立切线单元刚度矩阵（几何非线性）
+    void hex_ele_elastic::build_ele_nl_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> node_dis,
+                                                 Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, Eigen::Ref<Eigen::MatrixXd> inter_force)
+    {
+        build_ele_nl_stiff_mat_gauss(node_coords, node_dis, stiffness_matrix, inter_force, C_matrix_);
+    }
+
+    // 建立质量矩阵
+    void hex_ele_elastic::build_ele_mass(const vector<int> &node_topos, const vector<vector<double>> &coords, vector<double> &Mass)
     {
         Matrix24d24 eM;
         eM.setZero();
@@ -55,7 +63,8 @@ namespace CAE
         shape_fun.resize(3, 24);
         Matrix8d3 node_coords;
         int item_node;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             item_node = node_topos[i] - 1;
             node_coords(i, 0) = coords[item_node][0];
             node_coords(i, 1) = coords[item_node][1];
@@ -75,24 +84,30 @@ namespace CAE
         //
         double weight = 1.; // 两点高斯积分 权重
         double ro = this->matrial_struc_.density;
-        for (int i = 0; i < 8; i++) {
-            vector<double> gp_points = { gps(i, 0), gps(i, 1), gps(i, 2) };
+        for (int i = 0; i < 8; i++)
+        {
+            vector<double> gp_points = {gps(i, 0), gps(i, 1), gps(i, 2)};
             double det_jacobi_point;
             build_shape_fun(node_coords, shape_fun, gp_points, det_jacobi_point);
             eM = eM + shape_fun.transpose() * shape_fun * det_jacobi_point * ro;
         }
-        //组装进整体质量荷载列阵，8个节点
+        // 组装进整体质量荷载列阵，8个节点
         double temp;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             temp = 0;
-            for (int j = 0; j < 3; j++) {
-                for (int k = 0; k < 24; k++) { temp = temp + eM(i * 3 + j, k); }//集中质量列阵
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 24; k++)
+                {
+                    temp = temp + eM(i * 3 + j, k);
+                } // 集中质量列阵
             }
             Mass[(node_topos[i] - 1)] = Mass[(node_topos[i] - 1)] + temp / 3;
         }
     }
 
-    void hex_ele_elastic::build_shape_fun(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::MatrixXd& shape_fun, vector<double>& gp_points, double& det_jacobi_point)
+    void hex_ele_elastic::build_shape_fun(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::MatrixXd &shape_fun, vector<double> &gp_points, double &det_jacobi_point)
     {
         // 初始化
         shape_fun.setZero();
@@ -100,9 +115,10 @@ namespace CAE
         Matrix3d3 jacobi(3, 3);
         double r = gp_points[0], s = gp_points[1], t = gp_points[2];
         // 计算形函数
-        vector<vector<double>> Parentnode{ {-1,1,1,-1,-1,1,1,-1},{-1,-1,1,1,-1,-1,1,1},{-1,-1,-1,-1,1,1,1,1} };
+        vector<vector<double>> Parentnode{{-1, 1, 1, -1, -1, 1, 1, -1}, {-1, -1, 1, 1, -1, -1, 1, 1}, {-1, -1, -1, -1, 1, 1, 1, 1}};
         double temp;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             temp = (1 + Parentnode[0][i] * r) * (1 + Parentnode[1][i] * s) * (1 + Parentnode[2][i] * t) / 8;
             shape_fun(0, 3 * i) = shape_fun(1, 3 * i + 1) = shape_fun(2, 3 * i + 2) = temp;
         }
@@ -139,13 +155,14 @@ namespace CAE
     }
 
     // 计算单元内力
-    void hex_ele_elastic::cal_in_force(const vector<int>& node_topos, const vector<vector<double>>& real_coords, const vector<double>& disp_d, vector<double>& stress, vector<double>& strain, vector<double>& InFroce)
+    void hex_ele_elastic::cal_in_force(const vector<int> &node_topos, const vector<vector<double>> &real_coords, const vector<double> &disp_d, vector<double> &stress, vector<double> &strain, vector<double> &InFroce)
     {
         Matrix8d3 nodes_coor;
         nodes_coor.setZero();
         int item_node;
         // trans nodes coor to a matrix
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             item_node = node_topos[i] - 1;
             nodes_coor(i, 0) = real_coords[item_node][0];
             nodes_coor(i, 1) = real_coords[item_node][1];
@@ -155,15 +172,17 @@ namespace CAE
         stiffness_matrix.resize(24, 24);
         disp.resize(24, 1);
         int idx_temp;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             idx_temp = node_topos[i] - 1;
             disp(3 * i, 0) = disp_d[3 * idx_temp];
             disp(3 * i + 1, 0) = disp_d[3 * idx_temp + 1];
             disp(3 * i + 2, 0) = disp_d[3 * idx_temp + 2];
         }
         build_ele_stiff_mat(nodes_coor, stiffness_matrix);
-        inforce = stiffness_matrix * disp;//24*24 24*1 = 24*1
-        for (int i = 0; i < 8; i++) {
+        inforce = stiffness_matrix * disp; // 24*24 24*1 = 24*1
+        for (int i = 0; i < 8; i++)
+        {
             idx_temp = node_topos[i] - 1;
             // 内力为负，故减去
             InFroce[3 * idx_temp] -= inforce(3 * i, 0);
@@ -173,23 +192,27 @@ namespace CAE
     }
 
     // 计算单元时间步长
-    void hex_ele_elastic::update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double& time_step)
+    void hex_ele_elastic::update_timestep(Eigen::Ref<Eigen::MatrixXd> node_coords, double &time_step)
     {
         Eigen::MatrixXd stiffness_matrix;
         stiffness_matrix.resize(24, 24);
         build_ele_stiff_mat(node_coords, stiffness_matrix);
         double max_v = DBL_MIN;
         double temp;
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0; i < 24; i++)
+        {
             temp = 0;
-            for (int j = 0; j < 24; j++) {
+            for (int j = 0; j < 24; j++)
+            {
                 temp = temp + abs(stiffness_matrix(i, j));
             }
-            if (max_v < temp) {
+            if (max_v < temp)
+            {
                 max_v = temp;
             }
         }
-        if (time_step > 2 / sqrt(max_v)) {
+        if (time_step > 2 / sqrt(max_v))
+        {
             time_step = 2 / sqrt(max_v);
         }
     }
