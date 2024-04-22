@@ -24,7 +24,9 @@ namespace CAE
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 识别单元类型
-            int num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
+            int ele_type = data_cae.ele_list_idx_[id_ele];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            int num_nodes = data_cae.ele_list_[map_idx]->nnode_;
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
             build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
             // 删除负自由度，即被约束自由度
@@ -106,7 +108,9 @@ namespace CAE
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
             // 获取该单元的节点数量
-            int node_num_ele = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->nnode_;
+            int ele_type = data_cae.ele_list_idx_[id_ele];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            int node_num_ele = data_cae.ele_list_[map_idx]->nnode_;
             // 查找节点自由度及坐标
             item_ele_coors.resize(node_num_ele, 3);
             build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, node_num_ele);
@@ -115,15 +119,15 @@ namespace CAE
             item_ele_dis.setZero();
             for (int i = 0; i < node_num_ele; i++)
             {
-                if(item_ele_dofs[3 * i]>=0)
+                if (item_ele_dofs[3 * i] >= 0)
                 {
                     item_ele_dis(0, i) = current_dis_vec[item_ele_dofs[3 * i]];
                 }
-                if(item_ele_dofs[3 * i + 1]>=0)
+                if (item_ele_dofs[3 * i + 1] >= 0)
                 {
                     item_ele_dis(1, i) = current_dis_vec[item_ele_dofs[3 * i + 1]];
                 }
-                if(item_ele_dofs[3 * i + 2]>=0)
+                if (item_ele_dofs[3 * i + 2] >= 0)
                 {
                     item_ele_dis(2, i) = current_dis_vec[item_ele_dofs[3 * i + 2]];
                 }
@@ -131,7 +135,7 @@ namespace CAE
             // 计算单元刚度矩阵和内力
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             inter_force_matrix.resize(3 * node_num_ele, 1);
-            data_cae.ele_list_[data_cae.ele_list_idx_[id_ele]]->build_ele_nl_stiff_mat(item_ele_coors, item_ele_dis, stiffness_matrix, inter_force_matrix);
+            data_cae.ele_list_[map_idx]->build_ele_nl_stiff_mat(item_ele_coors, item_ele_dis, stiffness_matrix, inter_force_matrix);
             // 组装
             int ii_dof, jj_dof, num_edof = item_ele_dofs.size();
             for (int mm = 0; mm < num_edof; mm++)

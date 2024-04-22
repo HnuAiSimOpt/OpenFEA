@@ -106,7 +106,9 @@ namespace CAE
         int num_ele_C3D8R = 0;
         for (int i = 0; i < num_ele; i++)
         {
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
@@ -135,7 +137,9 @@ namespace CAE
         fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
@@ -171,7 +175,9 @@ namespace CAE
         fout << "CELL_TYPES\t\t" << num_ele << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
