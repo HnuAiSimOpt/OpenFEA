@@ -17,8 +17,9 @@ Description: XXX
 #include <set>
 #include <map>
 #include "Eigen/Dense"
-#include "include/data_management.h"
-#include "include/NCF_map.h"
+#include "./data_management.h"
+#include "./NCF_map.h"
+
 
 using std::cout;
 using std::endl;

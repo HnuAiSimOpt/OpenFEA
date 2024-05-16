@@ -1,3 +1,4 @@
+
 /**************************************************************************
 
 Copyright:  WH team
@@ -38,10 +39,12 @@ namespace CAE
         // 构造函数，析构函数
         PardisoSolution(){};
         // 数据预处理
-        bool pardiso_init(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, vector<double> &b, vector<double> &x);
+        bool pardiso_init(vector<double> &nz_val, vector<int> &row_idx, vector<int> &col_idx, int n);
+        bool pardiso_init(vector<double>& nz_val, vector<int>& row_idx, vector<int>& col_idx, vector<double>& b, vector<double>& x);
         // 分解矩阵
         bool pardiso_decomposition();
         // 求解
+        bool pardiso_solution(vector<double> &b, vector<double> &x);
         bool pardiso_solution();
 
     private:

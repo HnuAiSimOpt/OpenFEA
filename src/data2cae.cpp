@@ -231,70 +231,78 @@ namespace CAE
                     }
                 }
             }
-            // 读取细网格 交界面4节点信息
+
+            // 读取细网格 交界面（四边形、三角形）节点信息
+            std::vector<string> facenode_temp;
             if (line.find("*BndFace_finemesh") != string::npos)
             {
-                int i;
-                i = data_cae.BndMesh_F.size();
-                data_cae.bndFace_finemesh.resize(i, vector<int>(4));
+                facenode_temp = split_str(line, "=");
+                int face_nnode;
+                del_blank(facenode_temp[1]);
+                face_nnode = std::stoi(facenode_temp[1]);
+
+                int r = data_cae.BndMesh_F.size();
+                data_cae.bndFace_finemesh.resize(r, vector<int>(face_nnode));
+
                 int id_node = 0;
                 while (getline(infile, line))
                 {
                     if (line.find("*") != string::npos)
-                        break;
-                    else
                     {
-                        string x1, x2, x3, x4;
-                        double x1_, x2_, x3_, x4_;
-                        std::istringstream iss(line);
-                        iss >> x1 >> x2 >> x3 >> x4;
-                        x1.erase(x1.end() - 1);
-                        x1_ = stod(x1);
-                        x2.erase(x2.end() - 1);
-                        x2_ = stod(x2);
-                        x3.erase(x3.end() - 1);
-                        x3_ = stod(x3);
-                        x4_ = stod(x4);
-                        data_cae.bndFace_finemesh[id_node][0] = x1_;
-                        data_cae.bndFace_finemesh[id_node][1] = x2_;
-                        data_cae.bndFace_finemesh[id_node][2] = x3_;
-                        data_cae.bndFace_finemesh[id_node][3] = x4_;
-                        id_node = id_node + 1;
+                        break;
                     }
+
+                    std::istringstream iss(line);
+                    vector<string> tempN_a;
+                    string tempN;
+                    while (getline(iss, tempN, ','))
+                    {
+                        del_blank(tempN);
+                        tempN_a.push_back(tempN);
+                    }
+
+                    for (int i = 0; i < face_nnode; i++)
+                    {
+                        data_cae.bndFace_finemesh[id_node][i] = atoi(tempN_a[i].c_str());
+                    }
+                    id_node++;
                 }
             }
-            // 读取粗网格 交界面4节点信息
             if (line.find("*BndFace_coarsemesh") != string::npos)
             {
-                int j;
-                j = data_cae.BndMesh_C.size();
-                data_cae.bndFace_coarsemesh.resize(j, vector<int>(4));
+                facenode_temp = split_str(line, "=");
+                int face_nnode;
+                del_blank(facenode_temp[1]);
+                face_nnode = std::stoi(facenode_temp[1]);
+
+                int r = data_cae.BndMesh_C.size();
+                data_cae.bndFace_coarsemesh.resize(r, vector<int>(face_nnode));
+
                 int id_node = 0;
                 while (getline(infile, line))
                 {
                     if (line.find("*") != string::npos)
-                        break;
-                    else
                     {
-                        string x1, x2, x3, x4;
-                        double x1_, x2_, x3_, x4_;
-                        std::istringstream iss(line);
-                        iss >> x1 >> x2 >> x3 >> x4;
-                        x1.erase(x1.end() - 1);
-                        x1_ = stod(x1);
-                        x2.erase(x2.end() - 1);
-                        x2_ = stod(x2);
-                        x3.erase(x3.end() - 1);
-                        x3_ = stod(x3);
-                        x4_ = stod(x4);
-                        data_cae.bndFace_coarsemesh[id_node][0] = x1_;
-                        data_cae.bndFace_coarsemesh[id_node][1] = x2_;
-                        data_cae.bndFace_coarsemesh[id_node][2] = x3_;
-                        data_cae.bndFace_coarsemesh[id_node][3] = x4_;
-                        id_node = id_node + 1;
+                        break;
                     }
+
+                    std::istringstream iss(line);
+                    vector<string> tempN_a;
+                    string tempN;
+                    while (getline(iss, tempN, ','))
+                    {
+                        del_blank(tempN);
+                        tempN_a.push_back(tempN);
+                    }
+
+                    for (int i = 0; i < face_nnode; i++)
+                    {
+                        data_cae.bndFace_coarsemesh[id_node][i] = atoi(tempN_a[i].c_str());
+                    }
+                    id_node++;
                 }
             }
+
             if (line.find("*End Nconforming") != string::npos)
             {
                 break;
@@ -361,7 +369,7 @@ namespace CAE
         }
         infile.close();
         cout << "the information of load boundary (" << data_cae.load_set_.size() << ") have been readed." << endl;
-        cout << "the fixed DOF is " << data_cae.load_dof_ << ", and the value is " << data_cae.load_value_ << endl;
+        cout << "the loaded DOF is " << data_cae.load_dof_ << ", and the value is " << data_cae.load_value_ << endl;
     }
 
     // 读取约束信息
@@ -430,4 +438,91 @@ namespace CAE
         int I_ele_type = ele_map[str];
         return I_ele_type;
     }
-}
+
+    void ReadInfo::CA_read_del(string CA_del_set_keyword, vector<int> &del_topo)
+    {
+        std::ifstream infile(path_.c_str(), std::ios::in);
+        if (!infile)
+        {
+            std::cerr << "Error: Cannot open " << path_ << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        string line;
+        // 读取删除单元集合
+        string ele_id;
+        int ele_id_;
+        while (getline(infile, line))
+        {
+            if (line.find(CA_del_set_keyword) != string::npos)
+            {
+                if (line.find("generate") != string::npos)
+                {
+                    getline(infile, line);
+                    std::istringstream iss(line);
+                    string start, end, step;
+                    int start_, end_, step_;
+                    iss >> start >> end >> step;
+                    start_ = atoi(start.c_str()) - 1;
+                    end_ = atoi(end.c_str()) - 1;
+                    step_ = atoi(step.c_str());
+                    // 
+                    del_topo.resize((int)((end_ - start_) / step_) + 1);
+                    for (int idx = 0; idx < del_topo.size(); idx++)
+                    {
+                        del_topo[idx] = start_ + idx * step_;
+                    }
+                }
+                else
+                {
+                    while (getline(infile, line))
+                    {
+                        if (line.find("*") != string::npos)
+                            break;
+                        else
+                        {
+                            std::istringstream iss(line);
+                            while (iss >> ele_id)
+                            {
+                                if (ele_id.find(",") != string::npos)
+                                {
+                                    ele_id.erase(ele_id.end() - 1); // 删除字符串最后的符号
+                                }
+                                ele_id_ = atoi(ele_id.c_str()) - 1; // 转换字符串为int,单元索引-1
+                                del_topo.push_back(ele_id_);
+                            }
+                        }
+                    }
+                }
+            }
+            if (line.find("*End Assembly") != string::npos)
+            {
+                break;
+            }
+        }
+    }
+
+    void CAE::ReadInfo::CA_data_convert(data_management &data_cae, vector<int> &del_topo, bool *node_del_idx, bool *topo_del_idx)
+    {
+        for (int i = 0; i < data_cae.node_topos_.size(); i++)
+        {
+            topo_del_idx[i] = 1;
+        }
+        for (int i = 0; i < del_topo.size(); i++)
+        {
+            topo_del_idx[i] = 0;
+        }
+        int num_nodes;
+        for (int i = 0; i < data_cae.node_topos_.size(); i++)
+        {
+            if (topo_del_idx[i])
+            {
+                num_nodes = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->nnode_;
+                for (int j = 0; j < num_nodes; j++)
+                {
+                    node_del_idx[data_cae.node_topos_[i][j] - 1] = 1;
+                }
+            }
+        }
+    }
+
+} // namespace
