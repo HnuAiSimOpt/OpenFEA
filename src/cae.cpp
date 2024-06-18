@@ -69,7 +69,7 @@ namespace CAE
                 // 求解
                 vector<double> incre_dis_vec;
                 incre_dis_vec.resize(3 * num_free_nodes);
-                string type_solver = "Pardiso_class"; // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
+                string type_solver = "SuperLU_class"; // "SuperLU_func"; "SuperLU_class"; "Pardiso_func"; "Pardiso_class"; "CA"
                 solution_nl_api(item_nl_assam, data_cae_, res_vec, incre_dis_vec, type_solver);
 
                 // 位移修正
@@ -109,7 +109,7 @@ namespace CAE
             // 求解
             int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
             data_cae_.single_dis_vec_.resize(3 * num_free_nodes);
-            string type_solver = "Pardiso_class"; // "SuperLU"; "Pardiso_func"; "Pardiso_class"; "CA"
+            string type_solver = "SuperLU_class"; // "SuperLU_class"; "Pardiso_class"; "SuperLU_func"; "Pardiso_func";  "CA"
             solution_api(item_assam, data_cae_, type_solver);
             Save_stiffness(item_assam);
         }

@@ -111,13 +111,17 @@ namespace CAE
         vector<vector<double>> ca_rom(n, vector<double>(row, 0.));
         // 初始化 第一列
         ca_rom[0].assign(data_cae.single_dis_vec_.begin(), data_cae.single_dis_vec_.end());
+        bool flag_clear = false;
         for (int i = 1; i < n; i++)
         {
             //
             vector<double> item_temp(row, 0.);
             Sparese_dot_vector(item_delt_k, ca_rom[i - 1], item_temp);
             //
-            int phase_33 = data_cae.item_pardiso.pardiso_solution(item_temp, ca_rom[i]);
+            // int phase_33 = data_cae.item_pardiso.pardiso_solution(item_temp, ca_rom[i]);
+            if (i == n-1)
+                bool flag_clear = true;
+            bool aaa = data_cae.item_superlu.superlu_solution_next(item_temp, ca_rom[i], flag_clear);
             //
             for (int j = 0; j < row; j++)
             {
@@ -127,7 +131,16 @@ namespace CAE
         // SVD
         vector<vector<double>> ca_rom_SVD;
         ca_SVD(ca_rom, ca_rom_SVD);
-        data_cae.ca_rom_n_ = ca_rom;
+        data_cae.ca_rom_n_ = ca_rom_SVD;
+        // cehck
+        // for(int j=0; j<100; j++)
+        // {
+        //     for(int i=0; i<n; i++)
+        //     {
+        //         cout<<ca_rom_SVD[i][j]<<"    ";
+        //     }
+        //     cout<<endl;
+        // }
         cout << "SVD has been completed !!!\n";
     }
 
@@ -187,7 +200,8 @@ namespace CAE
         }
         // 求解
         vector<double> rx(nn, 0.);
-        superlu_solver(nz_val, row_idx, col_idx, rf, rx);
+        superlu_solver_func(nz_val, row_idx, col_idx, rf, rx);
+        
         //
         int row = int(data_cae.ca_rom_n_[0].size());
         solution.resize(row);
@@ -239,7 +253,9 @@ namespace CAE
             for (int j = 0; j < col; j++)
             {
                 rk[i][j] = ca_vec_dot_vec(ca_rom_svd[i], k_dot_rom[j]);
+                cout << rk[i][j] << "   ";
             }
+            cout << endl;
         }
     }
 
