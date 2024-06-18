@@ -1,6 +1,0 @@
-AutoBuild/*
-build/*
-buildDebug/*
-.vscode/*
-bin/
-externals/mkl/lib/*.lib
