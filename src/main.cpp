@@ -18,7 +18,7 @@ Description: XXX
 
 void main()
 {
-    int case_num = 1;
+    int case_num = 101;
     if (case_num == 1)
     {
         // 材料属性赋值
@@ -84,7 +84,7 @@ void main()
 
         // 开始重分析
         // 修改网格路径(仅包含1个part的网格)
-        string mesh_path = "E:\\WH_CAE\\test_model\\modefy.inp";
+        string mesh_path = "E:\\WH_CAE\\test_model\\original.inp";  // 此处使用original模型，里面包含删除单元
         // 关键字
         string CA_del_set_keyword = "Set-del";
         // 建立重分析CAE分析对象
