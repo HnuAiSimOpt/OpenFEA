@@ -15,7 +15,7 @@ namespace CAE
 {
 
     // 计算delt K
-    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat, vector<int>& del_topo)
+    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat, vector<int> &del_topo)
     {
         // 赋值 模板刚度矩阵的 CSR 索引
         item_delt_k.nz_val.resize(item_k.num_nz_val);
@@ -27,8 +27,9 @@ namespace CAE
         // delt_K = K - K0, 所以取负号
         for (int i = 0; i < item_k.num_nz_val; i++)
         {
-            if (item_delt_k.nz_val[i] != 0) {
-               item_delt_k.nz_val[i] = -1. * item_delt_k.nz_val[i];
+            if (item_delt_k.nz_val[i] != 0)
+            {
+                item_delt_k.nz_val[i] = -1. * item_delt_k.nz_val[i];
             }
         }
     }
@@ -57,7 +58,7 @@ namespace CAE
     }
 
     // 基于CSR索引格式填充稀疏矩阵
-    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k, vector<int>& del_topo)
+    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k, vector<int> &del_topo)
     {
         // 初始化单元
         data_cae.ele_inite(data_mat);
@@ -119,7 +120,7 @@ namespace CAE
             Sparese_dot_vector(item_delt_k, ca_rom[i - 1], item_temp);
             //
             // int phase_33 = data_cae.item_pardiso.pardiso_solution(item_temp, ca_rom[i]);
-            if (i == n-1)
+            if (i == n - 1)
                 bool flag_clear = true;
             bool aaa = data_cae.item_superlu.superlu_solution_next(item_temp, ca_rom[i], flag_clear);
             //
@@ -201,7 +202,7 @@ namespace CAE
         // 求解
         vector<double> rx(nn, 0.);
         superlu_solver_func(nz_val, row_idx, col_idx, rf, rx);
-        
+
         //
         int row = int(data_cae.ca_rom_n_[0].size());
         solution.resize(row);
@@ -253,25 +254,25 @@ namespace CAE
             for (int j = 0; j < col; j++)
             {
                 rk[i][j] = ca_vec_dot_vec(ca_rom_svd[i], k_dot_rom[j]);
-                cout << rk[i][j] << "   ";
+                // for check
+                // cout << rk[i][j] << "   ";
             }
-            cout << endl;
+            // cout << endl;
         }
     }
-
 
     // 提取节点位移
     void get_real_dis(data_management &data_cae, vector<double> &dis, vector<double> &full_dis)
     {
-        full_dis.resize(3*data_cae.nd_);
+        full_dis.resize(3 * data_cae.nd_);
         for (int i = 0; i < data_cae.nd_; i++)
         {
             int resort_node = data_cae.resort_free_nodes_[i];
             if (resort_node >= 0)
             {
-                 full_dis[3 * i] = dis[3 * resort_node];
-                 full_dis[3 * i + 1] = dis[3 * resort_node + 1];
-                 full_dis[3 * i + 2] = dis[3 * resort_node + 2];
+                full_dis[3 * i] = dis[3 * resort_node];
+                full_dis[3 * i + 1] = dis[3 * resort_node + 1];
+                full_dis[3 * i + 2] = dis[3 * resort_node + 2];
             }
             else
             {
@@ -282,7 +283,6 @@ namespace CAE
         }
         cout << "the full displacement has been filled." << endl;
     }
-
 
     // 向量与向量的乘法，返回标量
     double ca_vec_dot_vec(vector<double> &vec_1, vector<double> &vec_2)

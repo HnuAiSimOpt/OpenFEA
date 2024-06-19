@@ -32,11 +32,10 @@ namespace CAE
             bool a1 = item_cae_data.item_superlu.superlu_init(item_ass.nz_val, item_ass.row_idx, item_ass.col_idx);
             // 求解
             vector<double> F_copy(item_cae_data.single_load_vec_.size(), 0.);
-            for(int i=0;i<item_cae_data.single_load_vec_.size();i++)
+            for (int i = 0; i < item_cae_data.single_load_vec_.size(); i++)
                 F_copy[i] = item_cae_data.single_load_vec_[i];
             bool a2 = item_cae_data.item_superlu.superlu_solution_1st(F_copy, item_cae_data.single_dis_vec_, false);
             // bool a3 = item_cae_data.item_superlu.superlu_solution_next(F_copy, item_cae_data.single_dis_vec_, true);
-
         }
         else if (solver_type == "Pardiso_func")
         {
@@ -84,7 +83,6 @@ namespace CAE
         }
         else if (solver_type == "CA")
         {
-            
         }
         else
         {

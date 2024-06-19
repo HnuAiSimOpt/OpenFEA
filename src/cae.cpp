@@ -57,7 +57,7 @@ namespace CAE
             vector<double> inter_force_vec(3 * num_free_nodes, 0.);
             vector<double> res_vec(3 * num_free_nodes, 0.);
             int loop = 0;
-            while (res_norm > data_cae_.res_lmit && loop <100)
+            while (res_norm > data_cae_.res_lmit && loop < 100)
             {
                 std::fill(inter_force_vec.begin(), inter_force_vec.end(), 0.);
                 item_nl_assam.fill_CSR_sparse_mat(data_cae_, mat_, current_dis_vec, inter_force_vec);
@@ -81,7 +81,7 @@ namespace CAE
                 }
                 res_norm = sqrt(res_norm) / (3 * num_free_nodes);
                 loop++;
-                cout << "this is loop " << loop << ", and res is "<< res_norm <<endl;
+                cout << "this is loop " << loop << ", and res is " << res_norm << endl;
             }
             // 将当前位移赋到data_cae_成员变量中
             cout << "the loop is over " << endl;
@@ -119,11 +119,9 @@ namespace CAE
         item_output.fill_full_dis(data_cae_);
         double scale_dis = 1.0;
         item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis, path_abaqus, false);
-
-
     }
 
-    void CAE_process::CA_pre_process(string CA_del_set_keyword, vector<int>& del_topo)
+    void CAE_process::CA_pre_process(string CA_del_set_keyword, vector<int> &del_topo)
     {
         // 读取网格信息
         ReadInfo item_info(path_);
@@ -138,10 +136,10 @@ namespace CAE
         // item_info.CA_data_convert(data_cae_, del_topo, node_del_idx, topo_del_idx);
     }
 
-    void CAE_process::CA_ReAnalysis(string result_path, string path_abaqus, vector<int>& del_topo, bool Is_Update)
+    void CAE_process::CA_ReAnalysis(string result_path, string path_abaqus, vector<int> &del_topo, bool Is_Update)
     {
         // 重分析
-        clock_t start, end;     //定义clock_t变量
+        clock_t start, end; // 定义clock_t变量
         int n_basis = 4;
         vector<double> ca_solution;
         assamble_stiffness delt_K;
@@ -166,24 +164,24 @@ namespace CAE
         start = clock();
         ca_get_delt_stiffness(data_cae_, ref_K, delt_K, mat_, del_topo); // 计算delt_K
         // 填充当前刚度矩阵的值
-        for(int i = 0; i < current_K.num_nz_val; i++)
+        for (int i = 0; i < current_K.num_nz_val; i++)
         {
             current_K.nz_val[i] = ref_K.nz_val[i] + delt_K.nz_val[i];
         }
         end = clock();
-        cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the amount of change in the stiffness matrix"<<endl; 
+        cout << "It took " << double(end - start) / CLOCKS_PER_SEC << " s to compute the amount of change in the stiffness matrix" << endl;
         // 构造组合近似降阶模型计时
         start = clock();
-        ca_build_rom(data_cae_, delt_K, n_basis);  // 计算组合近似降阶模型
+        ca_build_rom(data_cae_, delt_K, n_basis); // 计算组合近似降阶模型
         end = clock();
-        cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to compute the CA model"<<endl; 
+        cout << "It took " << double(end - start) / CLOCKS_PER_SEC << " s to compute the CA model" << endl;
         data_cae_.single_dis_vec_.clear();
         data_cae_.single_full_dis_vec_.clear();
         // 求解计时
         start = clock();
-        ca_solve(data_cae_, current_K, ca_solution);   // 求解降阶后的模型
+        ca_solve(data_cae_, current_K, ca_solution); // 求解降阶后的模型
         end = clock();
-        cout<<"It took "<<double(end-start)/CLOCKS_PER_SEC<<" s to solve the reduced model"<<endl; 
+        cout << "It took " << double(end - start) / CLOCKS_PER_SEC << " s to solve the reduced model" << endl;
         // 提取节点位移
         vector<double> full_dis;
         get_real_dis(data_cae_, ca_solution, full_dis);
@@ -194,7 +192,8 @@ namespace CAE
         double scale_dis = 1.0;
         item_output.CA_export_dis_2_vtk(data_cae_, del_topo, result_path, scale_dis, full_dis);
 
-        if (Is_Update) {
+        if (Is_Update)
+        {
             // TODO:留个接口，将原模型更新为修改后的模型（节点、拓扑、刚度、位移等）
             // 可能以后CAD/CAE会用到
         }
@@ -354,7 +353,7 @@ namespace CAE
         // finish solve
         std::cout << "Explicit finished\n";
     }
-    void CAE_process::Save_stiffness(assamble_stiffness& item_assam)
+    void CAE_process::Save_stiffness(assamble_stiffness &item_assam)
     {
         // 存储刚度矩阵，用于重分析
         // TODO:存成文件？pum是否能访问上一次分析的data_managrement?
@@ -365,7 +364,7 @@ namespace CAE
         data_cae_.item_assam_implicit.row_idx = std::move(item_assam.row_idx);
         data_cae_.item_assam_implicit.col_idx = std::move(item_assam.col_idx);
     }
-    void CAE_process::Save_stiffness(assamble_nl_stiffness& item_assam)
+    void CAE_process::Save_stiffness(assamble_nl_stiffness &item_assam)
     {
         // 存储刚度矩阵，用于重分析
         // TODO:存成文件？pum是否能访问上一次分析的data_managrement?
