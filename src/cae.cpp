@@ -69,7 +69,7 @@ namespace CAE
                 // 求解
                 vector<double> incre_dis_vec;
                 incre_dis_vec.resize(3 * num_free_nodes);
-                string type_solver = "SuperLU_class"; // "SuperLU_func"; "SuperLU_class"; "Pardiso_func"; "Pardiso_class"; "CA"
+                string type_solver = "SuperLU_func"; // "SuperLU_func"; "SuperLU_class"; "Pardiso_func"; "Pardiso_class"; "CA"
                 solution_nl_api(item_nl_assam, data_cae_, res_vec, incre_dis_vec, type_solver);
 
                 // 位移修正
