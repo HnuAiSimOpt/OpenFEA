@@ -67,7 +67,6 @@ namespace CAE
     {
         if (solver_type == "SuperLU_func")
         {
-            // superlu_solver_func(item_ass.nz_val, item_ass.row_idx, item_ass.col_idx, item_cae_data.single_load_vec_, item_cae_data.single_dis_vec_);
             vector<double> F_copy(b.size(), 0.);
             for (int i = 0; i < b.size(); i++)
                 F_copy[i] = b[i];
@@ -76,11 +75,6 @@ namespace CAE
         else if (solver_type == "SuperLU_class")
         {
             item_cae_data.item_superlu = SuperLUSolution();
-            // ----------------------------------------------------------------------------------------
-            // vector<double> F_copy(item_cae_data.single_load_vec_.size(), 0.);
-            // for(int i=0;i<item_cae_data.single_load_vec_.size();i++)
-            //     F_copy[i] = 10. * item_cae_data.single_load_vec_[i];
-            // ----------------------------------------------------------------------------------------
             // 初次求解
             bool a1 = item_cae_data.item_superlu.superlu_init(item_ass.nz_val, item_ass.row_idx, item_ass.col_idx);
             // 求解
