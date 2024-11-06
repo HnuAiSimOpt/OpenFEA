@@ -472,12 +472,12 @@ namespace CAE
                             iss.clear(); // 清除错误标志
                             iss.seekg(0); // 回到流的开始位置
                         }
-                        else {
-                            // 成功读取time_step_后，尝试读取逗号
-                            if (!(iss >> comma) || comma != ',') {
-                                std::cout << "Input formatting error, missing comma(reading step time)" << std::endl;
-                            }
+                        
+                        // 成功读取time_step_后，尝试读取逗号
+                        if (!(iss >> comma) || comma != ',') {
+                            std::cout << "Input formatting error, missing comma(reading step time)" << std::endl;
                         }
+                        
                         // 读取time_total_
                         if (!(iss >> data_cae_.time_total_)) {
                             std::cout << "Input formatting error, missing total time(reading step time)" << std::endl;
