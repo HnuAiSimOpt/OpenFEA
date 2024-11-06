@@ -69,7 +69,7 @@ cmake编译成功无错后，可在 **{Project}/bin/** 目录下看到编译成�
 **InpFilePath**：求解文件路径（eg: ./input.inp）  
 **OutputFilePath**：输出结果文件路径（eg：./result.vtk）  
 *可选命令*  
--imp：隐式求解（可不加，默认为隐式计算） 
+-imp：隐式求解（可不加，默认为隐式计算）  
 -exp：显式求解  
 -sfem：光滑有限元  
 -nl：开启几何非线性计算（默认关闭）  
