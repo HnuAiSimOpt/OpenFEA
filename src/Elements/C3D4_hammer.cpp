@@ -47,15 +47,18 @@ namespace CAE
 
             strain_mat(4, id_2) = dN_dxyz(2, i);
             strain_mat(4, id_3) = dN_dxyz(1, i);
-            
+
             strain_mat(5, id_1) = dN_dxyz(2, i);
             strain_mat(5, id_3) = dN_dxyz(0, i);
         };
+        //if (det_jacobi < 0) {
+        //    std::cout << "det_jacobi<0" << std::endl;
+        //}
         return det_jacobi;
     }
 
     // 建立单元刚度矩阵
-    void build_ele_stiff_mat_hammer(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, const Matrix6d6 &C_matrix)
+    double  build_ele_stiff_mat_hammer(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, const Matrix6d6 &C_matrix)
     {
         // 基于 单点Hammer积分 计算四面体单元
         stiffness_matrix.setZero();
@@ -65,6 +68,7 @@ namespace CAE
         Matrix12d6 item_temp = strain_mat.transpose() * C_matrix; // 12 x 6
         stiffness_matrix = item_temp * strain_mat;                // 12 x 12
         stiffness_matrix = weight * det_jacobi * stiffness_matrix;
+        return det_jacobi;
     }
 
     // 考虑几何非线性建立应变矩阵 Green-Lagrangian应变张量
@@ -175,5 +179,49 @@ namespace CAE
         Matrix12d9 item_KN_mat_temp = strain_NL.transpose() * SIG; // 12 x 9
         Matrix12d12 KN = item_KN_mat_temp * strain_NL;             // 12 x 12
         stiffness_matrix = weight * det_jacobi * (KL + KN);
+    }
+
+    // 计算节点处位移应变转换矩阵
+    void build_strain_node_mat_hammer(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat)
+    {
+        strain_mat.setZero();
+        Matrix3d4 dN_drst(3, 4), dN_dxyz(3, 4);
+        Matrix3d3 jacobi(3, 3), inv_jacobi(3, 3);
+        // 计算形函数对等参坐标系的偏导
+        dN_drst << -1., 1., 0., 0.,
+            -1., 0., 1., 0.,
+            -1., 0., 0., 1.;
+        jacobi = dN_drst * node_coords; // 3x3 ：3x4 by 4x3
+        inv_jacobi = jacobi.inverse();  // 3x3
+        // 计算形函数对自然坐标系得偏导
+        dN_dxyz = inv_jacobi * dN_drst; // 3x4
+        for (int i = 0; i < 4; i++)
+        {
+            int id_1 = 3 * i;
+            int id_2 = 3 * i + 1;
+            int id_3 = 3 * i + 2;
+            strain_mat(0, id_1) = dN_dxyz(0, i);
+            strain_mat(1, id_2) = dN_dxyz(1, i);
+            strain_mat(2, id_3) = dN_dxyz(2, i);
+
+            strain_mat(3, id_1) = dN_dxyz(1, i);
+            strain_mat(3, id_2) = dN_dxyz(0, i);
+
+            strain_mat(4, id_2) = dN_dxyz(2, i);
+            strain_mat(4, id_3) = dN_dxyz(1, i);
+
+            strain_mat(5, id_1) = dN_dxyz(2, i);
+            strain_mat(5, id_3) = dN_dxyz(0, i);
+        };
+    }
+
+    // 计算节点处应力
+    void get_stress_node_hammer(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stress_mat, const Matrix6d6 &C_matrix, Eigen::Ref<Eigen::MatrixXd> dis_vec)
+    {
+        Matrix6d12 strain_mat;  
+        build_strain_node_mat_hammer(node_coords, strain_mat);
+        Matrix6d1 B_by_U = strain_mat * dis_vec; // 6 x 1
+        stress_mat = B_by_U;          // 6 x 1
+        //stress_mat = C_matrix * B_by_U;          // 6 x 1
     }
 }

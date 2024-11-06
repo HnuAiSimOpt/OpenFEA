@@ -82962,7 +82962,7 @@
 ** 
 *Material, name=Material-1
 *Elastic
-210000., 0.3
+2100000000., 0.3
 ** ----------------------------------------------------------------
 ** 
 ** STEP: Step-1
@@ -82981,7 +82981,7 @@ Part-1-1.Set-fix, ENCASTRE
 ** 
 ** Name: Load-1   Type: Concentrated force
 *Cload
-Part-1-1.Set-load, 2, -5000.
+Part-1-1.Set-load, 2, -1000000.
 ** 
 ** OUTPUT REQUESTS
 ** 

@@ -25,7 +25,7 @@ namespace CAE {
 
 	// 更新自动时间步长
 	void UpdateTimeStep(const vector<vector<int>>& node_topos, const vector<vector<double>>& coords, const vector<ele_base*>& ele_list,
-						const vector<int>& ele_list_idx, double& time_step);
+						const vector<int>& ele_list_idx, map<int, int>& ele_map_list, double& time_step);
 
 	// 为下一迭代步更新相关变量
 	void SwapData(vector<double>& disp_tp1, vector<double>& disp_t0, vector<double>& vel_tphalf, vector<double>& vel_thalf,

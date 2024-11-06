@@ -31,13 +31,13 @@ namespace CAE
 		{   
 			int id_ele_F = data_cae.BndMesh_F[e] - 1;
 			//int id_ele_C = data_cae.BndMesh_C[e] - 1;
-			int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
+			int face_nodes_ = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->face_node;
 			GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
 			 // 计算交界面积分点物理空间坐标
-			data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->text_gps_phy_coords(nodes1, text_gps,text_W_1,text_Normal);
+			data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->text_gps_phy_coords(nodes1, text_gps,text_W_1,text_Normal);
 
 			//重排细网格
-			int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
+			int face_gps_ = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->face_gps;
 			for (int p = 0; p < face_gps_; p++)
 			{
 				data_cae.F_mesh.push_back(id_ele_F+1);
@@ -65,7 +65,7 @@ namespace CAE
 			for (int n = 0; n < nC_bmesh; n++)
 			{
 				int id_ele_C = data_cae.BndMesh_C[n] - 1;//索引-1
-				int C_face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->face_node;
+				int C_face_nodes_ = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_C]]]->face_node;
 				//GetInt_Cface_Inform(data_cae, nodesC, C_face_nodes_);
 				nodesC.resize(C_face_nodes_, 3);
 				for (int k = 0; k < C_face_nodes_; ++k)
@@ -262,14 +262,14 @@ namespace CAE
 		{  
 			 //int id_ele_F = data_cae.BndMesh_F[e] - 1;//索引-1
 			 int id_ele_F = data_cae.F_mesh[e] - 1;//索引-1
-			 int face_nodes_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_node;
+			 int face_nodes_ = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->face_node;
 			 GetIntF_face_Inform(data_cae, nodes1, face_nodes_, e);
 
 			 //交界处粗、细单元节点个数
-			 int n_node_F = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->nnode_;
+			 int n_node_F = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->nnode_;
 			 //int id_ele_C = data_cae.BndMesh_C[e] - 1;
 			 int id_ele_C = data_cae.C_mesh[e] - 1;// 重排后的粗网格单元索引****
-			 int n_node_C = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_C]]->nnode_;
+			 int n_node_C = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_C]]]->nnode_;
 			 pts1.resize(n_node_F, 3);
 			 pts2.resize(n_node_C, 3);
 			 //获取"粗细单元"节点信息
@@ -286,12 +286,12 @@ namespace CAE
 			 Kd11.setZero(); Kd12.setZero(); Kd21.setZero(); Kd22.setZero();
 			 
 			 //一个面上的高斯积分点个数
-			 int face_gps_ = data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->face_gps;
+			 int face_gps_ = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->face_gps;
 			 phy_gps.resize(face_gps_, 3);
 			 W_1.resize(face_gps_);//权重
 			 Normal.resize(face_gps_);//法向量
 			 // 计算交界面积分点物理空间坐标、权重、法向量
-			 data_cae.ele_list_[data_cae.ele_list_idx_[id_ele_F]]->gps_phy_coords(nodes1, phy_gps, W_1, Normal);
+			 data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[id_ele_F]]]->gps_phy_coords(nodes1, phy_gps, W_1, Normal);
 			 
 			 //text****************
 			/* vector<double> p(3);

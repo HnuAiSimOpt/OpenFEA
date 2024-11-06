@@ -25,11 +25,11 @@ namespace CAE
             exit(EXIT_FAILURE);
         }
         string line;
-        while (getline(infile, line))
+        while (!safeGetline(infile, line).eof())
         {
             if (line.find("*Nset") != string::npos)
             {
-                getline(infile, line);
+                safeGetline(infile, line);
                 std::istringstream iss(line);
                 string t1, nd_temp, t2;
                 iss >> t1 >> nd_temp >> t2;
@@ -37,7 +37,7 @@ namespace CAE
             }
             if (line.find("*Elset") != string::npos)
             {
-                getline(infile, line);
+                safeGetline(infile, line);
                 std::istringstream iss(line);
                 string t1, ne_temp, t2;
                 iss >> t1 >> ne_temp >> t2;
@@ -86,13 +86,13 @@ namespace CAE
         std::vector<string> type_temp;
         int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
         bool node_record = false, node_topo_record = false;
-        while (getline(infile, line))
+        while (!safeGetline(infile, line).eof())
         {
             /* --------------------- 读取节点坐标 --------------------- */
             if (line.find("*Node") != string::npos)
             {
                 node_record = true;
-                getline(infile, line);
+                safeGetline(infile, line);
             }
             if (node_record & line.find("*") != string::npos)
             {
@@ -135,7 +135,7 @@ namespace CAE
                     break;
                 }
                 node_topo_record = true;
-                getline(infile, line);
+                safeGetline(infile, line);
             }
             if (node_topo_record & line.find("*") != string::npos)
             {
@@ -183,14 +183,14 @@ namespace CAE
     {
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
-        while (getline(infile, line))
+        while (!safeGetline(infile, line).eof())
         {
             string node_id;
             int node_id_;
             // 读取细网格单元8节点信息
             if (line.find("*BndMesh_F") != string::npos)
             {
-                while (getline(infile, line))
+                while (!safeGetline(infile, line).eof())
                 {
                     if (line.find("*") != string::npos)
                         break;
@@ -212,7 +212,7 @@ namespace CAE
             // 读取粗网格单元8节点信息
             if (line.find("*BndMesh_C") != string::npos)
             {
-                while (getline(infile, line))
+                while (!safeGetline(infile, line).eof())
                 {
                     if (line.find("*") != string::npos)
                         break;
@@ -245,7 +245,7 @@ namespace CAE
                 data_cae.bndFace_finemesh.resize(r, vector<int>(face_nnode));
 
                 int id_node = 0;
-                while (getline(infile, line))
+                while (!safeGetline(infile, line).eof())
                 {
                     if (line.find("*") != string::npos)
                     {
@@ -279,7 +279,7 @@ namespace CAE
                 data_cae.bndFace_coarsemesh.resize(r, vector<int>(face_nnode));
 
                 int id_node = 0;
-                while (getline(infile, line))
+                while (!safeGetline(infile, line).eof())
                 {
                     if (line.find("*") != string::npos)
                     {
@@ -318,13 +318,13 @@ namespace CAE
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
         // 读取载荷节点集合
-        while (getline(infile, line))
+        while (!safeGetline(infile, line).eof())
         {
             string node_id;
             int node_id_;
             if (line.find(load_set_keyword) != string::npos)
             {
-                while (getline(infile, line))
+                while (!safeGetline(infile, line).eof())
                 {
                     if (line.find("*") != string::npos)
                         break;
@@ -349,14 +349,14 @@ namespace CAE
             }
         }
         // 读取载荷自由度和幅值
-        while (getline(infile, line))
+        while (!safeGetline(infile, line).eof())
         {
             string load_name, dof_id, value_str;
             int dof_id_;
             double value_;
             if (line.find(load_value_keyword) != string::npos)
             {
-                getline(infile, line);
+                safeGetline(infile, line);
                 std::istringstream iss(line);
                 iss >> load_name >> dof_id >> value_str;
                 dof_id.erase(dof_id.end() - 1); // 删除字符串最后的符号
@@ -379,13 +379,13 @@ namespace CAE
         std::ifstream infile(path_.c_str(), std::ios::in);
         string line;
         // 读取载荷节点集合
-        while (getline(infile, line))
+        while (!safeGetline(infile, line).eof())
         {
             string node_id;
             int node_id_;
             if (line.find(dis_set_keyword) != string::npos)
             {
-                while (getline(infile, line))
+                while (!safeGetline(infile, line).eof())
                 {
                     if (line.find("*") != string::npos)
                         break;
@@ -411,6 +411,84 @@ namespace CAE
         }
         infile.close();
         cout << "the information of displacement boundary (" << data_cae.dis_bc_set_.size() << ")  have been readed." << endl;
+    }
+
+    void ReadInfo::read_mat(elastic_mat& mat_)
+    {
+        // 读取计算文件
+        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::string line;
+        // 读取载荷节点集合
+        while (!safeGetline(infile, line).eof())
+        {
+            if (line.find("*Density") != std::string::npos)
+            {
+                safeGetline(infile, line);
+                std::string density_s;
+                std::istringstream iss(line);
+                iss >> density_s;
+                mat_.density = stod(density_s);
+            }
+            if (line.find("*Elastic") != std::string::npos)
+            {
+                safeGetline(infile, line);
+                std::string young_modulus_s, poisson_ratio_s;
+                std::istringstream iss(line);
+                iss >> young_modulus_s >> poisson_ratio_s;
+                young_modulus_s.erase(young_modulus_s.end() - 1); // 删除字符串最后的符号
+                mat_.young_modulus = stod(young_modulus_s); // 转换字符串为double
+                mat_.poisson_ratio = stod(poisson_ratio_s); // 转换字符串为double
+            }
+        }
+        infile.close();
+        cout << "the young_modulus of mat is :" << mat_.young_modulus << "\nthe poisson_ratio of mat is :"
+            << mat_.poisson_ratio << "\nthe density of mat is :" << mat_.density << endl;
+    }
+
+    void ReadInfo::read_time(data_management& data_cae_)
+    {
+        // 读取计算文件
+        std::ifstream infile(path_.c_str(), std::ios::in);
+        string line;
+        // 读取时间步长设置
+        while (!safeGetline(infile, line).eof())
+        {
+            char comma;
+            if (line.find("Explicit") != string::npos)
+            {
+                while(!safeGetline(infile, line).eof())
+                {
+                    if (line[0] == '*' && line[1] == '*') {
+                        continue;
+                    }
+                    if (line[0] == '*')
+                        break;
+                    else
+                    {
+                        std::istringstream iss(line);
+                        // 尝试读取时间步长
+                        if (!(iss >> data_cae_.time_step_)) {
+                            // 如果读取time_step_失败，说明time_step_被省略了，保持默认值0.0
+                            iss.clear(); // 清除错误标志
+                            iss.seekg(0); // 回到流的开始位置
+                        }
+                        else {
+                            // 成功读取time_step_后，尝试读取逗号
+                            if (!(iss >> comma) || comma != ',') {
+                                std::cout << "Input formatting error, missing comma(reading step time)" << std::endl;
+                            }
+                        }
+                        // 读取time_total_
+                        if (!(iss >> data_cae_.time_total_)) {
+                            std::cout << "Input formatting error, missing total time(reading step time)" << std::endl;
+                        }
+                    }
+                }
+            }
+        }
+        infile.close();
+        cout << "the step time have been readed." << endl;
+
     }
 
     void ReadInfo::del_blank(string &str)
@@ -439,7 +517,7 @@ namespace CAE
         return I_ele_type;
     }
 
-    void ReadInfo::CA_read_del(string CA_del_set_keyword, vector<int> &del_topo)
+    void ReadInfo::CA_read_change(data_management &data_cae)
     {
         std::ifstream infile(path_.c_str(), std::ios::in);
         if (!infile)
@@ -447,58 +525,273 @@ namespace CAE
             std::cerr << "Error: Cannot open " << path_ << std::endl;
             exit(EXIT_FAILURE);
         }
+        // 读取变化前后节点合集总数，变化单元数
         string line;
-        // 读取删除单元集合
-        string ele_id;
-        int ele_id_;
-        while (getline(infile, line))
+        int nd, ne;
+        while (!safeGetline(infile, line).eof())
         {
-            if (line.find(CA_del_set_keyword) != string::npos)
+            if (line.find("*nodes_all") != string::npos)
             {
-                if (line.find("generate") != string::npos)
+                std::istringstream iss(line);
+                string t1, nd_temp;
+                iss >> t1 >> nd_temp;
+                nd = atoi(nd_temp.c_str());
+            }
+            if (line.find("*eles_change") != string::npos)
+            {
+                std::istringstream iss(line);
+                string t1, ne_temp, t2;
+                iss >> t1 >> ne_temp >> t2;
+                ne = atoi(ne_temp.c_str());
+                break;
+            }
+        }
+        data_cae.ne_m_ = ne;
+        data_cae.nd_m_ = nd;
+        cout << "the number node set after modifying is: " << data_cae.nd_m_ << endl;
+        cout << "the number of changed element is: " << data_cae.ne_m_ << endl;
+
+        // 读取节点合集，变化单元合集
+        data_cae.coords_m_.resize(data_cae.nd_m_, vector<double>(3));
+        data_cae.node_topos_m_.resize(data_cae.ne_m_, vector<int>(9));
+        data_cae.ele_list_idx_m_.resize(data_cae.ne_m_);
+        // 读取计算文件
+        string temp_node_topo;
+        std::vector<string> type_temp;
+        int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
+        bool node_record = false, node_topo_record = false;
+        // 将文件指针回到文件的开头
+        infile.seekg(0, std::ios::beg);
+        while (!safeGetline(infile, line).eof())
+        {
+            /* --------------------- 读取节点坐标 --------------------- */
+            if (line.find("*nodes_all") != string::npos)
+            {
+                node_record = true;
+                safeGetline(infile, line);
+            }
+            if (node_record & line.find("*") != string::npos)
+            {
+                node_record = false;
+            }
+            if (node_record)
+            {
+                string x, y, z;
+                double x_, y_, z_;
+                std::istringstream iss(line);
+                iss >> x >> y >> z;
+                x.erase(x.end() - 1); // 删除字符串最后的符号
+                x_ = stod(x);         // 转换字符串为double
+                y.erase(y.end() - 1);
+                y_ = stod(y);
+                z_ = stod(z);
+                data_cae.coords_m_[id_node][0] = x_;
+                data_cae.coords_m_[id_node][1] = y_;
+                data_cae.coords_m_[id_node][2] = z_;
+                id_node = id_node + 1;
+            }
+            /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
+            if (line.find("*eles_change") != string::npos)
+            {
+                // 读取单元类型
+                type_temp = split_str(line, "=");
+                I_ele_type = del_blank(type_temp[1], data_cae.ELE_TYPES);
+                data_cae.ele_class_.insert(I_ele_type);
+                //
+                switch (I_ele_type)
                 {
-                    getline(infile, line);
-                    std::istringstream iss(line);
-                    string start, end, step;
-                    int start_, end_, step_;
-                    iss >> start >> end >> step;
-                    start_ = atoi(start.c_str()) - 1;
-                    end_ = atoi(end.c_str()) - 1;
-                    step_ = atoi(step.c_str());
-                    // 
-                    del_topo.resize((int)((end_ - start_) / step_) + 1);
-                    for (int idx = 0; idx < del_topo.size(); idx++)
-                    {
-                        del_topo[idx] = start_ + idx * step_;
-                    }
+                case 0:
+                    node_per_ele = 4;
+                    break;
+                case 1:
+                    node_per_ele = 8;
+                    break;
+                default:
+                    cout << "Error in element type !!!\n";
+                    break;
                 }
-                else
+                node_topo_record = true;
+                safeGetline(infile, line);
+            }
+            if (node_topo_record & line.find("*") != string::npos)
+            {
+                node_topo_record = false;
+            }
+            if (node_topo_record)
+            {
+                std::istringstream iss(line);
+                // 储存单元类型
+                data_cae.ele_list_idx_m_[id_ele] = I_ele_type;
+                int temp_id = 0;
+                while (getline(iss, temp_node_topo, ','))
                 {
-                    while (getline(infile, line))
-                    {
-                        if (line.find("*") != string::npos)
-                            break;
-                        else
-                        {
-                            std::istringstream iss(line);
-                            while (iss >> ele_id)
-                            {
-                                if (ele_id.find(",") != string::npos)
-                                {
-                                    ele_id.erase(ele_id.end() - 1); // 删除字符串最后的符号
-                                }
-                                ele_id_ = atoi(ele_id.c_str()) - 1; // 转换字符串为int,单元索引-1
-                                del_topo.push_back(ele_id_);
-                            }
-                        }
-                    }
+                    del_blank(temp_node_topo);
+                    data_cae.node_topos_m_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                    temp_id += 1;
                 }
+                id_ele += 1;
             }
             if (line.find("*End Assembly") != string::npos)
             {
                 break;
             }
         }
+
+        // 读取节点映射集合
+        id_node = 0;
+        int node_id_;
+        data_cae.node_idx_m_.resize(data_cae.nd_m_);
+        // 将文件指针回到文件的开头
+        infile.seekg(0, std::ios::beg);
+        while (!safeGetline(infile, line).eof())
+        {
+            if (line.find("*idref2new") != string::npos)
+            {
+                while (!safeGetline(infile, line).eof())
+                {
+                    if (line.find("*End File") != string::npos)
+                    {
+                        infile.close();
+                        break;
+                    }
+                    node_id_ = atoi(line.c_str()); // 转换字符串为int
+                    data_cae.node_idx_m_[id_node] = node_id_;
+                    id_node++;
+                }
+            }
+        }
+        // cout << data_cae.coords_m_[data_cae.nd_m_ - 1][0] << ", "
+        //      << data_cae.coords_m_[data_cae.nd_m_ - 1][1] << ", "
+        //      << data_cae.coords_m_[data_cae.nd_m_ - 1][2] << endl;
+        // cout << data_cae.node_topos_m_[data_cae.ne_m_ - 1][0] << ", "
+        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][1] << ", "
+        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][2] << ", "
+        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][3] << ", "
+        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][4]<< endl;
+        // cout << data_cae.node_idx_m_[data_cae.nd_m_ - 1] << endl;
+    }
+
+
+    void CAE::ReadInfo::CA_read_now_node(data_management &data_cae)
+    {
+        std::ifstream infile(path_now_ndoe_.c_str(), std::ios::in);
+        if (!infile)
+        {
+            std::cerr << "Error: Cannot open " << path_ << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        int nd, ne;
+        string line;
+        while (!safeGetline(infile, line).eof())
+        {
+            if (line.find("*Nset") != string::npos)
+            {
+                safeGetline(infile, line);
+                std::istringstream iss(line);
+                string t1, nd_temp, t2;
+                iss >> t1 >> nd_temp >> t2;
+                nd = atoi(nd_temp.c_str());
+            }
+            if (line.find("*Elset") != string::npos)
+            {
+                safeGetline(infile, line);
+                std::istringstream iss(line);
+                string t1, ne_temp, t2;
+                iss >> t1 >> ne_temp >> t2;
+                ne = atoi(ne_temp.c_str());
+                break;
+            }
+        }
+        
+        cout << "the number of element for modified strcture is: " << data_cae.ne_ << endl
+             << "the number of node for modified strcture is: " << data_cae.nd_ << endl;
+
+        // 读取修改后模型的节点和topo
+        string temp_node_topo;
+        std::vector<string> type_temp;
+        int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
+        bool node_record = false, node_topo_record = false;
+        data_cae.coords_mfull_.resize(nd, vector<double>(3));
+        data_cae.node_topos_mfull_.resize(ne, vector<int>(8));
+        data_cae.ele_list_idx_mfull_.resize(ne);
+        infile.seekg(0, std::ios::beg);
+        while (!safeGetline(infile, line).eof())
+        {
+            /* --------------------- 读取节点坐标 --------------------- */
+            if (line.find("*Node") != string::npos)
+            {
+                node_record = true;
+                safeGetline(infile, line);
+            }
+            if (node_record & line.find("*") != string::npos)
+            {
+                node_record = false;
+            }
+            if (node_record)
+            {
+                string id_temp, x, y, z;
+                double x_, y_, z_;
+                std::istringstream iss(line);
+                iss >> id_temp >> x >> y >> z;
+                x.erase(x.end() - 1); // 删除字符串最后的符号
+                x_ = stod(x);         // 转换字符串为double
+                y.erase(y.end() - 1);
+                y_ = stod(y);
+                z_ = stod(z);
+                data_cae.coords_mfull_[id_node][0] = x_;
+                data_cae.coords_mfull_[id_node][1] = y_;
+                data_cae.coords_mfull_[id_node][2] = z_;
+                id_node = id_node + 1;
+            }
+            /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
+            if (line.find("*Element") != string::npos)
+            {
+                // 读取单元类型
+                type_temp = split_str(line, "=");
+                I_ele_type = del_blank(type_temp[1], data_cae.ELE_TYPES);
+                data_cae.ele_class_.insert(I_ele_type);
+                //
+                switch (I_ele_type)
+                {
+                case 0:
+                    node_per_ele = 4;
+                    break;
+                case 1:
+                    node_per_ele = 8;
+                    break;
+                default:
+                    cout << "Error in element type !!!\n";
+                    break;
+                }
+                node_topo_record = true;
+                safeGetline(infile, line);
+            }
+            if (node_topo_record & line.find("*") != string::npos)
+            {
+                node_topo_record = false;
+            }
+            if (node_topo_record)
+            {
+                std::istringstream iss(line);
+                // 储存单元类型
+                data_cae.ele_list_idx_mfull_[id_ele] = I_ele_type;
+                int temp_id = -1;
+                while (getline(iss, temp_node_topo, ','))
+                {
+                    del_blank(temp_node_topo);
+                    if (temp_id >= 0)
+                        data_cae.node_topos_mfull_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                    temp_id += 1;
+                }
+                id_ele += 1;
+            }
+            if (line.find("*End Assembly") != string::npos)
+            {
+                break;
+            }
+        }
+        infile.close();
+
     }
 
     void CAE::ReadInfo::CA_data_convert(data_management &data_cae, vector<int> &del_topo, bool *node_del_idx, bool *topo_del_idx)
@@ -521,6 +814,38 @@ namespace CAE
                 {
                     node_del_idx[data_cae.node_topos_[i][j] - 1] = 1;
                 }
+            }
+        }
+    }
+
+    std::istream& CAE::ReadInfo::safeGetline(std::istream& is, std::string& t)
+    {
+        t.clear();
+
+        // The characters in the stream are read one-by-one using a std::streambuf.
+        // That is faster than reading them one-by-one using the std::istream.
+        // Code that uses streambuf this way must be guarded by a sentry object.
+        // The sentry object performs various tasks,
+        // such as thread synchronization and updating the stream state.
+
+        std::istream::sentry se(is, true);
+        std::streambuf* sb = is.rdbuf();
+
+        for (;;) {
+            int c = sb->sbumpc();
+            switch (c) {
+            case '\n':
+                return is;
+            case '\r':
+                if (sb->sgetc() == '\n')
+                    sb->sbumpc();
+                return is;
+            case std::streambuf::traits_type::eof():
+                // Also handle the case when the last line has no line ending
+                is.setstate(std::ios::eofbit);
+                return is;
+            default:
+                t += (char)c;
             }
         }
     }

@@ -27,13 +27,13 @@ namespace CAE
     // void ca_pre_process(data_management &data_cae);
 
     // 基于单元类型和节点拓扑关系，返回自由度，节点坐标
-    void ca_build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors, data_management &data_cae, int ele_id, int num_nodes);
+    // void ca_build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors, data_management &data_cae, int ele_id, int num_nodes);
 
     // 计算delt K
-    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_k, assamble_stiffness &item_delt_k, elastic_mat &data_mat, vector<int>& del_topo);
+    void ca_get_delt_stiffness(data_management &data_cae, assamble_stiffness &item_delt_k, elastic_mat &data_mat);
 
     // 基于CSR索引格式填充稀疏矩阵
-    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k, vector<int>& del_topo);
+    void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k);
 
     // 建立组合近似降阶模型
     void ca_build_rom(data_management &data_cae, assamble_stiffness &item_delt_k, int n);
@@ -49,9 +49,6 @@ namespace CAE
 
     // 计算约简后的系数矩阵
     void ca_reduced_K(assamble_stiffness &item_k, vector<vector<double>> &ca_rom_n, vector<vector<double>> &rk);
-
-    // 提取节点位移
-    void get_real_dis(data_management &data_cae, vector<double> &dis, vector<double> &full_dis);
 
     // 向量与向量的乘法，返回标量
     double ca_vec_dot_vec(vector<double> &vec_1, vector<double> &vec_2);

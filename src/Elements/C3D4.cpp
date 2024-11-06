@@ -44,7 +44,12 @@ namespace CAE
     // 建立单元刚度矩阵
     void tetra_ele_elastic::build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix)
     {
-        build_ele_stiff_mat_hammer(node_coords, stiffness_matrix, C_matrix_);
+        det_jacobi_ = build_ele_stiff_mat_hammer(node_coords, stiffness_matrix, C_matrix_);
+        if (det_jacobi_ < 0) {
+            std::cout << "det_jacobi<0" << std::endl;
+            count_det_++;
+            std::cout << count_det_ << std::endl;
+        }
     }
 
     // 建立切线单元刚度矩阵（几何非线性）
@@ -52,6 +57,18 @@ namespace CAE
                                                    Eigen::Ref<Eigen::MatrixXd> stiffness_matrix, Eigen::Ref<Eigen::MatrixXd> inter_force)
     {
         build_ele_nl_stiff_mat_hammer(node_coords, node_dis, stiffness_matrix, inter_force, C_matrix_);
+    }
+
+    // 计算节点处位移应变转换矩阵
+    void tetra_ele_elastic::build_strain_node_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat)
+    {
+        build_strain_node_mat_hammer(node_coords, strain_mat);
+    }
+
+    // 计算节点处应力
+    void tetra_ele_elastic::get_stress_node(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stress_mat, Eigen::Ref<Eigen::MatrixXd> dis_vec)
+    {
+        get_stress_node_hammer(node_coords, stress_mat, C_matrix_, dis_vec);
     }
 
     // 建立单元质量矩阵

@@ -19,10 +19,10 @@ namespace CAE {
 
     // 更新自动时间步长
     void CAE::UpdateTimeStep(const vector<vector<int>>& node_topos, const vector<vector<double>>& coords,
-        const vector<ele_base*>& ele_list, const vector<int>& ele_list_idx, double& time_step)
+        const vector<ele_base*>& ele_list, const vector<int>& ele_list_idx, map<int, int>& ele_map_list, double& time_step)
     {
         for (int i = 0; i < ele_list_idx.size(); i++) {
-            int idx = ele_list_idx[i];
+            int idx = ele_map_list[ele_list_idx[i]];
             MatrixXd item_ele_coors;
             get_ele_coords(node_topos[i], coords, item_ele_coors, ele_list[idx]->nnode_);
             ele_list[idx]->update_timestep(item_ele_coors, time_step);

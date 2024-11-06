@@ -16,29 +16,6 @@ Description: XXX
 
 namespace CAE
 {
-    // 重排序位移，填充为完整自由度位移
-    void data_process::fill_full_dis(data_management &data_cae)
-    {
-        data_cae.single_full_dis_vec_.resize(3 * data_cae.nd_);
-        for (int i = 0; i < data_cae.nd_; i++)
-        {
-            int resort_node = data_cae.resort_free_nodes_[i];
-            if (resort_node >= 0)
-            {
-                data_cae.single_full_dis_vec_[3 * i] = data_cae.single_dis_vec_[3 * resort_node];
-                data_cae.single_full_dis_vec_[3 * i + 1] = data_cae.single_dis_vec_[3 * resort_node + 1];
-                data_cae.single_full_dis_vec_[3 * i + 2] = data_cae.single_dis_vec_[3 * resort_node + 2];
-            }
-            else
-            {
-                data_cae.single_full_dis_vec_[3 * i] = 0.0;
-                data_cae.single_full_dis_vec_[3 * i + 1] = 0.0;
-                data_cae.single_full_dis_vec_[3 * i + 2] = 0.0;
-            }
-        }
-        cout << "the full displacement has been filled." << endl;
-    }
-
     // 读取Abaqus位移场
     void data_process::read_abaqus_dis(string path, vector<double> &abaqus_dis)
     {
@@ -67,14 +44,8 @@ namespace CAE
     }
 
     // 导出 位移场 VTK
-    void data_process::export_dis_2_vtk(data_management &data_cae, string path, double scale_dis, string path_abaqus, bool read_flag)
+    void data_process::export_dis_2_vtk(data_management &data_cae, string path, double scale_dis)
     {
-        // 读取Abaqus位移结果
-        vector<double> abaqus_dis(3 * data_cae.nd_);
-        if (read_flag)
-        {
-            read_abaqus_dis(path_abaqus, abaqus_dis);
-        }
         std::ofstream fout;
         fout.open(path, std::ios::out);
         if (!fout)
@@ -106,7 +77,9 @@ namespace CAE
         int num_ele_C3D8R = 0;
         for (int i = 0; i < num_ele; i++)
         {
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
@@ -135,7 +108,9 @@ namespace CAE
         fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
@@ -171,7 +146,9 @@ namespace CAE
         fout << "CELL_TYPES\t\t" << num_ele << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
@@ -220,66 +197,74 @@ namespace CAE
         {
             fout << data_cae.single_full_dis_vec_[3 * i + 2] << "\n";
         }
-        // Abaqus dis
-        if (read_flag)
+        // 合位移
+        fout << "\nSCALARS u_magnitude double 1\n"
+             << "LOOKUP_TABLE  table4\n";
+        for (int i = 0; i < num_node; i++)
         {
-            // X
-            fout << "\nSCALARS Abaqus_x double 1\n"
-                 << "LOOKUP_TABLE  table4\n";
+            double u_ = sqrt(data_cae.single_full_dis_vec_[3 * i + 2] * data_cae.single_full_dis_vec_[3 * i + 2] +
+                             data_cae.single_full_dis_vec_[3 * i + 1] * data_cae.single_full_dis_vec_[3 * i + 1] +
+                             data_cae.single_full_dis_vec_[3 * i] * data_cae.single_full_dis_vec_[3 * i]);
+            fout << u_ << "\n";
+        }
+        
+        // 写入单元应力
+        if (data_cae.stress_node_mat_.size() != 0) {
+            // xx应力
+            fout << "\nSCALARS S_xx double 1\n"
+                << "LOOKUP_TABLE  table5\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << abaqus_dis[3 * i] << "\n";
+                fout << data_cae.stress_node_mat_[0][i] << "\n";
             }
-            // Y
-            fout << "\nSCALARS Abaqus_y double 1\n"
-                 << "LOOKUP_TABLE  table5\n";
+            // yy应力
+            fout << "\nSCALARS S_yy double 1\n"
+                << "LOOKUP_TABLE  table6\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << abaqus_dis[3 * i + 1] << "\n";
+                fout << data_cae.stress_node_mat_[1][i] << "\n";
             }
-            // Z
-            fout << "\nSCALARS Abaqus_z double 1\n"
-                 << "LOOKUP_TABLE  table6\n";
+            // zz应力
+            fout << "\nSCALARS S_zz double 1\n"
+                << "LOOKUP_TABLE  table7\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << abaqus_dis[3 * i + 2] << "\n";
+                fout << data_cae.stress_node_mat_[2][i] << "\n";
             }
-            // Error in X
-            fout << "\nSCALARS Error_ux double 1\n"
-                 << "LOOKUP_TABLE  table7\n";
+            // xy应力
+            fout << "\nSCALARS S_xy double 1\n"
+                << "LOOKUP_TABLE  table8\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << abs(data_cae.single_full_dis_vec_[3 * i + 0] - abaqus_dis[3 * i + 0]) << "\n";
+                fout << data_cae.stress_node_mat_[3][i] << "\n";
             }
-            // Error in Y
-            fout << "\nSCALARS Error_uy double 1\n"
-                 << "LOOKUP_TABLE  table8\n";
+            // yz应力
+            fout << "\nSCALARS S_yz double 1\n"
+                << "LOOKUP_TABLE  table9\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << abs(data_cae.single_full_dis_vec_[3 * i + 1] - abaqus_dis[3 * i + 1]) << "\n";
+                fout << data_cae.stress_node_mat_[4][i] << "\n";
             }
-            // Error in Z
-            fout << "\nSCALARS Error_uz double 1\n"
-                 << "LOOKUP_TABLE  table9\n";
+            // xz应力
+            fout << "\nSCALARS S_xz double 1\n"
+                << "LOOKUP_TABLE  table10\n";
             for (int i = 0; i < num_node; i++)
             {
-                fout << abs(data_cae.single_full_dis_vec_[3 * i + 2] - abaqus_dis[3 * i + 2]) << "\n";
+                fout << data_cae.stress_node_mat_[5][i] << "\n";
+            }
+            // Von_Mises应力
+            fout << "\nSCALARS S_Mises double 1\n"
+                << "LOOKUP_TABLE  table11\n";
+            for (int i = 0; i < num_node; i++)
+            {
+                fout << data_cae.stress_node_mat_[6][i] << "\n";
             }
         }
+        fout.close();
     };
 
-    void CAE::data_process::CA_export_dis_2_vtk(data_management &data_cae, vector<int>& del_topo, string result_path, double scale_dis, vector<double> &full_dis)
+    void CAE::data_process::CA_export_dis_2_vtk(data_management &data_cae, double scale_dis, string result_path)
     {
-        // 处理删除拓扑信息
-        bool* topo_del_idx = new bool[data_cae.node_topos_.size()]();// 1为不删除，0为删除
-        for (int i = 0; i < data_cae.node_topos_.size(); i++) {
-            topo_del_idx[i] = 1;
-        }
-        for (int i = 0; i < del_topo.size(); i++) {
-            topo_del_idx[del_topo[i]] = 0;
-        }
-
-        // 准备写入
         std::ofstream fout;
         fout.open(result_path, std::ios::out);
         if (!fout)
@@ -293,119 +278,115 @@ namespace CAE
         fout << "DATASET UNSTRUCTURED_GRID\n\n";                // data format: unstructured grid
 
         // 输入节点坐标
-        int num_node = data_cae.nd_;
+        int num_node = data_cae.coords_mfull_.size();
         fout << "POINTS\t" << num_node << "\tdouble\n";
 
         int id = 1;
         for (int i = 0; i < num_node; i++)
         {
-            fout << data_cae.coords_[i][0] + scale_dis * full_dis[3 * i] << "\t\t"
-                << data_cae.coords_[i][1] + scale_dis * full_dis[3 * i + 1] << "\t\t"
-                << data_cae.coords_[i][2] + scale_dis * full_dis[3 * i + 2] << "\n";
-
+            //fout << data_cae.coords_mfull_[i][0] << "\t\t"
+            //    << data_cae.coords_mfull_[i][1]<< "\t\t"
+            //    << data_cae.coords_mfull_[i][2]<< "\n";
+            fout << data_cae.coords_mfull_[i][0] + scale_dis * data_cae.single_full_ca_dis_vec_[3 * i] << "\t\t"
+                << data_cae.coords_mfull_[i][1] + scale_dis * data_cae.single_full_ca_dis_vec_[3 * i + 1] << "\t\t"
+                << data_cae.coords_mfull_[i][2] + scale_dis * data_cae.single_full_ca_dis_vec_[3 * i + 2] << "\n";
         }
 
         // 统计单元类型
-        int num_ele = data_cae.ne_;
+        int num_ele = data_cae.node_topos_mfull_.size();
         int num_ele_C3D4 = 0;
         int num_ele_C3D8 = 0;
         int num_ele_C3D8R = 0;
         for (int i = 0; i < num_ele; i++)
         {
-            if (topo_del_idx[i]) {
-                string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
-                switch (ELE_TYPES[item_ele_type])
-                {
-                    case 1:
-                    {
-                        num_ele_C3D4 += 1;
-                        break;
-                    }
-                    case 2:
-                    {
-                        num_ele_C3D8 += 1;
-                        break;
-                    }
-                    case 3:
-                    {
-                        num_ele_C3D8R += 1;
-                        break;
-                    }
-                    default:
-                    {
-                        cout << "This type does not exist in the element library" << endl;
-                        break;
-                    }
-                }
+            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_mfull_[i]]->type_;
+            switch (ELE_TYPES[item_ele_type])
+            {
+            case 1:
+            {
+                num_ele_C3D4 += 1;
+                break;
+            }
+            case 2:
+            {
+                num_ele_C3D8 += 1;
+                break;
+            }
+            case 3:
+            {
+                num_ele_C3D8R += 1;
+                break;
+            }
+            default:
+            {
+                cout << "This type does not exist in the element library" << endl;
+                break;
+            }
             }
         }
-        // 写入节点拓扑关系
-        fout << "CELLS\t" << num_ele - del_topo.size() << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
+        // 输入节点拓扑关系
+        fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            if (topo_del_idx[i]) {
-                string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
-                switch (ELE_TYPES[item_ele_type])
-                {
-                    case 1:
-                    {
-                        fout << 4 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
-                            << data_cae.node_topos_[i][1] - 1 << "\t" << data_cae.node_topos_[i][3] - 1 << "\n";
-                        break;
-                    }
-                    case 2:
-                    {
-                        fout << 8 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][1] - 1 << "\t"
-                            << data_cae.node_topos_[i][3] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
-                            << data_cae.node_topos_[i][4] - 1 << "\t" << data_cae.node_topos_[i][5] - 1 << "\t"
-                            << data_cae.node_topos_[i][7] - 1 << "\t" << data_cae.node_topos_[i][6] - 1 << "\n";
-                        break;
-                    }
-                    case 3:
-                    {
-                        fout << 8 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][1] - 1 << "\t"
-                            << data_cae.node_topos_[i][3] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
-                            << data_cae.node_topos_[i][4] - 1 << "\t" << data_cae.node_topos_[i][5] - 1 << "\t"
-                            << data_cae.node_topos_[i][7] - 1 << "\t" << data_cae.node_topos_[i][6] - 1 << "\n";
-                        break;
-                    }
-                    default:
-                    {
-                        cout << "This type does not exist in the element library" << endl;
-                        break;
-                    }
-                }
+            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_mfull_[i]]->type_;
+            switch (ELE_TYPES[item_ele_type])
+            {
+            case 1:
+            {
+                fout << 4 << "\t" << data_cae.node_topos_mfull_[i][0] - 1 << "\t" << data_cae.node_topos_mfull_[i][2] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][1] - 1 << "\t" << data_cae.node_topos_mfull_[i][3] - 1 << "\n";
+                break;
+            }
+            case 2:
+            {
+                fout << 8 << "\t" << data_cae.node_topos_mfull_[i][0] - 1 << "\t" << data_cae.node_topos_mfull_[i][1] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][3] - 1 << "\t" << data_cae.node_topos_mfull_[i][2] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][4] - 1 << "\t" << data_cae.node_topos_mfull_[i][5] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][7] - 1 << "\t" << data_cae.node_topos_mfull_[i][6] - 1 << "\n";
+                break;
+            }
+            case 3:
+            {
+                fout << 8 << "\t" << data_cae.node_topos_mfull_[i][0] - 1 << "\t" << data_cae.node_topos_mfull_[i][1] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][3] - 1 << "\t" << data_cae.node_topos_mfull_[i][2] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][4] - 1 << "\t" << data_cae.node_topos_mfull_[i][5] - 1 << "\t"
+                    << data_cae.node_topos_mfull_[i][7] - 1 << "\t" << data_cae.node_topos_mfull_[i][6] - 1 << "\n";
+                break;
+            }
+            default:
+            {
+                cout << "This type does not exist in the element library" << endl;
+                break;
+            }
             }
         }
         // 写入单元类型
-        fout << "CELL_TYPES\t\t" << num_ele - del_topo.size() << "\n";
+        fout << "CELL_TYPES\t\t" << num_ele << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            if (topo_del_idx[i]) {
-                string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_[i]]->type_;
-                switch (ELE_TYPES[item_ele_type])
-                {
-                    case 1:
-                    {
-                        fout << 10 << "\n";
-                        break;
-                    }
-                    case 2:
-                    {
-                        fout << 11 << "\n";
-                        break;
-                    }
-                    case 3:
-                    {
-                        fout << 11 << "\n";
-                        break;
-                    }
-                    default:
-                    {
-                        cout << "This type does not exist in the element library" << endl;
-                        break;
-                    }
-                }
+            string item_ele_type = data_cae.ele_list_[data_cae.ele_list_idx_mfull_[i]]->type_;
+            switch (ELE_TYPES[item_ele_type])
+            {
+            case 1:
+            {
+                fout << 10 << "\n";
+                break;
+            }
+            case 2:
+            {
+                fout << 11 << "\n";
+                break;
+            }
+            case 3:
+            {
+                fout << 11 << "\n";
+                break;
+            }
+            default:
+            {
+                cout << "This type does not exist in the element library" << endl;
+                break;
+            }
             }
         }
 
@@ -416,21 +397,31 @@ namespace CAE
             << "LOOKUP_TABLE  table1\n";
         for (int i = 0; i < num_node; i++)
         {
-            fout << full_dis[3 * i] << "\n";
+            fout << data_cae.single_full_ca_dis_vec_[3 * i] << "\n";
         }
         // Y
         fout << "\nSCALARS u_y double 1\n"
             << "LOOKUP_TABLE  table2\n";
         for (int i = 0; i < num_node; i++)
         {
-            fout << full_dis[3 * i + 1] << "\n";
+            fout << data_cae.single_full_ca_dis_vec_[3 * i + 1] << "\n";
         }
         // Z
         fout << "\nSCALARS u_z double 1\n"
             << "LOOKUP_TABLE  table3\n";
         for (int i = 0; i < num_node; i++)
         {
-            fout << full_dis[3 * i + 2] << "\n";
+            fout << data_cae.single_full_ca_dis_vec_[3 * i + 2] << "\n";
+        }
+        // 合位移
+        fout << "\nSCALARS u_magnitude double 1\n"
+            << "LOOKUP_TABLE  table4\n";
+        for (int i = 0; i < num_node; i++)
+        {
+            double u_ = sqrt(data_cae.single_full_ca_dis_vec_[3 * i + 2] * data_cae.single_full_ca_dis_vec_[3 * i + 2] +
+                data_cae.single_full_ca_dis_vec_[3 * i + 1] * data_cae.single_full_ca_dis_vec_[3 * i + 1] +
+                data_cae.single_full_ca_dis_vec_[3 * i] * data_cae.single_full_ca_dis_vec_[3 * i]);
+            fout << u_ << "\n";
         }
     }
 

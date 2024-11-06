@@ -24,6 +24,7 @@ namespace CAE
         elastic_mat matrial_struc_;
         Matrix6d6 C_matrix_;
         Matrix6d12 strain_mat;
+        int count_det_ = 0;
 
     public:
         // 构造函数，析构函数
@@ -38,8 +39,14 @@ namespace CAE
         // 建立本构矩阵
         virtual void build_cons_mat();
 
-        // 建立应变矩阵(积分点)
+        // 建立位移应变转换矩阵
         virtual void build_strain_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat);
+
+        // 计算节点处位移应变转换矩阵
+        virtual void build_strain_node_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> strain_mat);
+
+        // 计算节点处应力
+        virtual void get_stress_node(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stress_mat, Eigen::Ref<Eigen::MatrixXd> dis_vec);
 
         // 建立单元刚度矩阵
         void build_ele_stiff_mat(Eigen::Ref<Eigen::MatrixXd> node_coords, Eigen::Ref<Eigen::MatrixXd> stiffness_matrix) override;
@@ -67,7 +74,5 @@ namespace CAE
          void text_gps_phy_coords(Eigen::Ref<Eigen::MatrixXd> nodes1,
             vector<vector<double>>& text_gps, vector<double>& text_W_1,
             vector<Eigen::Vector3d>& text_Normal) override;
-
     };
-
 }
