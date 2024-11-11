@@ -31,11 +31,13 @@
            可使用以下命令检查是否设置成功(成功会返回路径结果)
            > set MKLROOT
          - 新建并进入build文件夹，可在终端输入以下命令
-              > mkdir build;
-              > cd build;
+              > mkdir build
+              
+              > cd build
          - 使用cmake编译，下面命令为编译一个Release版本的OpenFEA（默认静态链接mkl）
-              > cmake ../ -DCMAKE_BUILD_TYPE=Release;
-              > cmake --build ./ -j *$(nproc)*;
+              > cmake ../ -DCMAKE_BUILD_TYPE=Release
+              
+              > cmake --build ./ -j *$(nproc)*
       2. **Visual Studio + CmakeGUI**
          - 如已安装mkl，设置mkl环境(使用intel提供环境设置脚本，按oneapi实际安装路径修改下行命令)
            在cmd运行
