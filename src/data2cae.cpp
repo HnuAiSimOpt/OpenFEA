@@ -18,10 +18,12 @@ namespace CAE
     void ReadInfo::read_ele_node_num(data_management &data_cae)
     {
         int nd, ne;
+        std::cout<<path_;
+        std::cout<<path_;
         std::ifstream infile(path_.c_str(), std::ios::in);
         if (!infile)
         {
-            std::cerr << "Error: Cannot open " << path_ << std::endl;
+            std::cerr << "!!! Error: Cannot open " << path_ << std::endl;
             exit(EXIT_FAILURE);
         }
         string line;
@@ -418,6 +420,8 @@ namespace CAE
         // 读取计算文件
         std::ifstream infile(path_.c_str(), std::ios::in);
         std::string line;
+        mat_.density = 0.0;
+        mat_.young_modulus = 0.0;
         // 读取载荷节点集合
         while (!safeGetline(infile, line).eof())
         {
@@ -548,7 +552,7 @@ namespace CAE
         }
         data_cae.ne_m_ = ne;
         data_cae.nd_m_ = nd;
-        cout << "the number node set after modifying is: " << data_cae.nd_m_ << endl;
+        cout << "\n\nthe number node set after modifying is: " << data_cae.nd_m_ << endl;
         cout << "the number of changed element is: " << data_cae.ne_m_ << endl;
 
         // 读取节点合集，变化单元合集

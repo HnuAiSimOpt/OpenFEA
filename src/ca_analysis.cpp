@@ -24,32 +24,7 @@ namespace CAE
         item_delt_k.nz_val_.resize(data_cae.item_assam_implicit_.num_nz_val_);
         std::fill(item_delt_k.nz_val_.begin(), item_delt_k.nz_val_.end(), 0.);
         ca_fill_CSR_sparse_mat(data_cae, data_mat, item_delt_k);
-        // delt_K = K - K0
-
     }
-
-    // // 基于单元类型和节点拓扑关系，返回自由度，节点坐标
-    // void ca_build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors, data_management &data_cae, int ele_id, int num_nodes)
-    // {
-    //     item_ele_dofs.resize(3 * num_nodes);
-    //     std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
-    //     item_ele_coors.resize(num_nodes, 3);
-    //     item_ele_coors.setZero();
-    //     int item_dof, item_node;
-    //     for (int i = 0; i < num_nodes; i++)
-    //     {
-    //         // 自由度
-    //         item_dof = data_cae.resort_free_nodes_[data_cae.node_topos_[ele_id][i] - 1];
-    //         item_ele_dofs[3 * i] = 3 * item_dof;
-    //         item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
-    //         item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
-    //         // 坐标
-    //         item_node = data_cae.node_topos_[ele_id][i] - 1;
-    //         item_ele_coors(i, 0) = data_cae.coords_[item_node][0]; // X 坐标
-    //         item_ele_coors(i, 1) = data_cae.coords_[item_node][1]; // Y 坐标
-    //         item_ele_coors(i, 2) = data_cae.coords_[item_node][2]; // Z 坐标
-    //     }
-    // }
 
     // 基于CSR索引格式填充稀疏矩阵
     void ca_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, assamble_stiffness &item_delt_k)
@@ -65,7 +40,9 @@ namespace CAE
         for (int i = 0; i < n_modify; i++)
         {
             // 获取该单元的节点数量
-            int node_num_ele = data_cae.ele_list_[data_cae.ele_list_idx_m_[i]]->nnode_;
+            int ele_type = data_cae.ele_list_idx_m_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            int node_num_ele = data_cae.ele_list_[map_idx]->nnode_;
             // 查找节点自由度及坐标
             item_ele_dofs.resize(3 * node_num_ele);
             item_ele_coors.resize(node_num_ele, 3);
@@ -78,40 +55,62 @@ namespace CAE
                 item_ele_dofs[3 * j] = 3 * item_dof;
                 item_ele_dofs[3 * j + 1] = 3 * item_dof + 1;
                 item_ele_dofs[3 * j + 2] = 3 * item_dof + 2;
+                // if (i == 0)
+                // {
+                //     cout << item_dof << ":  " << item_ele_dofs[3 * j] << "  " << item_ele_dofs[3 * j + 1] << "  " << item_ele_dofs[3 * j + 2] << endl;
+                // }
                 // 坐标
                 item_ele_coors(j, 0) = data_cae.coords_m_[item_node][0]; // X 坐标
                 item_ele_coors(j, 1) = data_cae.coords_m_[item_node][1]; // Y 坐标
                 item_ele_coors(j, 2) = data_cae.coords_m_[item_node][2]; // Z 坐标
+                // if (i == 0)
+                // {
+                //     cout << item_ele_coors(j, 0) << "  " << item_ele_coors(j, 1) << "  " << item_ele_coors(j, 2) << endl;
+                // }
             }
-            // 计算 单元刚度矩阵变化量
+            // 计算 单元刚度矩阵变化量 K-K0
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             if (data_cae.node_topos_m_[i][0] == 0)
             {
                 // 0：删除单元
-                data_cae.ele_list_[data_cae.ele_list_idx_m_[i]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
+                data_cae.ele_list_[map_idx]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
                 stiffness_matrix = -1. * stiffness_matrix;
             }
             else if (data_cae.node_topos_m_[i][0] == 1)
             {
-                // 1：移动单元（即仅改变单元topo）
+                // 1：移动单元（即仅改变单元形状）
                 MatrixXd item_ele_coors_o;
-                MatrixXd stiffness_matrix_o;
                 item_ele_coors_o.resize(node_num_ele, 3); // 单元修改前的节点坐标
-                for (int j = 1; j < node_num_ele + 1; j++)
+                MatrixXd stiffness_matrix_o;
+                stiffness_matrix_o.resize(3 * node_num_ele, 3 * node_num_ele);
+                // MatrixXd stiffness_matrix_m;
+                // stiffness_matrix_m.resize(3 * node_num_ele, 3 * node_num_ele);
+                for (int j = 0; j < node_num_ele; j++)
                 {
-                    item_node = data_cae.node_topos_m_[i][j];
-                    item_ele_coors_o(i, 0) = data_cae.coords_o_[item_node][0]; // X 坐标
-                    item_ele_coors_o(i, 1) = data_cae.coords_o_[item_node][1]; // Y 坐标
-                    item_ele_coors_o(i, 2) = data_cae.coords_o_[item_node][2]; // Z 坐标
+                    item_node = data_cae.node_topos_m_[i][j + 1];
+                    // if (i==0)
+                    //     cout<<item_node<<":  ";
+                    item_ele_coors_o(j, 0) = data_cae.coords_o_[item_node][0]; // X 坐标
+                    item_ele_coors_o(j, 1) = data_cae.coords_o_[item_node][1]; // Y 坐标
+                    item_ele_coors_o(j, 2) = data_cae.coords_o_[item_node][2]; // Z 坐标
+                    // if (i == 0)
+                    //     cout << item_ele_coors_o(j, 0) << "  " << item_ele_coors_o(j, 1) << "  " << item_ele_coors_o(j, 2) << endl;
                 }
-                data_cae.ele_list_[data_cae.ele_list_idx_m_[i]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
-                data_cae.ele_list_[data_cae.ele_list_idx_m_[i]]->build_ele_stiff_mat(item_ele_coors_o, stiffness_matrix_o);
+                data_cae.ele_list_[map_idx]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
+                // if (i == 0)
+                //     cout << stiffness_matrix << endl;
+                data_cae.ele_list_[map_idx]->build_ele_stiff_mat(item_ele_coors_o, stiffness_matrix_o);
+                // if (i == 0)
+                //     cout << endl << stiffness_matrix_o << endl;
                 stiffness_matrix = stiffness_matrix - stiffness_matrix_o;
+                // stiffness_matrix.setZero();
+                // if (i == 0)
+                //     cout << endl << stiffness_matrix << endl;
             }
             else if (data_cae.node_topos_m_[i][0] == 2)
             {
                 // 2：增加单元
-                data_cae.ele_list_[data_cae.ele_list_idx_m_[i]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
+                // data_cae.ele_list_[data_cae.ele_list_idx_m_[i]]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
             }
             else
             {
@@ -229,11 +228,11 @@ namespace CAE
             }
             col_idx[i + 1] = (i + 1) * nn;
         }
-        // 求解
+        // 求解 降阶方程
         vector<double> rx(nn, 0.);
         superlu_solver_func(nz_val, row_idx, col_idx, rf, rx);
 
-        //
+        // 线性映射 降阶解 到 完全解
         int row = int(data_cae.ca_rom_n_[0].size());
         solution.resize(row);
         for (int i = 0; i < row; i++)
@@ -244,6 +243,7 @@ namespace CAE
                 sum += data_cae.ca_rom_n_[j][i] * rx[j];
             }
             solution[i] = sum;
+            // cout<< i+1<<": "<<solution[i]<<endl;
         }
     }
 
@@ -284,9 +284,9 @@ namespace CAE
             for (int j = 0; j < col; j++)
             {
                 rk[i][j] = ca_vec_dot_vec(ca_rom_svd[i], k_dot_rom[j]);
-                std::cout << rk[i][j] << " ";
+                // std::cout << rk[i][j] << " ";
             }
-            std::cout << std::endl;
+            // std::cout << std::endl;
         }
     }
 

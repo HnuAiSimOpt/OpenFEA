@@ -41,6 +41,7 @@ namespace CAE
     // 重置组合近似分析位移
     bool simulation_post::reset_ca_displacement(data_management &data_cae, vector<double> &dis)
     {
+        // dis 未包含位移约束点，故还原到完整全位移
         data_cae.single_full_ca_dis_vec_.resize(3 * data_cae.coords_m_.size());
         for (int i = 0; i < data_cae.coords_m_.size(); i++)
         {
@@ -60,10 +61,13 @@ namespace CAE
         }
         cout << "the full displacement has been filled." << endl;
 
+        // 删除修改后结构不包含的节点
         std::vector<double> new_full_dis_vec;
         new_full_dis_vec.resize(3 * data_cae.coords_mfull_.size());
-        for (int i = 0; i < data_cae.node_idx_m_.size(); i++) {
-            if (data_cae.node_idx_m_[i] == -1) {
+        for (int i = 0; i < data_cae.node_idx_m_.size(); i++)
+        {
+            if (data_cae.node_idx_m_[i] == -1)
+            {
                 continue;
             }
             new_full_dis_vec[data_cae.node_idx_m_[i] * 3] = data_cae.single_full_ca_dis_vec_[i * 3];
@@ -71,7 +75,7 @@ namespace CAE
             new_full_dis_vec[data_cae.node_idx_m_[i] * 3 + 2] = data_cae.single_full_ca_dis_vec_[i * 3 + 2];
         }
         data_cae.single_full_ca_dis_vec_ = std::move(new_full_dis_vec);
-        cout << "the displacement has been mapped to the new model." << endl;
+        cout << "the displacement has been mapped to the new model. the size is: " << data_cae.single_full_ca_dis_vec_.size() << endl;
         return true;
     }
 
@@ -98,6 +102,7 @@ namespace CAE
             build_ele_dofs_dis_coors(item_ele_dofs, item_ele_disp, item_ele_coors, data_cae, id_ele, node_num_ele);
             // 计算柯西应力
             item_ele_stress.resize(6, 1);
+            item_ele_stress.setZero();
             data_cae.ele_list_[map_idx]->get_stress_node(item_ele_coors, item_ele_stress, item_ele_disp);
             // 米塞斯应力
             double vm_s = std::sqrt(0.5 *
@@ -114,10 +119,10 @@ namespace CAE
                                      item_ele_stress(4, 0),
                                      item_ele_stress(5, 0),
                                      vm_s};
-            //cout << "S_VM ele"<<id_ele<< ":" << stress[2] << endl;
+            // cout << "S_VM ele"<<id_ele<< ":" << stress[2] << endl;
             data_cae.stress_mat_[id_ele] = stress;
         }
-        
+
         cout << "the stress has been calculated." << endl;
         // 初始化节点应力矩阵
         data_cae.stress_node_mat_.resize(7);
@@ -152,7 +157,8 @@ namespace CAE
         // 节点平均
         for (int id_node = 0; id_node < data_cae.nd_; id_node++)
         {
-            if (node_count[id_node] == 0) continue;
+            if (node_count[id_node] == 0)
+                continue;
             data_cae.stress_node_mat_[0][id_node] = data_cae.stress_node_mat_[0][id_node] / node_count[id_node];
             data_cae.stress_node_mat_[1][id_node] = data_cae.stress_node_mat_[1][id_node] / node_count[id_node];
             data_cae.stress_node_mat_[2][id_node] = data_cae.stress_node_mat_[2][id_node] / node_count[id_node];
@@ -160,7 +166,7 @@ namespace CAE
             data_cae.stress_node_mat_[4][id_node] = data_cae.stress_node_mat_[4][id_node] / node_count[id_node];
             data_cae.stress_node_mat_[5][id_node] = data_cae.stress_node_mat_[5][id_node] / node_count[id_node];
             data_cae.stress_node_mat_[6][id_node] = data_cae.stress_node_mat_[6][id_node] / node_count[id_node];
-            //cout << "S_VM node" << id_node << ":" << data_cae.stress_node_mat_[2][id_node] << endl;
+            // cout << "S_VM node" << id_node << ":" << data_cae.stress_node_mat_[2][id_node] << endl;
         }
         cout << "the nodal stress has been smoothed." << endl;
         return true;

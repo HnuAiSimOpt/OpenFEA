@@ -115,14 +115,10 @@ namespace CAE
             //  计算单元刚度矩阵
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             data_cae.ele_list_[map_idx]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
-            // temp
-            /* for (int i = 0; i < 24; i++)
-             {
-                 for (int j = 0; j < 24; j++)
-                 {
-                     cout << stiffness_matrix(i, j) << endl;
-                 }
-             }*/
+            // if (id_ele == 0)
+            // {
+            //     cout << stiffness_matrix << endl;
+            // }
 
             // 组装
             int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
@@ -243,7 +239,7 @@ namespace CAE
             int C_id_ele = data_cae.C_mesh[e] - 1; // 重排后的粗网格单元索引*********************
 
             int C_num_nodes = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[C_id_ele]]]->nnode_;
-            
+
             build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes);
 
             Storematrix_columns(col_data, F_ele_dofs, F_ele_dofs);
@@ -290,17 +286,18 @@ namespace CAE
         }
     }
     //[*******光滑有限元部分********]
-    void assamble_stiffness::SFEM_build_CSR(SFEM3D* sfemData)
+    void assamble_stiffness::SFEM_build_CSR(SFEM3D *sfemData)
     {
-        //系统方程数目
+        // 系统方程数目
         int num_free_node = sfemData->data_cae->nd_ - sfemData->data_cae->dis_bc_set_.size();
         vector<set<int>> col_data(3 * num_free_node);
         vector<int> item_ele_dofs;
 
         // 遍历节点积分域，储存所有自由度
-        for (int iNs = 1; iNs <= sfemData->ns; iNs++) {
+        for (int iNs = 1; iNs <= sfemData->ns; iNs++)
+        {
 
-            //积分域自由度
+            // 积分域自由度
             iNs_dofs(item_ele_dofs, sfemData, iNs);
 
             // 删除负自由度，即被约束自由度
@@ -350,9 +347,9 @@ namespace CAE
         cout << "The CSR index has been built" << endl;
     }
 
-    void assamble_stiffness::iNs_dofs(vector<int>& item_ele_dofs, SFEM3D* sfemData, int iNs)
+    void assamble_stiffness::iNs_dofs(vector<int> &item_ele_dofs, SFEM3D *sfemData, int iNs)
     {
-        //根据积分域节点数量确定自由度数量
+        // 根据积分域节点数量确定自由度数量
         int num_nodes = sfemData->nodeArNode[iNs].size();
         item_ele_dofs.assign(3 * num_nodes, 0);
 
@@ -367,7 +364,7 @@ namespace CAE
         }
     }
 
-    void assamble_stiffness::SFEM_fill_CSR_sparse_mat(SFEM3D* sfemData, elastic_mat& data_mat)
+    void assamble_stiffness::SFEM_fill_CSR_sparse_mat(SFEM3D *sfemData, elastic_mat &data_mat)
     {
         // 声明内存
         nz_val_.resize(num_nz_val_);
@@ -376,8 +373,8 @@ namespace CAE
         int num_nodes;
         vector<int> item_ele_dofs;
 
-
-        for (int iNs = 1; iNs <= sfemData->ns; iNs++) {
+        for (int iNs = 1; iNs <= sfemData->ns; iNs++)
+        {
 
             // 获取该积分域的自由度
             iNs_dofs(item_ele_dofs, sfemData, iNs);
@@ -409,6 +406,5 @@ namespace CAE
             }
         }
         cout << "The CSR index has been filled" << endl;
-    }
-    ;
+    };
 }

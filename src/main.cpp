@@ -20,7 +20,7 @@ void code_test();
 
 int main(int argc, char* argv[])
 {
-    bool test_ = false;//设置true为以前的启动模式
+    bool test_ = tanhl;//设置true为以前的启动模式
     if (test_) {
         code_test();
         return 0;
@@ -38,13 +38,13 @@ int main(int argc, char* argv[])
 
 void code_test()
 {
-    int case_num = 205;
+    int case_num = 2;
     if (case_num == 1)
     {
         // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 };
+        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800};
         // 材料路径
-        std::string path = "E:\\WH_CAE\\test_model\\cadcae-linear.inp";
+        std::string path = "C:\\Users\\jicha\\Desktop\\YFdata\\modefy_for_full.inp";
         // 关键字
         string load_set_keyword = "Set-load";
         string load_value_keyword = "Cload";
@@ -54,73 +54,19 @@ void code_test()
         // 读取计算文件
         cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
         // 执行结构响应分析
-        string result_path = "E:\\WH_CAE\\test_model\\output\\cadcae-linear.vtk";
+        string result_path = "C:\\Users\\jicha\\Desktop\\YFdata\\output\\modefy_for_full.vtk";
         cae_item.implict_analysis(result_path);
     }
-    else if (case_num == 2)
-    {
-        // 非协调计算
-        // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 }; // 此材料参数用于非协调计算
-        // 材料路径
-        string path = "E:/project/CADCAE/bracket_nonconforming/inp/Job-c3d4-ele12k.inp"; // 非协调路径
-        // 关键字
-        string load_set_keyword = "Set-load";
-        string load_value_keyword = "Cload";
-        string dis_set_keyword = "Set-fix";
-        // 建立CAE分析对象
-        CAE::CAE_process cae_item(path, mat_item);
-        // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-        // 执行结构响应分析
-        string result_path = "E:/project/CADCAE/bracket_nonconforming/output/dis_with_error.vtk";
-        cae_item.implict_analysis(result_path);
-    }
-    else if (case_num == 101) // 隐式完整分析+重分析
-    {
-        // 开始隐式分析
-        // 材料属性赋值
-        // CAE::elastic_mat mat_item{2.1e5, 0.3, 7800};
-        // 材料路径
-        // std::string path = "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_o.inp";
-        // 关键字
-        // string load_set_keyword = "Set-load";
-        // string load_value_keyword = "Cload";
-        // string dis_set_keyword = "Set-fix";
-        // 建立CAE分析对象
-        // CAE::CAE_process cae_item(path, mat_item);
-        // 读取计算文件
-        // cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-        // 执行结构响应分析
-        // string result_path = "E:\\WH_CAE\\test_model\\output\\original.vtk";
-        // string path_abaqus = "E:\\WH_CAE\\test_model\\original.txt";
-        // cae_item.implict_analysis(result_path, path_abaqus);
-
-        // 开始重分析
-        // 修改网格路径(仅包含1个part的网格)
-        // string mesh_path = "E:\\WH_CAE\\test_model\\original.inp"; // 此处使用original模型，里面包含删除单元
-        // 关键字
-        // string CA_del_set_keyword = "Set-del";
-        // 建立重分析CAE分析对象
-        // cae_item.path_ = mesh_path;
-        // 处理重复节点网格
-        // vector<int> del_topo;
-        // cae_item.CA_pre_process(CA_del_set_keyword, del_topo);
-        // 执行重分析
-        // string CA_result_path = "E:\\WH_CAE\\test_model\\output\\CA_modefy.vtk";
-        // string CA_path_abaqus = "E:\\WH_CAE\\test_model\\CA_modefy.txt";
-        // bool Is_Update = false; // 是否将原模型更新为修改后的模型
-        // cae_item.CA_ReAnalysis(CA_result_path, CA_path_abaqus, del_topo, Is_Update);
-    }
-    else if (case_num == 102) // 隐式完整分析+重分析
+    else if (case_num == 2) // 隐式完整分析+重分析
     {
         // ----------------------------------------------------------------------------------------------------------- 
         // 隐式 全分析
         // ----------------------------------------------------------------------------------------------------------- 
         // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 };
+        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800};
         // 材料路径
-        std::string path = "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_o.inp";
+        std::string path = "C:\\Users\\jicha\\Desktop\\YFdata\\original.inp";
+        // std::string path = "C:\\Users\\jicha\\Desktop\\CA_CADCAE\\data_ca\\Job-SL.inp";
         // 关键字
         string load_set_keyword = "Set-load";
         string load_value_keyword = "Cload";
@@ -130,7 +76,7 @@ void code_test()
         // 读取计算文件
         cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
         // 执行结构响应分析
-        string result_path = "E:\\WH_CAE\\test_model\\output\\cadcae_o.vtk";
+        string result_path = "C:\\Users\\jicha\\Desktop\\YFdata\\output\\original.vtk";
         bool is_save_stiffness = true;
         cae_item.implict_analysis(result_path, is_save_stiffness);
 
@@ -138,141 +84,15 @@ void code_test()
         // 重分析
         // ----------------------------------------------------------------------------------------------------------- 
         // 修改网格路径(仅包含1个part的网格)
-        string mesh_path1 = "E:\\WH_CAE\\test_model\\CA_cadcae\\CA_info.txt";
-        string mesh_path2 = "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_m.inp";
+        string mesh_path1 = "C:\\Users\\jicha\\Desktop\\YFdata\\map_info.txt";
+        string mesh_path2 = "C:\\Users\\jicha\\Desktop\\YFdata\\modefy.inp";
+        // string mesh_path1 = "C:\\Users\\jicha\\Desktop\\CA_CADCAE\\data_ca\\ca_info.txt";
+        // string mesh_path2 =  "C:\\Users\\jicha\\Desktop\\CA_CADCAE\\data_ca\\m_model.inp";
         cae_item.CA_pre_process(mesh_path1, mesh_path2);
         // 开始执行重分析
-        string CA_result_path = "E:\\WH_CAE\\test_model\\output\\cadcae_ca.vtk";
-        int n_basis = 4;
+        string CA_result_path = "C:\\Users\\jicha\\Desktop\\YFdata\\output\\modefy_ca.vtk";
+        int n_basis = 20;
         cae_item.CA_ReAnalysis(CA_result_path, n_basis);
-    }
-    else if (case_num == 201)
-    {
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 显式动力学分析
-        // ----------------------------------------------------------------------------------------------------------- 
-            // 材料属性赋值
-            CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 };
-            // 材料路径
-            std::string path = "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_o.inp";
-            // 关键字
-            string load_set_keyword = "Set-load";
-            string load_value_keyword = "Cload";
-            string dis_set_keyword = "Set-fix";
-            // 建立CAE分析对象
-            CAE::CAE_process cae_item(path, mat_item);
-            // 读取计算文件
-            cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-            // 执行动力学分析
-             string result_path = "F:/OpenFEM/model/";
-             string path_abaqus = "F:/OpenFEM/model/Abaqus_U.txt";
-             // 可以手动指定计算步长，会以此处修改生效
-             // cae_item.data_cae_.time_total_ = 0.1;       
-             // cae_item.data_cae_.time_step_ = 0.0;
-             cae_item.explicit_analysis(result_path, path_abaqus);
-    }
-    else if (case_num == 202)
-    {
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 隐式 全分析
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 };
-        // 材料路径
-        std::string path = "F:\\OpenFEM\\model\\CAppt\\full_analysis_fine.inp";
-        // 关键字
-        string load_set_keyword = "Set-load";
-        string load_value_keyword = "Cload";
-        string dis_set_keyword = "Set-fix";
-        // 建立CAE分析对象
-        CAE::CAE_process cae_item(path, mat_item);
-        // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-        // 执行结构响应分析
-        string result_path = "F:\\OpenFEM\\model\\CAppt\\full_analysis_fine.vtk";
-        bool is_save_stiffness = true;
-        cae_item.implict_analysis(result_path, is_save_stiffness);
-
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 重分析
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 修改网格路径(仅包含1个part的网格)
-        string mesh_path1 = "F:\\OpenFEM\\model\\CAppt\\fine_info_ca.txt";
-        string mesh_path2 = "F:\\OpenFEM\\model\\CAppt\\fine_model_m.inp";
-        cae_item.CA_pre_process(mesh_path1, mesh_path2);
-        // 开始执行重分析
-        string CA_result_path = "F:\\OpenFEM\\model\\CAppt\\fine_model_m.vtk";
-        int n_basis = 4;
-        cae_item.CA_ReAnalysis(CA_result_path, n_basis);
-    }
-    else if (case_num == 203)
-    {
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 隐式 全分析
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 };
-        // 材料路径
-        std::string path = "F:\\OpenFEM\\model\\bugfix-stress\\solid3_o.inp";
-        // 关键字
-        string load_set_keyword = "Set-load";
-        string load_value_keyword = "Cload";
-        string dis_set_keyword = "Set-fix";
-        // 建立CAE分析对象
-        CAE::CAE_process cae_item(path, mat_item);
-        // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-        // 执行结构响应分析
-        string result_path = "F:\\OpenFEM\\model\\bugfix-stress\\solid3_o.vtk";
-        bool is_save_stiffness = true;
-        cae_item.implict_analysis(result_path, is_save_stiffness);
-    }
-    else if (case_num == 204)
-    {
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 非协调计算
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 }; // 此材料参数用于非协调计算
-        // 材料路径
-        // std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/model.inp";//c3d8非协调路径
-        // std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/Job-c3d4-random.inp";//非协调路径
-        // std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/Job-c3d4-ncf.inp";//非协调路径
-        string path = "F:\\OpenFEM\\model\\noncomfortable\\Job-c3d4-ele12k.inp"; // 非协调路径
-        // std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/Job-c3d4_110k.inp";//非协调路径
-        // std::string path = "E:/project/CADCAE/bracket_nonconforming/inp/Job-c3d4-1000k.inp";//非协调路径
-        //  关键字
-        string load_set_keyword = "Set-load";
-        string load_value_keyword = "Cload";
-        string dis_set_keyword = "Set-fix";
-        // 建立CAE分析对象
-        CAE::CAE_process cae_item(path, mat_item);
-        // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-        // 执行结构响应分析
-        string result_path = "F:\\OpenFEM\\model\\noncomfortable\\dis_with_error.vtk";
-        cae_item.implict_analysis(result_path);
-    }
-    else if (case_num == 205)
-    {
-        // ----------------------------------------------------------------------------------------------------------- 
-        // SFEM
-        // ----------------------------------------------------------------------------------------------------------- 
-        // 材料属性赋值
-        CAE::elastic_mat mat_item{ 2.1e5, 0.3, 7800 };
-        // 材料路径
-        std::string path = "F:\\OpenFEM\\model\\CAppt\\full_analysis_fine.inp";
-        // 关键字
-        string load_set_keyword = "Set-load";
-        string load_value_keyword = "Cload";
-        string dis_set_keyword = "Set-fix";
-        // 建立CAE分析对象 
-        CAE::CAE_process cae_item(path, mat_item);
-        // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
-        // 执行结构响应分析
-        string result_path = "F:\\OpenFEM\\model\\CAppt\\full_analysis_fine_SFEM. vtk";
-        cae_item.implict_SFEManalysis(result_path, "");
     }
     else
     {

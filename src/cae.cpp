@@ -15,113 +15,147 @@ Description: XXX
 namespace CAE
 {
 
-    void CAE_process::Init(int nargs, char* argv[])
+    void CAE_process::Init(int nargs, char *argv[])
     {
-        //this->mat_.young_modulus = 21000.0;
-        //this->mat_.poisson_ratio = 0.3;
-        //处理命令行
+        // this->mat_.young_modulus = 21000.0;
+        // this->mat_.poisson_ratio = 0.3;
+        // 处理命令行
         processCmdLine(nargs, argv);
 
-        //读入求解文件
+        // 读入求解文件
         readFile();
     }
 
-    void CAE_process::processCmdLine(int nargs, char* argv[])
+    void CAE_process::processCmdLine(int nargs, char *argv[])
     {
-        //第一个命令为工作目录
-        char* work_path = argv[0];
+        // 第一个命令为工作目录
+        char *work_path = argv[0];
         option_.work_path = string(work_path);
 
-        if (nargs == 2) {
-            char* file_name = argv[1];
+        if (nargs == 2)
+        {
+            char *file_name = argv[1];
             option_.ifile_name = string(file_name);
             path_ = string(file_name);
         }
-        else {
-            //依次处理后续命令符
-            char* sz;
+        else
+        {
+            // 依次处理后续命令符
+            char *sz;
             bool ifile_on = false;
             bool ofile_on = false;
-            for (int i = 1; i < nargs; i++) {
+            bool cafile_on = false;
+            for (int i = 1; i < nargs; i++)
+            {
                 sz = argv[i];
-                if (ifile_on) {
+                if (ifile_on)
+                {
                     option_.ifile_name = string(sz);
                     path_ = string(sz);
                     ifile_on = false;
                     continue;
                 }
-                if (ofile_on) {
+                if (ofile_on)
+                {
                     option_.ofile_name = string(sz);
                     ofile_on = false;
                     continue;
                 }
-                if (strcmp(sz, "-imp") == 0) {
+                if (cafile_on)
+                {
+                    option_.ofile_name = string(sz);
+                    if (option_.ca1file_name == "None")
+                        option_.ca1file_name = string(sz);
+                    else
+                        option_.ca2file_name = string(sz);
+                    cafile_on = false;
+                    continue;
+                }
+                if (strcmp(sz, "-imp") == 0)
+                {
                     option_.analysis_type = 1;
                 }
-                else if (strcmp(sz, "-exp") == 0) {
+                else if (strcmp(sz, "-exp") == 0)
+                {
                     option_.analysis_type = 2;
                 }
-                else if (strcmp(sz, "-nl") == 0) {
+                else if (strcmp(sz, "-nl") == 0)
+                {
                     data_cae_.NLFEA = true;
                 }
-                else if (strcmp(sz, "-sfem") == 0) {
+                else if (strcmp(sz, "-sfem") == 0)
+                {
                     option_.sfem_flag = true;
                 }
-                else if (strcmp(sz, "-re") == 0) {
+                else if (strcmp(sz, "-re") == 0)
+                {
                     option_.reanalysis_flag = true;
                     // TODO
                     // 因为前处理相关功能不全，可根据后续项目需求完善重分析
                     // 比如找个变量存重分析文件路径等，检查是否文件给全了，用于后面读取。
                     // 以及是否需要加一个命令控制隐式分析是否保存刚度信息。
                 }
-                else if (strcmp(sz, "-i") == 0) {
+                else if (strcmp(sz, "-i") == 0)
+                {
                     ifile_on = true;
                 }
-                else if (strcmp(sz, "-o") == 0) {
+                else if (strcmp(sz, "-o") == 0)
+                {
                     ofile_on = true;
+                }
+                else if (strcmp(sz, "-ca") == 0)
+                {
+                    cafile_on = true;
+                    option_.reanalysis_flag = true;
                 }
             }
         }
 
-
-
         // 检查文件后缀和输出设置
-        if (option_.ifile_name.empty()) {
+        if (option_.ifile_name.empty())
+        {
             cout << "Please enter the correct path to the input file ending in .inp" << option_.ifile_name << endl;
         }
-        else {
+        else
+        {
             // 找到最后一个'/'或'\'的位置
             size_t last_slash_pos = option_.ifile_name.find_last_of("/\\");
             // 找到最后一个'.'的位置
             size_t last_dot_pos = option_.ifile_name.find_last_of('.');
             // 如果没有找到'/'或'\'，则文件名就是整个路径;如果没有找到'.'，则没有后缀名;或者后缀不是inp
-            if (last_slash_pos == std::string::npos || last_dot_pos == std::string::npos || option_.ifile_name.substr(last_dot_pos + 1) != "inp") {
+            if (last_slash_pos == std::string::npos || last_dot_pos == std::string::npos || option_.ifile_name.substr(last_dot_pos + 1) != "inp")
+            {
                 cout << "Please enter the correct path to the input file ending in .inp" << option_.ifile_name << endl;
             }
-            if (!option_.ofile_name.empty()) {
+            if (!option_.ofile_name.empty())
+            {
                 size_t last_dot_pos_out = option_.ofile_name.find_last_of('.');
                 // 如果没有找到'.'，则没有后缀名;或者后缀不是vtk
-                if (last_dot_pos == std::string::npos || option_.ofile_name.substr(last_dot_pos_out + 1) != "vtk") {
+                if (last_dot_pos == std::string::npos || option_.ofile_name.substr(last_dot_pos_out + 1) != "vtk")
+                {
                     cout << "Please enter the correct path to the output file ending in .vtk" << option_.ofile_name << endl;
                 }
             }
-            else {
+            else
+            {
                 option_.ofile_name = option_.ifile_name.substr(0, last_dot_pos) + ".vtk";
             }
         }
 
-        if (option_.ifile_name.find(".inp") == option_.ifile_name.size() - 4) {
+        if (option_.ifile_name.find(".inp") == option_.ifile_name.size() - 4)
+        {
             option_.file_type = 1;
         }
-        else if (option_.ifile_name.find(".fem") == option_.ifile_name.size() - 4) {
+        else if (option_.ifile_name.find(".fem") == option_.ifile_name.size() - 4)
+        {
             option_.file_type = 2;
         }
     }
 
-
     void CAE_process::readFile()
     {
-        if (option_.file_type == 1) {//inp文件读取
+        if (option_.file_type == 1)
+        { // inp文件读取
             // 关键字
             string load_set_keyword = "Set-load";
             string load_value_keyword = "Cload";
@@ -129,39 +163,43 @@ namespace CAE
             // 读取计算文件
             pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
         }
-        else if (option_.file_type == 2) {//fem文件读取
-
+        else if (option_.file_type == 2)
+        { // fem文件读取
         }
-        else if (option_.file_type == 3) {//re文件读取(重分析文件)
-
+        else if (option_.file_type == 3)
+        { // re文件读取(重分析文件)
         }
     }
 
     void CAE_process::Solve()
     {
-        if (option_.sfem_flag) {
+        if (option_.sfem_flag)
+        {
             // SFEM
             this->implict_SFEManalysis(option_.ofile_name, "");
         }
-        else if(option_.analysis_type == 1){
+        else if (option_.analysis_type == 1)
+        {
             // 隐式
             this->implict_analysis(option_.ofile_name, option_.is_save_stiffness);
+            // 重分析
+            if (option_.reanalysis_flag)
+            {
+                // 重分析
+                string mesh_path1 = option_.ca1file_name;     // "E:\\WH_CAE\\test_model\\CA_cadcae\\CA_info.txt"; 
+                string mesh_path2 = option_.ca2file_name;     // "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_m.inp";  
+                this->CA_pre_process(mesh_path1, mesh_path2); 
+                // 开始执行重分析                               
+                string CA_result_path = option_.ofile_name;  // "E:\\WH_CAE\\test_model\\output\\cadcae_ca.vtk";
+                int n_basis = 4;
+                this->CA_ReAnalysis(CA_result_path, n_basis);
+            }
         }
-        else if (option_.analysis_type == 2) {
+        else if (option_.analysis_type == 2)
+        {
             // 显式
             option_.ofile_name = option_.ofile_name.substr(0, option_.ofile_name.size() - 4);
             this->explicit_analysis(option_.ofile_name, "");
-        }
-        else if (option_.analysis_type == 3) {
-            // 重分析
-            // 因为文件数据、交互等功能不完备，此处仅复制了原始的调用代码，后面请按需修改。
-            string mesh_path1 = "E:\\WH_CAE\\test_model\\CA_cadcae\\CA_info.txt";       /////////////////////////////////////////////
-            string mesh_path2 = "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_m.inp";        // 这几行后续可以按需放到                  //
-            this->CA_pre_process(mesh_path1, mesh_path2);                               // processCmdLine(int nargs, char* argv[]) //
-            // 开始执行重分析                                                           // readFile()中处理                        //
-            string CA_result_path = "E:\\WH_CAE\\test_model\\output\\cadcae_ca.vtk";    /////////////////////////////////////////////
-            int n_basis = 4;
-            this->CA_ReAnalysis(CA_result_path, n_basis);
         }
     }
 
@@ -188,10 +226,10 @@ namespace CAE
         item_info.read_mat(mat_);
 
         // 读取时间信息--显式
-        if (option_.analysis_type == 2) {
+        if (option_.analysis_type == 2)
+        {
             item_info.read_time(data_cae_);
         }
-
     }
 
     // 执行结构响应分析
@@ -331,6 +369,7 @@ namespace CAE
         current_K.num_row_ = data_cae_.item_assam_implicit_.num_row_;
         current_K.num_col_ = data_cae_.item_assam_implicit_.num_col_;
         current_K.num_nz_val_ = data_cae_.item_assam_implicit_.num_nz_val_;
+        
         current_K.row_idx_.assign(data_cae_.item_assam_implicit_.row_idx_.begin(), data_cae_.item_assam_implicit_.row_idx_.end());
         current_K.col_idx_.assign(data_cae_.item_assam_implicit_.col_idx_.begin(), data_cae_.item_assam_implicit_.col_idx_.end());
         current_K.nz_val_.resize(current_K.num_nz_val_);
@@ -339,6 +378,7 @@ namespace CAE
         // 刚度矩阵变化量 计时
         start = clock();
         ca_get_delt_stiffness(data_cae_, delt_K, mat_); // 计算delt_K
+
         // 填充当前刚度矩阵的值
         for (int i = 0; i < current_K.num_nz_val_; i++)
         {
@@ -346,6 +386,7 @@ namespace CAE
         }
         end = clock();
         cout << "It took " << double(end - start) / CLOCKS_PER_SEC << " s to compute the amount of change in the stiffness matrix" << endl;
+        
         // 构造组合近似降阶模型计时
         start = clock();
         ca_build_rom(data_cae_, delt_K, n_basis); // 计算组合近似降阶模型
@@ -354,11 +395,13 @@ namespace CAE
 
         data_cae_.single_dis_vec_.clear();
         data_cae_.single_full_dis_vec_.clear();
+        
         // 求解计时
         start = clock();
         ca_solve(data_cae_, current_K, ca_solution); // 求解降阶后的模型
         end = clock();
         cout << "It took " << double(end - start) / CLOCKS_PER_SEC << " s to solve the reduced model" << endl;
+
         // 提取节点位移, 此处位移场仍是参考模型上所有结点位移，在VTK输出中，只输出修改后模型的位移
         simulation_post post_item;
         post_item.reset_ca_displacement(data_cae_, ca_solution);
@@ -393,12 +436,9 @@ namespace CAE
         // 组装刚度矩阵
         assamble_stiffness item_assam;
 
-
         item_assam.SFEM_build_CSR(&SFEMData);
 
-
         item_assam.SFEM_fill_CSR_sparse_mat(&SFEMData, mat_);
-
 
         // 求解
         int num_free_nodes = data_cae_.nd_ - data_cae_.dis_bc_set_.size();
@@ -414,7 +454,6 @@ namespace CAE
         double scale_dis = 1.0;
         item_output.export_dis_2_vtk(data_cae_, result_path, scale_dis);
     }
-
 
     // 执行结构动态响应分析
     void CAE_process::explicit_analysis(string result_path, string path_abaqus)
