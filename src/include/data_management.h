@@ -62,7 +62,6 @@ namespace CAE
         vector<double> single_load_vec_;                         // 基于重排自由度的单载荷向量
         vector<double> single_dis_vec_;                          // 仅考虑无约束自由度的位移向量
         vector<double> single_full_dis_vec_;                     // 考虑所有自由度的位移向量
-        vector<double> single_full_ca_dis_vec_;                  // 考虑所有自由度的位移向量(用于重分析)
         vector<vector<double>> stress_mat_;                      // 针对每个"单元"的 柯西应力(前6列) + 冯米塞斯应力(最后一列)
         vector<vector<double>> stress_node_mat_;                 // 针对每个"节点"的 柯西应力(前6列) + 冯米塞斯应力(最后一列)
         vector<ele_base *> ele_list_;                            // 单元类型列表
@@ -78,24 +77,25 @@ namespace CAE
         double res_lmit = 1.0e-6;                                // 默认非线性的残差收敛标准
 
         // for CA
-        vector<vector<double>> ca_rom_n_;             // 组合近似-降阶模型(感觉没必要存，要不改到CA求解时再创建？把CA独立成新的求解类？)
+        vector<vector<double>> ca_rom_n_; // 组合近似-降阶模型(感觉没必要存，要不改到CA求解时再创建？把CA独立成新的求解类？)
         // 完整分析求解结果
         assamble_stiffness_save item_assam_implicit_; // 完整隐式分析的总刚
-        std::vector<double> single_dis_vec_o_;      // 仅考虑无约束自由度的位移向量-原始模型
-        std::vector<double> single_load_vec_o_;     // 基于重排自由度的单载荷向量-原始模型
-        std::vector<int> resort_free_nodes_o_;      // 重排无约束自由度索引-原始模型
-        std::vector<std::vector<double>> coords_o_; // 节点坐标 -原始模型
+        vector<double> single_dis_vec_ori_;           // 仅考虑无约束自由度的位移向量-原始模型
+        vector<double> single_load_vec_ori_;          // 基于重排自由度的单载荷向量-原始模型
+        vector<int> resort_free_nodes_ori_;           // 重排无约束自由度索引-原始模型
+        vector<vector<double>> coords_ori_;           // 节点坐标 -原始模型(用于复制coords_变量)
         // 修改后的模型
-        std::vector<std::vector<double>> coords_mfull_;   // 修改后的模型的所有节点坐标
-        std::vector<std::vector<int>> node_topos_mfull_;  // 修改后的模型的所有拓扑关系
-        vector<int> ele_list_idx_mfull_;                  // 修改后的模型(所有单元), 各单元对应的ele_list的索引
+        vector<vector<double>> coords_mdf_;  // 修改的模型的节点坐标
+        vector<vector<int>> node_topos_mdf_; // 修改的模型的拓扑关系
+        vector<int> ele_list_idx_mdf_;       // 修改后模型(所有单元), 各单元对应的ele_list的索引
+        vector<double> single_ca_dis_show_;  // 考虑所有自由度的位移向量(用于重分析)
         // 网格修改数据
-        int nd_m_;                                  // 修改前后模型前后节点合集元素数
-        int ne_m_;                                  // 修改的单元数（包含增删改）
-        std::vector<std::vector<int>> node_topos_m_; // 网格修改后的单元拓扑,num_ele*(1+4)后四个为节点坐标vec的索引，第1个为修改类型标记，0：删除单元，1：移动单元，2：增加单元
-        std::vector<std::vector<double>> coords_m_;  // 网格修改后的节点坐标
-        vector<int> ele_list_idx_m_;                 // 网格修改后,各单元对应的ele_list的索引
-        std::vector<int> node_idx_m_;                // 网格修改后的节点索引，如果为删除标记为-1
+        // int nd_union_map_;                        // 修改前后模型前后所有节点合集元素数
+        // int ne_diff_map_;                         // 修改的单元数（包含增删改）
+        vector<vector<int>> node_topos_diff_map_; // 修改的单元拓扑,num_ele*(1+4)后四个为节点坐标vec的索引，第1个为修改类型标记，0：删除单元，1：移动单元，2：增加单元
+        vector<vector<double>> coords_union_map_; // 修改前后模型前后所有节点（节点集合）坐标
+        vector<int> ele_list_idx_diff_map_;       // 修改单元对应的ele_list的索引
+        vector<int> node_idx_union_map_;          // 修改节点索引映射（节点合集在修改模型中节点的映射，如果为删除标记为-1）
     public:
         //  单元初始化
         void ele_inite(elastic_mat &data_mat);

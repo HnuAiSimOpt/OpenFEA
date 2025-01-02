@@ -186,11 +186,11 @@ namespace CAE
             if (option_.reanalysis_flag)
             {
                 // 重分析
-                string mesh_path1 = option_.ca1file_name;     // "E:\\WH_CAE\\test_model\\CA_cadcae\\CA_info.txt"; 
-                string mesh_path2 = option_.ca2file_name;     // "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_m.inp";  
-                this->CA_pre_process(mesh_path1, mesh_path2); 
-                // 开始执行重分析                               
-                string CA_result_path = option_.ofile_name;  // "E:\\WH_CAE\\test_model\\output\\cadcae_ca.vtk";
+                string mesh_path1 = option_.ca1file_name; // "E:\\WH_CAE\\test_model\\CA_cadcae\\CA_info.txt";
+                string mesh_path2 = option_.ca2file_name; // "E:\\WH_CAE\\test_model\\CA_cadcae\\mesh_m.inp";
+                this->CA_pre_process(mesh_path1, mesh_path2);
+                // 开始执行重分析
+                string CA_result_path = option_.ofile_name; // "E:\\WH_CAE\\test_model\\output\\cadcae_ca.vtk";
                 int n_basis = 4;
                 this->CA_ReAnalysis(CA_result_path, n_basis);
             }
@@ -331,20 +331,21 @@ namespace CAE
         if (is_save_stiffness)
         {
             // move 原始节点坐标
-            data_cae_.single_dis_vec_o_ = std::move(data_cae_.single_dis_vec_);
-            data_cae_.resort_free_nodes_o_ = std::move(data_cae_.resort_free_nodes_);
-            data_cae_.coords_o_ = std::move(data_cae_.coords_);
-            data_cae_.single_load_vec_o_ = std::move(data_cae_.single_load_vec_);
+            data_cae_.single_dis_vec_ori_ = std::move(data_cae_.single_dis_vec_);
+            data_cae_.resort_free_nodes_ori_ = std::move(data_cae_.resort_free_nodes_);
+            data_cae_.coords_ori_ = std::move(data_cae_.coords_);
+            data_cae_.single_load_vec_ori_ = std::move(data_cae_.single_load_vec_);
+            cout << "the data have been saved." << endl;
         }
     }
 
-    void CAE_process::CA_pre_process(string mesh_path, string node_now_path)
+    void CAE_process::CA_pre_process(string mesh_path, string map_info_path)
     {
         // 读取网格信息
         path_ = mesh_path;
-        ReadInfo item_info(path_, node_now_path);
+        ReadInfo item_info(mesh_path, map_info_path);
 
-        // 读取删除单元拓扑信息
+        // 读取网格变化信息及映射关系
         item_info.CA_read_change(data_cae_);
 
         // 读取现有模型节点
@@ -365,18 +366,21 @@ namespace CAE
         {
             // TODO 当有单元增加的时候，修改参考刚度矩阵索引：row_idx_，col_idx_
         }
-        // 当前刚度矩阵无增加的情况
+        // 当前刚度矩阵无增加的情况，索引与从参考模型一致
         current_K.num_row_ = data_cae_.item_assam_implicit_.num_row_;
         current_K.num_col_ = data_cae_.item_assam_implicit_.num_col_;
         current_K.num_nz_val_ = data_cae_.item_assam_implicit_.num_nz_val_;
-        
         current_K.row_idx_.assign(data_cae_.item_assam_implicit_.row_idx_.begin(), data_cae_.item_assam_implicit_.row_idx_.end());
         current_K.col_idx_.assign(data_cae_.item_assam_implicit_.col_idx_.begin(), data_cae_.item_assam_implicit_.col_idx_.end());
+        // 填充值需要重写
         current_K.nz_val_.resize(current_K.num_nz_val_);
         std::fill(current_K.nz_val_.begin(), current_K.nz_val_.end(), 0.);
 
         // 刚度矩阵变化量 计时
         start = clock();
+        delt_K.num_row_ = data_cae_.item_assam_implicit_.num_row_;
+        delt_K.num_col_ = data_cae_.item_assam_implicit_.num_col_;
+        delt_K.num_nz_val_ = data_cae_.item_assam_implicit_.num_nz_val_;
         ca_get_delt_stiffness(data_cae_, delt_K, mat_); // 计算delt_K
 
         // 填充当前刚度矩阵的值
@@ -386,7 +390,16 @@ namespace CAE
         }
         end = clock();
         cout << "It took " << double(end - start) / CLOCKS_PER_SEC << " s to compute the amount of change in the stiffness matrix" << endl;
-        
+        // ----------------------------------------------------------------------------------
+        // std::ofstream fout;
+        // fout.open("C:\\Users\\jicha\\Desktop\\YFdata\\output\\Kinfo.txt", std::ios::out);
+        // fout << std::unitbuf;
+        // for (int kkkk = 0; kkkk < current_K.num_nz_val_; kkkk++)
+        // {
+        //     fout << delt_K.nz_val_[kkkk] << "\t\t" << current_K.nz_val_[kkkk] << "\t\t" << data_cae_.item_assam_implicit_.nz_val_[kkkk] << "\n";
+        // }
+        // fout.close();
+        // ----------------------------------------------------------------------------------
         // 构造组合近似降阶模型计时
         start = clock();
         ca_build_rom(data_cae_, delt_K, n_basis); // 计算组合近似降阶模型
@@ -395,7 +408,7 @@ namespace CAE
 
         data_cae_.single_dis_vec_.clear();
         data_cae_.single_full_dis_vec_.clear();
-        
+
         // 求解计时
         start = clock();
         ca_solve(data_cae_, current_K, ca_solution); // 求解降阶后的模型

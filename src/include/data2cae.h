@@ -29,14 +29,14 @@ namespace CAE
     class ReadInfo
     {
     public:
-        string path_;
-        string path_now_ndoe_;
+        string mesh_path_;
+        string map_info_path_;
 
     public:
         // 构造函数，析构函数
         ReadInfo(){};
-        ReadInfo(string path1) : path_(path1){};
-        ReadInfo(string path1, string path2) : path_(path1), path_now_ndoe_(path2){};
+        ReadInfo(string mesh_path) : mesh_path_(mesh_path){};
+        ReadInfo(string mesh_path, string map_info_path) : mesh_path_(mesh_path), map_info_path_(map_info_path){};
         // ~ReadInfo();
 
         // 读取单元、节点总数
