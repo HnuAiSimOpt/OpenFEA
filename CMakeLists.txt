@@ -26,6 +26,7 @@ if(MKL_USE)
     list(APPEND CMAKE_PREFIX_PATH $ENV{MKLROOT}/lib/cmake/mkl)
     set (MKL_INTERFACE lp64)
     set (MKL_LINK static) # 使用静态链接，生成的程序不用拷贝动态库（如果希望使用动态链接，请查阅CmakeLists参数手册、打包发送注意事项）
+    # set (MKL_THREADING tbb_thread)
     find_package(MKL CONFIG REQUIRED)
 endif()
 

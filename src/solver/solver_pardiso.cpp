@@ -124,12 +124,13 @@ namespace CAE
             exit(3);
         }
         std::cout << "Phase 33 has been finished ......\n";
+        return true;
     }
 
     bool PardisoSolution::pardiso_solution()
     {
         /* ---------------------------------------------------------------------------------------------------------------
-        回代
+        回代求解
         ---------------------------------------------------------------------------------------------------------------- */
         MKL_INT error = 0; /* Initialize error flag */
         MKL_INT phase = 33;
@@ -139,9 +140,28 @@ namespace CAE
         if (error != 0)
         {
             printf("\nERROR during solution: " IFORMAT, error);
-            exit(3);
+            exit(4);
         }
         std::cout << "Phase 33 has been finished ......\n";
+        return true;
+    }
+
+    // 清空数据
+    bool PardisoSolution::clear_data()
+    {
+        /* ---------------------------------------------------------------------------------------------------------------
+        设置 phase = -1 或 phase = 0 来释放PARDISO占用的资源
+        ---------------------------------------------------------------------------------------------------------------- */
+        MKL_INT error = 0; /* Initialize error flag */
+        MKL_INT phase = -1; 
+        PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, rhs, solution, &error);
+        if (error != 0)
+        {
+            printf("\nERROR during clear: " IFORMAT, error);
+            exit(5);
+        }
+        std::cout << "Phase -1 has been finished ......\n";
+        return true;
     }
 
 

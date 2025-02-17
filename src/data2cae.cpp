@@ -18,10 +18,10 @@ namespace CAE
     void ReadInfo::read_ele_node_num(data_management &data_cae)
     {
         int nd, ne;
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         if (!infile)
         {
-            std::cerr << "Error: Cannot open " << path_ << std::endl;
+            std::cerr << "!!! Error: Cannot open " << mesh_path_ << std::endl;
             exit(EXIT_FAILURE);
         }
         string line;
@@ -81,7 +81,7 @@ namespace CAE
         data_cae.node_topos_.resize(data_cae.ne_, vector<int>(8));
         data_cae.ele_list_idx_.resize(data_cae.ne_);
         // 读取计算文件
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         string line, temp_node_topo;
         std::vector<string> type_temp;
         int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
@@ -181,7 +181,7 @@ namespace CAE
     // 读取非协调信息
     void ReadInfo::readNconformingMessage(data_management &data_cae)
     {
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         string line;
         while (!safeGetline(infile, line).eof())
         {
@@ -315,7 +315,7 @@ namespace CAE
     void ReadInfo::read_load_bcs(string load_set_keyword, string load_value_keyword, data_management &data_cae)
     {
         // 读取计算文件
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         string line;
         // 读取载荷节点集合
         while (!safeGetline(infile, line).eof())
@@ -376,7 +376,7 @@ namespace CAE
     void ReadInfo::read_dis_bcs(string dis_set_keyword, data_management &data_cae)
     {
         // 读取计算文件
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         string line;
         // 读取载荷节点集合
         while (!safeGetline(infile, line).eof())
@@ -413,11 +413,13 @@ namespace CAE
         cout << "the information of displacement boundary (" << data_cae.dis_bc_set_.size() << ")  have been readed." << endl;
     }
 
-    void ReadInfo::read_mat(elastic_mat& mat_)
+    void ReadInfo::read_mat(elastic_mat &mat_)
     {
         // 读取计算文件
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         std::string line;
+        mat_.density = 0.0;
+        mat_.young_modulus = 0.0;
         // 读取载荷节点集合
         while (!safeGetline(infile, line).eof())
         {
@@ -436,19 +438,19 @@ namespace CAE
                 std::istringstream iss(line);
                 iss >> young_modulus_s >> poisson_ratio_s;
                 young_modulus_s.erase(young_modulus_s.end() - 1); // 删除字符串最后的符号
-                mat_.young_modulus = stod(young_modulus_s); // 转换字符串为double
-                mat_.poisson_ratio = stod(poisson_ratio_s); // 转换字符串为double
+                mat_.young_modulus = stod(young_modulus_s);       // 转换字符串为double
+                mat_.poisson_ratio = stod(poisson_ratio_s);       // 转换字符串为double
             }
         }
         infile.close();
         cout << "the young_modulus of mat is :" << mat_.young_modulus << "\nthe poisson_ratio of mat is :"
-            << mat_.poisson_ratio << "\nthe density of mat is :" << mat_.density << endl;
+             << mat_.poisson_ratio << "\nthe density of mat is :" << mat_.density << endl;
     }
 
-    void ReadInfo::read_time(data_management& data_cae_)
+    void ReadInfo::read_time(data_management &data_cae_)
     {
         // 读取计算文件
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         string line;
         // 读取时间步长设置
         while (!safeGetline(infile, line).eof())
@@ -456,9 +458,10 @@ namespace CAE
             char comma;
             if (line.find("Explicit") != string::npos)
             {
-                while(!safeGetline(infile, line).eof())
+                while (!safeGetline(infile, line).eof())
                 {
-                    if (line[0] == '*' && line[1] == '*') {
+                    if (line[0] == '*' && line[1] == '*')
+                    {
                         continue;
                     }
                     if (line[0] == '*')
@@ -467,19 +470,22 @@ namespace CAE
                     {
                         std::istringstream iss(line);
                         // 尝试读取时间步长
-                        if (!(iss >> data_cae_.time_step_)) {
+                        if (!(iss >> data_cae_.time_step_))
+                        {
                             // 如果读取time_step_失败，说明time_step_被省略了，保持默认值0.0
-                            iss.clear(); // 清除错误标志
+                            iss.clear();  // 清除错误标志
                             iss.seekg(0); // 回到流的开始位置
                         }
-                        
+
                         // 成功读取time_step_后，尝试读取逗号
-                        if (!(iss >> comma) || comma != ',') {
+                        if (!(iss >> comma) || comma != ',')
+                        {
                             std::cout << "Input formatting error, missing comma(reading step time)" << std::endl;
                         }
-                        
+
                         // 读取time_total_
-                        if (!(iss >> data_cae_.time_total_)) {
+                        if (!(iss >> data_cae_.time_total_))
+                        {
                             std::cout << "Input formatting error, missing total time(reading step time)" << std::endl;
                         }
                     }
@@ -488,7 +494,6 @@ namespace CAE
         }
         infile.close();
         cout << "the step time have been readed." << endl;
-
     }
 
     void ReadInfo::del_blank(string &str)
@@ -519,13 +524,20 @@ namespace CAE
 
     void ReadInfo::CA_read_change(data_management &data_cae)
     {
-        std::ifstream infile(path_.c_str(), std::ios::in);
+        /*
+        读取特征修改 “前后” 结构的网格信息映射关系，包括：
+        1、修改 “前后” 结构的所有节点合集
+        2、发生变化的单元信息
+        3、节点集合中的点在修改模型中的节点映射
+        */
+        std::ifstream infile(map_info_path_.c_str(), std::ios::in);
         if (!infile)
         {
-            std::cerr << "Error: Cannot open " << path_ << std::endl;
+            std::cerr << "Error: Cannot open " << map_info_path_ << std::endl;
             exit(EXIT_FAILURE);
         }
-        // 读取变化前后节点合集总数，变化单元数
+
+        // 读取映射关系涉及的 节点合集总数 和 变化单元数
         string line;
         int nd, ne;
         while (!safeGetline(infile, line).eof())
@@ -546,15 +558,17 @@ namespace CAE
                 break;
             }
         }
-        data_cae.ne_m_ = ne;
-        data_cae.nd_m_ = nd;
-        cout << "the number node set after modifying is: " << data_cae.nd_m_ << endl;
-        cout << "the number of changed element is: " << data_cae.ne_m_ << endl;
+        cout << "\n"
+             << endl;
+        cout << "the number of toal nodes is: " << nd << endl;
+        cout << "the number of changed elements is: " << ne << endl;
 
         // 读取节点合集，变化单元合集
-        data_cae.coords_m_.resize(data_cae.nd_m_, vector<double>(3));
-        data_cae.node_topos_m_.resize(data_cae.ne_m_, vector<int>(9));
-        data_cae.ele_list_idx_m_.resize(data_cae.ne_m_);
+        data_cae.mesh_ca_map_.union_coords_.resize(nd, vector<double>(3));
+        data_cae.mesh_ca_map_.change_node_topos_.resize(ne, vector<int>(9));
+        data_cae.mesh_ca_map_.change_ele_idx_.resize(ne);
+        data_cae.mesh_ca_map_.node_idx_union_map_.resize(nd);
+
         // 读取计算文件
         string temp_node_topo;
         std::vector<string> type_temp;
@@ -576,18 +590,18 @@ namespace CAE
             }
             if (node_record)
             {
-                string x, y, z;
+                string temp, x, y, z;
                 double x_, y_, z_;
                 std::istringstream iss(line);
-                iss >> x >> y >> z;
+                iss >> temp >> x >> y >> z;
                 x.erase(x.end() - 1); // 删除字符串最后的符号
                 x_ = stod(x);         // 转换字符串为double
                 y.erase(y.end() - 1);
                 y_ = stod(y);
                 z_ = stod(z);
-                data_cae.coords_m_[id_node][0] = x_;
-                data_cae.coords_m_[id_node][1] = y_;
-                data_cae.coords_m_[id_node][2] = z_;
+                data_cae.mesh_ca_map_.union_coords_[id_node][0] = x_;
+                data_cae.mesh_ca_map_.union_coords_[id_node][1] = y_;
+                data_cae.mesh_ca_map_.union_coords_[id_node][2] = z_;
                 id_node = id_node + 1;
             }
             /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
@@ -621,12 +635,12 @@ namespace CAE
             {
                 std::istringstream iss(line);
                 // 储存单元类型
-                data_cae.ele_list_idx_m_[id_ele] = I_ele_type;
+                data_cae.mesh_ca_map_.change_ele_idx_[id_ele] = I_ele_type;
                 int temp_id = 0;
                 while (getline(iss, temp_node_topo, ','))
                 {
                     del_blank(temp_node_topo);
-                    data_cae.node_topos_m_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                    data_cae.mesh_ca_map_.change_node_topos_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
                     temp_id += 1;
                 }
                 id_ele += 1;
@@ -639,8 +653,7 @@ namespace CAE
 
         // 读取节点映射集合
         id_node = 0;
-        int node_id_;
-        data_cae.node_idx_m_.resize(data_cae.nd_m_);
+        int node_id_temp;
         // 将文件指针回到文件的开头
         infile.seekg(0, std::ios::beg);
         while (!safeGetline(infile, line).eof())
@@ -654,30 +667,25 @@ namespace CAE
                         infile.close();
                         break;
                     }
-                    node_id_ = atoi(line.c_str()); // 转换字符串为int
-                    data_cae.node_idx_m_[id_node] = node_id_;
+                    node_id_temp = atoi(line.c_str()); // 转换字符串为int
+                    data_cae.mesh_ca_map_.node_idx_union_map_[id_node] = node_id_temp;
                     id_node++;
                 }
             }
         }
-        // cout << data_cae.coords_m_[data_cae.nd_m_ - 1][0] << ", "
-        //      << data_cae.coords_m_[data_cae.nd_m_ - 1][1] << ", "
-        //      << data_cae.coords_m_[data_cae.nd_m_ - 1][2] << endl;
-        // cout << data_cae.node_topos_m_[data_cae.ne_m_ - 1][0] << ", "
-        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][1] << ", "
-        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][2] << ", "
-        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][3] << ", "
-        //      << data_cae.node_topos_m_[data_cae.ne_m_ - 1][4]<< endl;
-        // cout << data_cae.node_idx_m_[data_cae.nd_m_ - 1] << endl;
     }
-
 
     void CAE::ReadInfo::CA_read_now_node(data_management &data_cae)
     {
-        std::ifstream infile(path_now_ndoe_.c_str(), std::ios::in);
+        /*
+        读取特征修改 “后” 结构的网格信息映射关系，包括：
+        1、修改 “后” 结构的节点坐标
+        2、修改 “后” 结构的节点连接关系
+        */
+        std::ifstream infile(mesh_path_.c_str(), std::ios::in);
         if (!infile)
         {
-            std::cerr << "Error: Cannot open " << path_ << std::endl;
+            std::cerr << "Error: Cannot open " << mesh_path_ << std::endl;
             exit(EXIT_FAILURE);
         }
         int nd, ne;
@@ -702,18 +710,18 @@ namespace CAE
                 break;
             }
         }
-        
-        cout << "the number of element for modified strcture is: " << data_cae.ne_ << endl
-             << "the number of node for modified strcture is: " << data_cae.nd_ << endl;
 
-        // 读取修改后模型的节点和topo
+        cout << "the number of node for modified strcture is: " << nd << endl
+             << "the number of element for modified strcture is: " << ne << endl;
+
+        // 读取修改后模型的节点坐标和节点连接关系
         string temp_node_topo;
         std::vector<string> type_temp;
         int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
         bool node_record = false, node_topo_record = false;
-        data_cae.coords_mfull_.resize(nd, vector<double>(3));
-        data_cae.node_topos_mfull_.resize(ne, vector<int>(8));
-        data_cae.ele_list_idx_mfull_.resize(ne);
+        data_cae.mesh_ca_new_.mdf_coords_.resize(nd, vector<double>(3));
+        data_cae.mesh_ca_new_.mdf_node_topos_.resize(ne, vector<int>(8));
+        data_cae.mesh_ca_new_.mdf_ele_list_idx_.resize(ne);
         infile.seekg(0, std::ios::beg);
         while (!safeGetline(infile, line).eof())
         {
@@ -738,9 +746,9 @@ namespace CAE
                 y.erase(y.end() - 1);
                 y_ = stod(y);
                 z_ = stod(z);
-                data_cae.coords_mfull_[id_node][0] = x_;
-                data_cae.coords_mfull_[id_node][1] = y_;
-                data_cae.coords_mfull_[id_node][2] = z_;
+                data_cae.mesh_ca_new_.mdf_coords_[id_node][0] = x_;
+                data_cae.mesh_ca_new_.mdf_coords_[id_node][1] = y_;
+                data_cae.mesh_ca_new_.mdf_coords_[id_node][2] = z_;
                 id_node = id_node + 1;
             }
             /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
@@ -774,13 +782,13 @@ namespace CAE
             {
                 std::istringstream iss(line);
                 // 储存单元类型
-                data_cae.ele_list_idx_mfull_[id_ele] = I_ele_type;
+                data_cae.mesh_ca_new_.mdf_ele_list_idx_[id_ele] = I_ele_type;
                 int temp_id = -1;
                 while (getline(iss, temp_node_topo, ','))
                 {
                     del_blank(temp_node_topo);
                     if (temp_id >= 0)
-                        data_cae.node_topos_mfull_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                        data_cae.mesh_ca_new_.mdf_node_topos_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
                     temp_id += 1;
                 }
                 id_ele += 1;
@@ -791,7 +799,6 @@ namespace CAE
             }
         }
         infile.close();
-
     }
 
     void CAE::ReadInfo::CA_data_convert(data_management &data_cae, vector<int> &del_topo, bool *node_del_idx, bool *topo_del_idx)
@@ -818,7 +825,7 @@ namespace CAE
         }
     }
 
-    std::istream& CAE::ReadInfo::safeGetline(std::istream& is, std::string& t)
+    std::istream &CAE::ReadInfo::safeGetline(std::istream &is, std::string &t)
     {
         t.clear();
 
@@ -829,11 +836,13 @@ namespace CAE
         // such as thread synchronization and updating the stream state.
 
         std::istream::sentry se(is, true);
-        std::streambuf* sb = is.rdbuf();
+        std::streambuf *sb = is.rdbuf();
 
-        for (;;) {
+        for (;;)
+        {
             int c = sb->sbumpc();
-            switch (c) {
+            switch (c)
+            {
             case '\n':
                 return is;
             case '\r':

@@ -46,6 +46,8 @@ namespace CAE
         // 求解
         bool pardiso_solution(vector<double> &b, vector<double> &x);
         bool pardiso_solution();
+        // 清空数据
+        bool clear_data();
 
     private:
         /* -------------------------- */
