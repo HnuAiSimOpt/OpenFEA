@@ -272,7 +272,8 @@ namespace CAE
         fout.close();
     };
 
-    void CAE::data_process::CA_export_dis_2_vtk(data_management &data_cae, double scale_dis, string result_path)
+    void data_process::export_dis2vtk(data_management &data_cae, vector<vector<double>> &coors, vector<vector<int>> &eles, vector<int> &mdf_ele_list_idx_,
+                                      vector<double> &dis, double scale_dis, string result_path)
     {
         std::ofstream fout;
         fout.open(result_path, std::ios::out);
@@ -281,32 +282,31 @@ namespace CAE
             std::cerr << "Error: Cannot open " << result_path << std::endl;
             exit(EXIT_FAILURE);
         }
-        fout << std::unitbuf;                                   // 关闭缓冲
         fout << "# vtk DataFile Version 3.0\n";                 // Version Statement
         fout << "The density field of the optimized results\n"; // title
         fout << "ASCII\n";                                      // file format statement
         fout << "DATASET UNSTRUCTURED_GRID\n\n";                // data format: unstructured grid
 
         // 输入节点坐标
-        int num_node = data_cae.coords_mdf_.size();
+        int num_node = coors.size();
         fout << "POINTS\t" << num_node << "\tdouble\n";
         int id = 1;
         for (int i = 0; i < num_node; i++)
         {
-            double dis1 = data_cae.coords_mdf_[i][0] + scale_dis * data_cae.single_ca_dis_show_[3 * i];
-            double dis2 = data_cae.coords_mdf_[i][1] + scale_dis * data_cae.single_ca_dis_show_[3 * i + 1];
-            double dis3 = data_cae.coords_mdf_[i][2] + scale_dis * data_cae.single_ca_dis_show_[3 * i + 2];
+            double dis1 = coors[i][0] + scale_dis * dis[3 * i];
+            double dis2 = coors[i][1] + scale_dis * dis[3 * i + 1];
+            double dis3 = coors[i][2] + scale_dis * dis[3 * i + 2];
             fout << dis1 << "\t\t" << dis2 << "\t\t" << dis3 << "\n";
         }
 
         // 统计单元类型
-        int num_ele = data_cae.node_topos_mdf_.size();
+        int num_ele = mdf_ele_list_idx_.size();
         int num_ele_C3D4 = 0;
         int num_ele_C3D8 = 0;
         int num_ele_C3D8R = 0;
         for (int i = 0; i < num_ele; i++)
         {
-            int ele_type = data_cae.ele_list_idx_mdf_[i];
+            int ele_type = mdf_ele_list_idx_[i];
             int map_idx = data_cae.ele_map_list_[ele_type];
             string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
@@ -337,31 +337,31 @@ namespace CAE
         fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            int ele_type = data_cae.ele_list_idx_mdf_[i];
+            int ele_type = mdf_ele_list_idx_[i];
             int map_idx = data_cae.ele_map_list_[ele_type];
             string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
             {
             case 1:
             {
-                fout << 4 << "\t" << data_cae.node_topos_mdf_[i][0] - 1 << "\t" << data_cae.node_topos_mdf_[i][2] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][1] - 1 << "\t" << data_cae.node_topos_mdf_[i][3] - 1 << "\n";
+                fout << 4 << "\t" << eles[i][0] - 1 << "\t" << eles[i][2] - 1 << "\t"
+                     << eles[i][1] - 1 << "\t" << eles[i][3] - 1 << "\n";
                 break;
             }
             case 2:
             {
-                fout << 8 << "\t" << data_cae.node_topos_mdf_[i][0] - 1 << "\t" << data_cae.node_topos_mdf_[i][1] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][3] - 1 << "\t" << data_cae.node_topos_mdf_[i][2] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][4] - 1 << "\t" << data_cae.node_topos_mdf_[i][5] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][7] - 1 << "\t" << data_cae.node_topos_mdf_[i][6] - 1 << "\n";
+                fout << 8 << "\t" << eles[i][0] - 1 << "\t" << eles[i][1] - 1 << "\t"
+                     << eles[i][3] - 1 << "\t" << eles[i][2] - 1 << "\t"
+                     << eles[i][4] - 1 << "\t" << eles[i][5] - 1 << "\t"
+                     << eles[i][7] - 1 << "\t" << eles[i][6] - 1 << "\n";
                 break;
             }
             case 3:
             {
-                fout << 8 << "\t" << data_cae.node_topos_mdf_[i][0] - 1 << "\t" << data_cae.node_topos_mdf_[i][1] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][3] - 1 << "\t" << data_cae.node_topos_mdf_[i][2] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][4] - 1 << "\t" << data_cae.node_topos_mdf_[i][5] - 1 << "\t"
-                     << data_cae.node_topos_mdf_[i][7] - 1 << "\t" << data_cae.node_topos_mdf_[i][6] - 1 << "\n";
+                fout << 8 << "\t" << eles[i][0] - 1 << "\t" << eles[i][1] - 1 << "\t"
+                     << eles[i][3] - 1 << "\t" << eles[i][2] - 1 << "\t"
+                     << eles[i][4] - 1 << "\t" << eles[i][5] - 1 << "\t"
+                     << eles[i][7] - 1 << "\t" << eles[i][6] - 1 << "\n";
                 break;
             }
             default:
@@ -375,7 +375,7 @@ namespace CAE
         fout << "CELL_TYPES\t\t" << num_ele << "\n";
         for (int i = 0; i < num_ele; i++)
         {
-            int ele_type = data_cae.ele_list_idx_mdf_[i];
+            int ele_type = mdf_ele_list_idx_[i];
             int map_idx = data_cae.ele_map_list_[ele_type];
             string item_ele_type = data_cae.ele_list_[map_idx]->type_;
             switch (ELE_TYPES[item_ele_type])
@@ -402,7 +402,6 @@ namespace CAE
             }
             }
         }
-
         // 写入单元位移
         // X
         fout << "\nPOINT_DATA\t" << num_node
@@ -410,30 +409,30 @@ namespace CAE
              << "LOOKUP_TABLE  table1\n";
         for (int i = 0; i < num_node; i++)
         {
-            fout << data_cae.single_ca_dis_show_[3 * i] << "\n";
+            fout << dis[3 * i] << "\n";
         }
         // Y
         fout << "\nSCALARS u_y double 1\n"
              << "LOOKUP_TABLE  table2\n";
         for (int i = 0; i < num_node; i++)
         {
-            fout << data_cae.single_ca_dis_show_[3 * i + 1] << "\n";
+            fout << dis[3 * i + 1] << "\n";
         }
         // Z
         fout << "\nSCALARS u_z double 1\n"
              << "LOOKUP_TABLE  table3\n";
         for (int i = 0; i < num_node; i++)
         {
-            fout << data_cae.single_ca_dis_show_[3 * i + 2] << "\n";
+            fout << dis[3 * i + 2] << "\n";
         }
         // 合位移
         fout << "\nSCALARS u_magnitude double 1\n"
              << "LOOKUP_TABLE  table4\n";
         for (int i = 0; i < num_node; i++)
         {
-            double u_ = sqrt(data_cae.single_ca_dis_show_[3 * i + 2] * data_cae.single_ca_dis_show_[3 * i + 2] +
-                             data_cae.single_ca_dis_show_[3 * i + 1] * data_cae.single_ca_dis_show_[3 * i + 1] +
-                             data_cae.single_ca_dis_show_[3 * i] * data_cae.single_ca_dis_show_[3 * i]);
+            double u_ = sqrt(dis[3 * i + 2] * dis[3 * i + 2] +
+                             dis[3 * i + 1] * dis[3 * i + 1] +
+                             dis[3 * i] * dis[3 * i]);
             fout << u_ << "\n";
         }
         fout.close();

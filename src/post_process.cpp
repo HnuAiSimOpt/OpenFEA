@@ -42,40 +42,40 @@ namespace CAE
     bool simulation_post::reset_ca_displacement(data_management &data_cae, vector<double> &dis)
     {
         // dis 未包含位移约束点，故还原到完整全位移(包含节点变化前后的所有节点自由度)
-        data_cae.single_ca_dis_show_.resize(3 * data_cae.coords_union_map_.size());
-        for (int i = 0; i < data_cae.coords_union_map_.size(); i++)
-        {
-            int resort_node = data_cae.resort_free_nodes_ori_[i];
-            if (resort_node >= 0)
-            {
-                data_cae.single_ca_dis_show_[3 * i] = dis[3 * resort_node];
-                data_cae.single_ca_dis_show_[3 * i + 1] = dis[3 * resort_node + 1];
-                data_cae.single_ca_dis_show_[3 * i + 2] = dis[3 * resort_node + 2];
-            }
-            else
-            {
-                data_cae.single_ca_dis_show_[3 * i] = 0.0;
-                data_cae.single_ca_dis_show_[3 * i + 1] = 0.0;
-                data_cae.single_ca_dis_show_[3 * i + 2] = 0.0;
-            }
-        }
-        cout << "the full displacement has been filled." << endl;
+        // data_cae.single_ca_dis_show_.resize(3 * data_cae.coords_union_map_.size());
+        // for (int i = 0; i < data_cae.coords_union_map_.size(); i++)
+        // {
+        //     int resort_node = data_cae.resort_free_nodes_ori_[i];
+        //     if (resort_node >= 0)
+        //     {
+        //         data_cae.single_ca_dis_show_[3 * i] = dis[3 * resort_node];
+        //         data_cae.single_ca_dis_show_[3 * i + 1] = dis[3 * resort_node + 1];
+        //         data_cae.single_ca_dis_show_[3 * i + 2] = dis[3 * resort_node + 2];
+        //     }
+        //     else
+        //     {
+        //         data_cae.single_ca_dis_show_[3 * i] = 0.0;
+        //         data_cae.single_ca_dis_show_[3 * i + 1] = 0.0;
+        //         data_cae.single_ca_dis_show_[3 * i + 2] = 0.0;
+        //     }
+        // }
+        // cout << "the full displacement has been filled." << endl;
 
-        // 删除修改后结构不包含的节点
-        std::vector<double> new_full_dis_vec;
-        new_full_dis_vec.resize(3 * data_cae.coords_mdf_.size());
-        for (int i = 0; i < data_cae.coords_union_map_.size(); i++)
-        {
-            if (data_cae.node_idx_union_map_[i] == -1)
-            {
-                continue;
-            }
-            new_full_dis_vec[data_cae.node_idx_union_map_[i] * 3] = data_cae.single_ca_dis_show_[i * 3];
-            new_full_dis_vec[data_cae.node_idx_union_map_[i] * 3 + 1] = data_cae.single_ca_dis_show_[i * 3 + 1];
-            new_full_dis_vec[data_cae.node_idx_union_map_[i] * 3 + 2] = data_cae.single_ca_dis_show_[i * 3 + 2];
-        }
-        data_cae.single_ca_dis_show_ = std::move(new_full_dis_vec);
-        cout << "the displacement has been mapped to the new model. the size is: " << data_cae.single_ca_dis_show_.size() << endl;
+        // // 删除修改后结构不包含的节点
+        // std::vector<double> new_full_dis_vec;
+        // new_full_dis_vec.resize(3 * data_cae.coords_mdf_.size());
+        // for (int i = 0; i < data_cae.coords_union_map_.size(); i++)
+        // {
+        //     if (data_cae.node_idx_union_map_[i] == -1)
+        //     {
+        //         continue;
+        //     }
+        //     new_full_dis_vec[data_cae.node_idx_union_map_[i] * 3] = data_cae.single_ca_dis_show_[i * 3];
+        //     new_full_dis_vec[data_cae.node_idx_union_map_[i] * 3 + 1] = data_cae.single_ca_dis_show_[i * 3 + 1];
+        //     new_full_dis_vec[data_cae.node_idx_union_map_[i] * 3 + 2] = data_cae.single_ca_dis_show_[i * 3 + 2];
+        // }
+        // data_cae.single_ca_dis_show_ = std::move(new_full_dis_vec);
+        // cout << "the displacement has been mapped to the new model. the size is: " << data_cae.single_ca_dis_show_.size() << endl;
         return true;
     }
 

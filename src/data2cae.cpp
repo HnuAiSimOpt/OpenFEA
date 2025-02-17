@@ -558,15 +558,16 @@ namespace CAE
                 break;
             }
         }
-        // nd = nd;
-        // ne = ne;
-        cout << "\n\nthe number NODE SET cloud before and after modifying is: " << nd << endl;
-        cout << "the number of CHANGED ELEMENT is: " << ne << endl;
+        cout << "\n"
+             << endl;
+        cout << "the number of toal nodes is: " << nd << endl;
+        cout << "the number of changed elements is: " << ne << endl;
 
         // 读取节点合集，变化单元合集
-        data_cae.coords_union_map_.resize(nd, vector<double>(3));
-        data_cae.node_topos_diff_map_.resize(ne, vector<int>(9));
-        data_cae.ele_list_idx_diff_map_.resize(ne);
+        data_cae.mesh_ca_map_.union_coords_.resize(nd, vector<double>(3));
+        data_cae.mesh_ca_map_.change_node_topos_.resize(ne, vector<int>(9));
+        data_cae.mesh_ca_map_.change_ele_idx_.resize(ne);
+        data_cae.mesh_ca_map_.node_idx_union_map_.resize(nd);
 
         // 读取计算文件
         string temp_node_topo;
@@ -589,18 +590,18 @@ namespace CAE
             }
             if (node_record)
             {
-                string x, y, z;
+                string temp, x, y, z;
                 double x_, y_, z_;
                 std::istringstream iss(line);
-                iss >> x >> y >> z;
+                iss >> temp >> x >> y >> z;
                 x.erase(x.end() - 1); // 删除字符串最后的符号
                 x_ = stod(x);         // 转换字符串为double
                 y.erase(y.end() - 1);
                 y_ = stod(y);
                 z_ = stod(z);
-                data_cae.coords_union_map_[id_node][0] = x_;
-                data_cae.coords_union_map_[id_node][1] = y_;
-                data_cae.coords_union_map_[id_node][2] = z_;
+                data_cae.mesh_ca_map_.union_coords_[id_node][0] = x_;
+                data_cae.mesh_ca_map_.union_coords_[id_node][1] = y_;
+                data_cae.mesh_ca_map_.union_coords_[id_node][2] = z_;
                 id_node = id_node + 1;
             }
             /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
@@ -634,12 +635,12 @@ namespace CAE
             {
                 std::istringstream iss(line);
                 // 储存单元类型
-                data_cae.ele_list_idx_diff_map_[id_ele] = I_ele_type;
+                data_cae.mesh_ca_map_.change_ele_idx_[id_ele] = I_ele_type;
                 int temp_id = 0;
                 while (getline(iss, temp_node_topo, ','))
                 {
                     del_blank(temp_node_topo);
-                    data_cae.node_topos_diff_map_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                    data_cae.mesh_ca_map_.change_node_topos_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
                     temp_id += 1;
                 }
                 id_ele += 1;
@@ -653,7 +654,6 @@ namespace CAE
         // 读取节点映射集合
         id_node = 0;
         int node_id_temp;
-        data_cae.node_idx_union_map_.resize(nd);
         // 将文件指针回到文件的开头
         infile.seekg(0, std::ios::beg);
         while (!safeGetline(infile, line).eof())
@@ -668,23 +668,11 @@ namespace CAE
                         break;
                     }
                     node_id_temp = atoi(line.c_str()); // 转换字符串为int
-                    data_cae.node_idx_union_map_[id_node] = node_id_temp;
+                    data_cae.mesh_ca_map_.node_idx_union_map_[id_node] = node_id_temp;
                     id_node++;
                 }
             }
         }
-        // cout << data_cae.coords_union_map_[data_cae.nd_m_ - 1][0] << ", "
-        //      << data_cae.coords_union_map_[data_cae.nd_m_ - 1][1] << ", "
-        //      << data_cae.coords_union_map_[data_cae.nd_m_ - 1][2] << endl;
-        // cout << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][0] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][1] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][2] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][3] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][4] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][5] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][6] << ", "
-        //      << data_cae.node_topos_diff_map_[data_cae.ne_m_ - 1][7] << endl;
-        // cout << data_cae.node_idx_union_map_[data_cae.nd_m_ - 1] << endl;
     }
 
     void CAE::ReadInfo::CA_read_now_node(data_management &data_cae)
@@ -723,17 +711,17 @@ namespace CAE
             }
         }
 
-        cout << "the number of element for modified strcture is: " << ne << endl
-             << "the number of node for modified strcture is: " << nd << endl;
+        cout << "the number of node for modified strcture is: " << nd << endl
+             << "the number of element for modified strcture is: " << ne << endl;
 
         // 读取修改后模型的节点坐标和节点连接关系
         string temp_node_topo;
         std::vector<string> type_temp;
         int id_node = 0, id_ele = 0, ele_type_idx = 0, I_ele_type, node_per_ele;
         bool node_record = false, node_topo_record = false;
-        data_cae.coords_mdf_.resize(nd, vector<double>(3));
-        data_cae.node_topos_mdf_.resize(ne, vector<int>(8));
-        data_cae.ele_list_idx_mdf_.resize(ne);
+        data_cae.mesh_ca_new_.mdf_coords_.resize(nd, vector<double>(3));
+        data_cae.mesh_ca_new_.mdf_node_topos_.resize(ne, vector<int>(8));
+        data_cae.mesh_ca_new_.mdf_ele_list_idx_.resize(ne);
         infile.seekg(0, std::ios::beg);
         while (!safeGetline(infile, line).eof())
         {
@@ -758,9 +746,9 @@ namespace CAE
                 y.erase(y.end() - 1);
                 y_ = stod(y);
                 z_ = stod(z);
-                data_cae.coords_mdf_[id_node][0] = x_;
-                data_cae.coords_mdf_[id_node][1] = y_;
-                data_cae.coords_mdf_[id_node][2] = z_;
+                data_cae.mesh_ca_new_.mdf_coords_[id_node][0] = x_;
+                data_cae.mesh_ca_new_.mdf_coords_[id_node][1] = y_;
+                data_cae.mesh_ca_new_.mdf_coords_[id_node][2] = z_;
                 id_node = id_node + 1;
             }
             /* --------------------- 读取单元类型及节点拓扑关系 --------------------- */
@@ -794,13 +782,13 @@ namespace CAE
             {
                 std::istringstream iss(line);
                 // 储存单元类型
-                data_cae.ele_list_idx_mdf_[id_ele] = I_ele_type;
+                data_cae.mesh_ca_new_.mdf_ele_list_idx_[id_ele] = I_ele_type;
                 int temp_id = -1;
                 while (getline(iss, temp_node_topo, ','))
                 {
                     del_blank(temp_node_topo);
                     if (temp_id >= 0)
-                        data_cae.node_topos_mdf_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
+                        data_cae.mesh_ca_new_.mdf_node_topos_[id_ele][temp_id] = atoi(temp_node_topo.c_str());
                     temp_id += 1;
                 }
                 id_ele += 1;

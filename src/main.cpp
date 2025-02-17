@@ -40,16 +40,14 @@ int main(int argc, char *argv[])
 
 void code_test()
 {
-    int case_num = 1;
+    int case_num = 2;
     if (case_num == 1)
     {
         // 材料属性赋值
         CAE::elastic_mat mat_item{2.1e5, 0.3, 7800};
         // 材料路径
-        // std::string path = "C:\\Users\\jicha\\Desktop\\test\\reduced\\Job-CASL.inp";
-        // string result_path = "C:\\Users\\jicha\\Desktop\\test\\output\\verify_ca_reduced.vtk";
-        std::string path = "C:\\Users\\jicha\\Desktop\\test\\modified\\modify_for_full.inp";
-        string result_path = "C:\\Users\\jicha\\Desktop\\test\\output\\verify_ca_modify.vtk";
+        string path = "E:\\WH_CAE\\ZZZ_ca_other_test\\CA_CADCAE\\FOR_ADD_ELE\\original_model.inp";
+        string result_path = "E:\\WH_CAE\\ZZZ_ca_other_test\\CA_CADCAE\\FOR_ADD_ELE\\original_model_solve.vtk";
         // 关键字
         string load_set_keyword = "Set-load";
         string load_value_keyword = "Cload";
@@ -57,7 +55,7 @@ void code_test()
         // 建立CAE分析对象
         CAE::CAE_process cae_item(path, mat_item);
         // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
+        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword, 0);
         // 执行结构响应分析
         cae_item.implict_analysis(result_path);
     }
@@ -69,10 +67,8 @@ void code_test()
         // 材料属性赋值
         CAE::elastic_mat mat_item{2.1e5, 0.3, 7800};
         // 材料路径
-        // string path = "C:\\Users\\jicha\\Desktop\\test\\reduced\\Job-SL.inp";
-        // string result_path = "C:\\Users\\jicha\\Desktop\\test\\output\\Job-SL.vtk";
-        string path = "C:\\Users\\jicha\\Desktop\\test\\modified\\original.inp";  // modify_for_full.inp, original.inp
-        string result_path = "C:\\Users\\jicha\\Desktop\\test\\output\\original.vtk";
+        string path = "E:\\WH_CAE\\CA_new_OpenFEA\\IOdata\\4\\ref_model.inp";
+        string result_path = "E:\\WH_CAE\\CA_new_OpenFEA\\IOdata\\4\\ref_fem.vtk";
         // 关键字
         string load_set_keyword = "Set-load";
         string load_value_keyword = "Cload";
@@ -80,7 +76,7 @@ void code_test()
         // 建立CAE分析对象
         CAE::CAE_process cae_item(path, mat_item);
         // 读取计算文件
-        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword);
+        cae_item.pre_info(load_set_keyword, load_value_keyword, dis_set_keyword, 0);
         // 执行结构响应分析
         
         bool is_save_stiffness = true;
@@ -89,15 +85,12 @@ void code_test()
         // 重分析
         // -----------------------------------------------------------------------------------------------------------
         // 修改网格路径(仅包含1个part的网格)
-        // string map_info = "C:\\Users\\jicha\\Desktop\\test\\reduced\\map_info.inp";
-        // string mesh_path = "C:\\Users\\jicha\\Desktop\\test\\reduced\\m_model.inp";
-        // string CA_result_path = "C:\\Users\\jicha\\Desktop\\test\\output\\ca_reduced.vtk";
-        string map_info = "C:\\Users\\jicha\\Desktop\\test\\modified\\map_info.inp";
-        string mesh_path = "C:\\Users\\jicha\\Desktop\\test\\modified\\modify.inp";
-        string CA_result_path = "C:\\Users\\jicha\\Desktop\\test\\output\\ca_modify.vtk";
+        string map_info = "E:\\WH_CAE\\CA_new_OpenFEA\\IOdata\\4\\mdf_info_map.inp";
+        string mesh_path = "E:\\WH_CAE\\CA_new_OpenFEA\\IOdata\\4\\mdf_model.inp";
+        string CA_result_path = "E:\\WH_CAE\\CA_new_OpenFEA\\IOdata\\4\\mdf_ca_2.vtk";
         cae_item.CA_pre_process(mesh_path, map_info);
         // 开始执行重分析
-        int n_basis = 4;
+        int n_basis = 2;
         cae_item.CA_ReAnalysis(CA_result_path, n_basis);
     }
     else

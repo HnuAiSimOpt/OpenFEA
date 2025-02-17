@@ -27,6 +27,7 @@ Description: XXX
 #include "./linear_solution.h"
 #include "./ca_reanalysis.h"
 #include "./SFEM3D.h"
+#include "./utils.h"
 
 using namespace std;
 namespace CAE
@@ -67,7 +68,7 @@ namespace CAE
         void processCmdLine(int nargs, char *argv[]);
         void readFile();
         // 读取计算文件
-        void pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword);
+        void pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword, int id_offset);
 
     public: // 求解
         void Solve();
@@ -75,7 +76,7 @@ namespace CAE
     public:
         // 执行结构响应分析
         void implict_analysis(string result_path, bool is_save_stiffness = false);
-        // 读取重分析网格并做重复节点处理
+        // 读取重分析网格
         void CA_pre_process(string mesh_path, string node_now_path);
         // 执行重分析
         void CA_ReAnalysis(string result_path, int n_basis = 4, bool is_Update = false);
@@ -85,5 +86,6 @@ namespace CAE
         void explicit_analysis(string result_path, string path_abaqus);
         // 转存刚度矩阵
         void Save_stiffness(assamble_stiffness &item_assam); // 线性
+
     };
 }

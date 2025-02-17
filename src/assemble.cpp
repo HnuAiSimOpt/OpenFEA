@@ -19,7 +19,9 @@ namespace CAE
     void assamble_stiffness::build_CSR(data_management &data_cae)
     {
         int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
-        vector<set<int>> col_data(3 * num_free_node);
+        num_row_ = 3 * num_free_node;
+        num_col_ = 3 * num_free_node;
+        col_data_.resize(3 * num_free_node);
         vector<int> item_ele_dofs;
         // 遍历单元，储存所有自由度
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
@@ -31,23 +33,13 @@ namespace CAE
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
             build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
             // 删除负自由度，即被约束自由度
-            for (auto it = item_ele_dofs.begin(); it != item_ele_dofs.end();)
-            {
-                if ((*it) < 0)
-                {
-                    it = item_ele_dofs.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
+            delete_negative(item_ele_dofs);
             // 压缩稀疏矩阵
             for (int id_dofs_row : item_ele_dofs)
             {
                 for (int id_dofs_col : item_ele_dofs)
                 {
-                    col_data[id_dofs_col].insert(id_dofs_row);
+                    col_data_[id_dofs_col].insert(id_dofs_row);
                 }
             }
         }
@@ -55,7 +47,7 @@ namespace CAE
         num_nz_val_ = 0;
         for (int id_dof = 0; id_dof < 3 * num_free_node; id_dof++)
         {
-            num_nz_val_ += col_data[id_dof].size(); // 计算每个单元非零元数目
+            num_nz_val_ += col_data_[id_dof].size(); // 计算每个单元非零元数目
         }
         // 分配行索引容量
         row_idx_.resize(num_nz_val_);
@@ -66,7 +58,7 @@ namespace CAE
         col_idx_[0] = 0;
         for (int i = 0; i < 3 * num_free_node; i++)
         {
-            for (int row : col_data[i])
+            for (int row : col_data_[i])
             {
                 row_idx_[item_idx_csr] = row;
                 item_idx_csr++;
@@ -115,10 +107,6 @@ namespace CAE
             //  计算单元刚度矩阵
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             data_cae.ele_list_[map_idx]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
-            // if (id_ele == 0)
-            // {
-            //     cout << stiffness_matrix << endl;
-            // }
 
             // 组装
             int ii_dof, jj_dof, loop_size = item_ele_dofs.size();
