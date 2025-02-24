@@ -20,7 +20,7 @@ void code_test();
 
 int main(int argc, char *argv[])
 {
-    bool test_flag = true; // 设置true为以前的启动模式
+    bool test_flag = false; // 设置true为以前的启动模式
     if (test_flag)
     {
         code_test();

@@ -48,14 +48,14 @@ namespace CAE
         void build_CSR(data_management &data_cae);
 
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度
-        void build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, int num_nodes);
+        void build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, int num_nodes, int node_dofs);
 
         // 基于CSR索引格式填充稀疏矩阵
         void fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat);
 
         // 基于单元编号，单元类型和节点拓扑关系，返回自由度和节点坐标
         void build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors,
-                                  data_management &data_cae, int ele_id, int num_nodes);
+                                  data_management &data_cae, int ele_id, int num_nodes, int node_dofs);
 
         //[*******非协调部分********]
         // 组装非协调刚度矩阵

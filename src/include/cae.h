@@ -28,6 +28,7 @@ Description: XXX
 #include "./ca_reanalysis.h"
 #include "./SFEM3D.h"
 #include "./utils.h"
+#include "./Node.h"
 
 using namespace std;
 namespace CAE

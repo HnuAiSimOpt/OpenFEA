@@ -46,6 +46,14 @@ namespace CAE
         vector<double> ca_dis_vec_show_;     // 考虑所有自由度的位移向量(用于重分析)
     };
 
+    struct NodeData                 // 定义一个结构体来表示节点的属性，包括节点编号、自由度
+    {
+        int node_id;                // 初始节点编号
+        int free_node_id;           // 重排节点编号
+        vector<int> full_dof;       // 初始全自由度
+        vector<int> re_free_dof;    // 重排自由度
+    };
+
     // 避免data_mana和assamble交叉引用
     class assamble_stiffness_save
     {
@@ -71,6 +79,8 @@ namespace CAE
     {
     public:
         int ne_, nd_;                                            // 单元，节点总数
+        vector<NodeData> nodes_;                                 // 存储节点数据
+        int re_free_dof_num;                                     // 无约束节点自由度总数
         vector<vector<double>> coords_;                          // 节点坐标
         vector<vector<int>> node_topos_;                         // 节点拓扑关系
         vector<int> BndMesh_F;                                   // 非协调细网格单元编号(读inp）

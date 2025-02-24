@@ -18,10 +18,10 @@ namespace CAE
 {
     void assamble_stiffness::build_CSR(data_management &data_cae)
     {
-        int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
-        num_row_ = 3 * num_free_node;
-        num_col_ = 3 * num_free_node;
-        col_data_.resize(3 * num_free_node);
+        // int num_free_node = data_cae.nd_ - data_cae.dis_bc_set_.size();
+        num_row_ = data_cae.re_free_dof_num;
+        num_col_ = data_cae.re_free_dof_num;
+        col_data_.resize(data_cae.re_free_dof_num);
         vector<int> item_ele_dofs;
         // 遍历单元，储存所有自由度
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
@@ -30,8 +30,9 @@ namespace CAE
             int ele_type = data_cae.ele_list_idx_[id_ele];
             int map_idx = data_cae.ele_map_list_[ele_type];
             int num_nodes = data_cae.ele_list_[map_idx]->nnode_;
+            int node_dofs = data_cae.ele_list_[map_idx]->node_dof_;
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
-            build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
+            build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes, node_dofs);
             // 删除负自由度，即被约束自由度
             delete_negative(item_ele_dofs);
             // 压缩稀疏矩阵
@@ -45,18 +46,18 @@ namespace CAE
         }
         // 建立CSR索引格式
         num_nz_val_ = 0;
-        for (int id_dof = 0; id_dof < 3 * num_free_node; id_dof++)
+        for (int id_dof = 0; id_dof < data_cae.re_free_dof_num; id_dof++)
         {
             num_nz_val_ += col_data_[id_dof].size(); // 计算每个单元非零元数目
         }
         // 分配行索引容量
         row_idx_.resize(num_nz_val_);
         // 分配列索引容量
-        col_idx_.resize(3 * num_free_node + 1);
+        col_idx_.resize(data_cae.re_free_dof_num + 1);
         // 建立列索引
         int item_idx_csr = 0;
         col_idx_[0] = 0;
-        for (int i = 0; i < 3 * num_free_node; i++)
+        for (int i = 0; i < data_cae.re_free_dof_num; i++)
         {
             for (int row : col_data_[i])
             {
@@ -69,17 +70,45 @@ namespace CAE
     }
 
     // 基于单元类型和节点拓扑关系，返回自由度
-    void assamble_stiffness::build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, int num_nodes)
+    void assamble_stiffness::build_ele_dofs(vector<int> &item_ele_dofs, data_management &data_cae, int ele_id, int num_nodes, int node_dofs)
     {
-        item_ele_dofs.resize(3 * num_nodes);
+        item_ele_dofs.resize(node_dofs * num_nodes);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
         int item_dof;
-        for (int i = 0; i < num_nodes; i++)
+        // for (int i = 0; i < num_nodes; i++)
+        // {
+        //     item_dof = data_cae.resort_free_nodes_[data_cae.node_topos_[ele_id][i] - 1];
+        //     item_ele_dofs[3 * i] = 3 * item_dof;
+        //     item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
+        //     item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
+        // }
+        if (node_dofs = 3)
         {
-            item_dof = data_cae.resort_free_nodes_[data_cae.node_topos_[ele_id][i] - 1];
-            item_ele_dofs[3 * i] = 3 * item_dof;
-            item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
-            item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
+            for (int i = 0; i < num_nodes; i++)
+            {
+                item_dof = data_cae.node_topos_[ele_id][i] - 1;
+                item_ele_dofs[3 * i] = data_cae.nodes_[item_dof].re_free_dof[0];
+                item_ele_dofs[3 * i + 1] = data_cae.nodes_[item_dof].re_free_dof[1];
+                item_ele_dofs[3 * i + 2] = data_cae.nodes_[item_dof].re_free_dof[2];
+            }
+        }  
+        else if (node_dofs = 6)
+        {
+            for (int i = 0; i < num_nodes; i++)
+            {
+                item_dof = data_cae.node_topos_[ele_id][i] - 1;
+                item_ele_dofs[6 * i] = data_cae.nodes_[item_dof].re_free_dof[0];
+                item_ele_dofs[6 * i + 1] = data_cae.nodes_[item_dof].re_free_dof[1];
+                item_ele_dofs[6 * i + 2] = data_cae.nodes_[item_dof].re_free_dof[2];
+                item_ele_dofs[6 * i + 3] = data_cae.nodes_[item_dof].re_free_dof[3];
+                item_ele_dofs[6 * i + 4] = data_cae.nodes_[item_dof].re_free_dof[4];
+                item_ele_dofs[6 * i + 5] = data_cae.nodes_[item_dof].re_free_dof[5];
+            }
+        }
+        else
+        {
+             std::cout << "The type of Element is not defined!!" << std::endl;
+
         }
     }
 
@@ -97,13 +126,14 @@ namespace CAE
         MatrixXd stiffness_matrix;
         for (int id_ele = 0; id_ele < data_cae.ne_; id_ele++)
         {
-            // 获取该单元的节点数量
+            // 获取该单元的节点数量,节点自由度
             int ele_type = data_cae.ele_list_idx_[id_ele];
             int map_idx = data_cae.ele_map_list_[ele_type];
             int node_num_ele = data_cae.ele_list_[map_idx]->nnode_;
+            int node_dofs = data_cae.ele_list_[map_idx]->node_dof_;
             // 查找节点自由度及坐标
             item_ele_coors.resize(node_num_ele, 3);
-            build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, node_num_ele);
+            build_ele_dofs_coors(item_ele_dofs, item_ele_coors, data_cae, id_ele, node_num_ele, node_dofs);
             //  计算单元刚度矩阵
             stiffness_matrix.resize(3 * node_num_ele, 3 * node_num_ele);
             data_cae.ele_list_[map_idx]->build_ele_stiff_mat(item_ele_coors, stiffness_matrix);
@@ -135,9 +165,9 @@ namespace CAE
     }
 
     void assamble_stiffness::build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors,
-                                                  data_management &data_cae, int ele_id, int num_nodes)
+                                                  data_management &data_cae, int ele_id, int num_nodes, int node_dofs)
     {
-        item_ele_dofs.resize(3 * num_nodes);
+        item_ele_dofs.resize(node_dofs * num_nodes);
         std::fill(item_ele_dofs.begin(), item_ele_dofs.end(), 0);
         item_ele_coors.resize(num_nodes, 3);
         item_ele_coors.setZero();
@@ -145,16 +175,45 @@ namespace CAE
         for (int i = 0; i < num_nodes; i++)
         {
             // 自由度
-            item_dof = data_cae.resort_free_nodes_[data_cae.node_topos_[ele_id][i] - 1];
-            item_ele_dofs[3 * i] = 3 * item_dof;
-            item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
-            item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
+            // item_dof = data_cae.resort_free_nodes_[data_cae.node_topos_[ele_id][i] - 1];
+            // item_ele_dofs[3 * i] = 3 * item_dof;
+            // item_ele_dofs[3 * i + 1] = 3 * item_dof + 1;
+            // item_ele_dofs[3 * i + 2] = 3 * item_dof + 2;
             // 坐标
             item_node = data_cae.node_topos_[ele_id][i] - 1;
             item_ele_coors(i, 0) = data_cae.coords_[item_node][0]; // X 坐标
             item_ele_coors(i, 1) = data_cae.coords_[item_node][1]; // Y 坐标
             item_ele_coors(i, 2) = data_cae.coords_[item_node][2]; // Z 坐标
         }
+        if (node_dofs = 3)
+        {
+            for (int i = 0; i < num_nodes; i++)
+            {
+                item_dof = data_cae.node_topos_[ele_id][i] - 1;
+                item_ele_dofs[3 * i] = data_cae.nodes_[item_dof].re_free_dof[0];
+                item_ele_dofs[3 * i + 1] = data_cae.nodes_[item_dof].re_free_dof[1];
+                item_ele_dofs[3 * i + 2] = data_cae.nodes_[item_dof].re_free_dof[2];
+            }
+        }  
+        else if (node_dofs = 6)
+        {
+            for (int i = 0; i < num_nodes; i++)
+            {
+                item_dof = data_cae.node_topos_[ele_id][i] - 1;
+                item_ele_dofs[6 * i] = data_cae.nodes_[item_dof].re_free_dof[0];
+                item_ele_dofs[6 * i + 1] = data_cae.nodes_[item_dof].re_free_dof[1];
+                item_ele_dofs[6 * i + 2] = data_cae.nodes_[item_dof].re_free_dof[2];
+                item_ele_dofs[6 * i + 3] = data_cae.nodes_[item_dof].re_free_dof[3];
+                item_ele_dofs[6 * i + 4] = data_cae.nodes_[item_dof].re_free_dof[4];
+                item_ele_dofs[6 * i + 5] = data_cae.nodes_[item_dof].re_free_dof[5];
+            }
+        }
+        else
+        {
+            std::cout << "The type of Element is not defined!!" << std::endl;
+
+        }
+
     }
 
     //[*******非协调部分********]
@@ -182,8 +241,9 @@ namespace CAE
             int ele_type = data_cae.ele_list_idx_[id_ele];
             int map_idx = data_cae.ele_map_list_[ele_type];
             int num_nodes = data_cae.ele_list_[map_idx]->nnode_;
+            int node_dofs = data_cae.ele_list_[map_idx]->node_dof_;
             // 基于单元类型和节点拓扑关系，计算单元包含的自由度
-            build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes);
+            build_ele_dofs(item_ele_dofs, data_cae, id_ele, num_nodes, node_dofs);
             // 删除负自由度，即被约束自由度
             for (auto it = item_ele_dofs.begin(); it != item_ele_dofs.end();)
             {
@@ -220,7 +280,8 @@ namespace CAE
             int ele_type = data_cae.ele_list_idx_[e];
             int map_idx = data_cae.ele_map_list_[ele_type];
             int F_num_nodes = data_cae.ele_list_[map_idx]->nnode_;
-            build_ele_dofs(F_ele_dofs, data_cae, F_id_ele, F_num_nodes);
+            int F_node_dofs = data_cae.ele_list_[map_idx]->node_dof_;
+            build_ele_dofs(F_ele_dofs, data_cae, F_id_ele, F_num_nodes, F_node_dofs);
 
             // int C_id_ele = data_cae.BndMesh_C[e]- 1;//单元索引
 
@@ -228,7 +289,9 @@ namespace CAE
 
             int C_num_nodes = data_cae.ele_list_[data_cae.ele_map_list_[data_cae.ele_list_idx_[C_id_ele]]]->nnode_;
 
-            build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes);
+            int C_node_dofs = data_cae.ele_list_[map_idx]->node_dof_;
+
+            build_ele_dofs(C_ele_dofs, data_cae, C_id_ele, C_num_nodes, C_node_dofs);
 
             Storematrix_columns(col_data, F_ele_dofs, F_ele_dofs);
             Storematrix_columns(col_data, F_ele_dofs, C_ele_dofs);

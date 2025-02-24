@@ -225,6 +225,11 @@ namespace CAE
         // 读取材料信息
         item_info.read_mat(mat_);
 
+        node_base item_node;
+
+        // 初始化节点编号、自由度
+        item_node.pre_nodes(data_cae_);
+
         // 读取时间信息--显式
         if (option_.analysis_type == 2)
         {
@@ -240,6 +245,11 @@ namespace CAE
         // 设置边界条件
         item_bcs.build_free_index(data_cae_);
         
+        node_base item_node;
+
+        // 计算无约束节点自由度数量
+        item_node.count_re_free_dof_num(data_cae_);
+
         // 建立单载荷向量
         item_bcs.build_single_load(data_cae_);
 
@@ -379,6 +389,11 @@ namespace CAE
         // 设置边界条件
         item_bcs.build_free_index(data_cae_);
 
+        node_base item_node;
+
+        // 计算无约束节点自由度数量
+        item_node.count_re_free_dof_num(data_cae_);
+        
         // 建立单载荷向量
         item_bcs.build_single_load(data_cae_);
 
