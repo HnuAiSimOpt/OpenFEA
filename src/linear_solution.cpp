@@ -23,7 +23,7 @@ namespace CAE
         else if (solver_type == "SuperLU_class")
         {
             item_cae_data.item_superlu = SuperLUSolution();
-            // 初次求解
+            // 初始化
             bool a1 = item_cae_data.item_superlu.superlu_init(item_ass.nz_val_, item_ass.row_idx_, item_ass.col_idx_);
             // 求解
             vector<double> F_copy(item_cae_data.single_load_vec_.size(), 0.);

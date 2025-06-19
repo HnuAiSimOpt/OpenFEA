@@ -38,5 +38,8 @@ namespace CAE
         // 导出 位移场 VTK-CA
         void export_dis2vtk(data_management &data_cae, vector<vector<double>> &coors, vector<vector<int>> &eles, vector<int> &mdf_ele_list_idx_,
                             vector<double> &dis, double scale_dis, string result_path);
+
+        // 
+        void export_topo2vtk(data_management &data_cae, vector<double> &den, double scale_dis, string result_path);
     };
 }

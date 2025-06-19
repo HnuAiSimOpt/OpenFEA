@@ -69,6 +69,7 @@ namespace CAE
             fout << data_cae.coords_[i][0] + scale_dis * data_cae.single_full_dis_vec_[3 * i] << "\t\t"
                  << data_cae.coords_[i][1] + scale_dis * data_cae.single_full_dis_vec_[3 * i + 1] << "\t\t"
                  << data_cae.coords_[i][2] + scale_dis * data_cae.single_full_dis_vec_[3 * i + 2] << "\n";
+            // cout << data_cae.coords_[i][0]<<endl;
         }
 
         // 统计单元类型
@@ -434,6 +435,188 @@ namespace CAE
                              dis[3 * i + 1] * dis[3 * i + 1] +
                              dis[3 * i] * dis[3 * i]);
             fout << u_ << "\n";
+        }
+        fout.close();
+    }
+
+    void data_process::export_topo2vtk(data_management &data_cae, vector<double> &den, double scale_dis, string result_path)
+    {
+        std::ofstream fout;
+        fout.open(result_path, std::ios::out);
+        if (!fout)
+        {
+            std::cerr << "Error: Cannot open " << result_path << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        fout << std::unitbuf;                                   // 关闭缓冲
+        fout << "# vtk DataFile Version 3.0\n";                 // Version Statement
+        fout << "The density field of the optimized results\n"; // title
+        fout << "ASCII\n";                                      // file format statement
+        fout << "DATASET UNSTRUCTURED_GRID\n\n";                // data format: unstructured grid
+
+        // 输入节点坐标
+        int num_node = data_cae.nd_;
+        fout << "POINTS\t" << num_node << "\tdouble\n";
+
+        int id = 1;
+        for (int i = 0; i < num_node; i++)
+        {
+            fout << data_cae.coords_[i][0] + scale_dis * data_cae.single_full_dis_vec_[3 * i] << "\t\t"
+                 << data_cae.coords_[i][1] + scale_dis * data_cae.single_full_dis_vec_[3 * i + 1] << "\t\t"
+                 << data_cae.coords_[i][2] + scale_dis * data_cae.single_full_dis_vec_[3 * i + 2] << "\n";
+        }
+
+        // 统计单元类型
+        int num_ele = data_cae.ne_;
+        int num_ele_C3D4 = 0;
+        int num_ele_C3D8 = 0;
+        int num_ele_C3D8R = 0;
+        for (int i = 0; i < num_ele; i++)
+        {
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
+            switch (ELE_TYPES[item_ele_type])
+            {
+            case 1:
+            {
+                num_ele_C3D4 += 1;
+                break;
+            }
+            case 2:
+            {
+                num_ele_C3D8 += 1;
+                break;
+            }
+            case 3:
+            {
+                num_ele_C3D8R += 1;
+                break;
+            }
+            default:
+            {
+                cout << "This type does not exist in the element library" << endl;
+                break;
+            }
+            }
+        }
+        // 输入节点拓扑关系
+        fout << "CELLS\t" << num_ele << "\t" << num_ele_C3D8 * (8 + 1) + num_ele_C3D8R * (8 + 1) + num_ele_C3D4 * (4 + 1) << "\n";
+        for (int i = 0; i < num_ele; i++)
+        {
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
+            switch (ELE_TYPES[item_ele_type])
+            {
+            case 1:
+            {
+                fout << 4 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
+                     << data_cae.node_topos_[i][1] - 1 << "\t" << data_cae.node_topos_[i][3] - 1 << "\n";
+
+                break;
+            }
+            case 2:
+            {
+                fout << 8 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][1] - 1 << "\t"
+                     << data_cae.node_topos_[i][3] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
+                     << data_cae.node_topos_[i][4] - 1 << "\t" << data_cae.node_topos_[i][5] - 1 << "\t"
+                     << data_cae.node_topos_[i][7] - 1 << "\t" << data_cae.node_topos_[i][6] - 1 << "\n";
+
+                break;
+            }
+            case 3:
+            {
+                fout << 8 << "\t" << data_cae.node_topos_[i][0] - 1 << "\t" << data_cae.node_topos_[i][1] - 1 << "\t"
+                     << data_cae.node_topos_[i][3] - 1 << "\t" << data_cae.node_topos_[i][2] - 1 << "\t"
+                     << data_cae.node_topos_[i][4] - 1 << "\t" << data_cae.node_topos_[i][5] - 1 << "\t"
+                     << data_cae.node_topos_[i][7] - 1 << "\t" << data_cae.node_topos_[i][6] - 1 << "\n";
+
+                break;
+            }
+            default:
+            {
+                cout << "This type does not exist in the element library" << endl;
+                break;
+            }
+            }
+        }
+        // 写入单元类型
+        fout << "CELL_TYPES\t\t" << num_ele << "\n";
+        for (int i = 0; i < num_ele; i++)
+        {
+            int ele_type = data_cae.ele_list_idx_[i];
+            int map_idx = data_cae.ele_map_list_[ele_type];
+            string item_ele_type = data_cae.ele_list_[map_idx]->type_;
+            switch (ELE_TYPES[item_ele_type])
+            {
+            case 1:
+            {
+                fout << 10 << "\n";
+
+                break;
+            }
+            case 2:
+            {
+                fout << 11 << "\n";
+
+                break;
+            }
+            case 3:
+            {
+                fout << 11 << "\n";
+
+                break;
+            }
+            default:
+            {
+                cout << "This type does not exist in the element library" << endl;
+
+                break;
+            }
+            }
+        }
+        // 写入单元位移
+        // X
+        fout << "\nPOINT_DATA\t" << num_node
+             << "\nSCALARS u_x double 1\n"
+             << "LOOKUP_TABLE  table1\n";
+        for (int i = 0; i < num_node; i++)
+        {
+            fout << data_cae.single_full_dis_vec_[3 * i] << "\n";
+        }
+        // Y
+        fout << "\nSCALARS u_y double 1\n"
+             << "LOOKUP_TABLE  table2\n";
+        for (int i = 0; i < num_node; i++)
+        {
+            fout << data_cae.single_full_dis_vec_[3 * i + 1] << "\n";
+        }
+        // Z
+        fout << "\nSCALARS u_z double 1\n"
+             << "LOOKUP_TABLE  table3\n";
+        for (int i = 0; i < num_node; i++)
+        {
+            fout << data_cae.single_full_dis_vec_[3 * i + 2] << "\n";
+        }
+        // 合位移
+        fout << "\nSCALARS u_magnitude double 1\n"
+             << "LOOKUP_TABLE  table4\n";
+        for (int i = 0; i < num_node; i++)
+        {
+            double u_ = sqrt(data_cae.single_full_dis_vec_[3 * i + 2] * data_cae.single_full_dis_vec_[3 * i + 2] +
+                             data_cae.single_full_dis_vec_[3 * i + 1] * data_cae.single_full_dis_vec_[3 * i + 1] +
+                             data_cae.single_full_dis_vec_[3 * i] * data_cae.single_full_dis_vec_[3 * i]);
+            fout << u_ << "\n";
+        }
+
+        // 写入设计变量
+        fout << "\nCELL_DATA\t" << num_ele
+             << "\nSCALARS den double 1\n"
+             << "LOOKUP_TABLE  table1\n";
+        for (int i = 0; i < num_ele; i++)
+        {
+            fout << den[i] << "\n";
         }
         fout.close();
     }

@@ -57,6 +57,9 @@ namespace CAE
         void build_ele_dofs_coors(vector<int> &item_ele_dofs, Eigen::Ref<Eigen::MatrixXd> item_ele_coors,
                                   data_management &data_cae, int ele_id, int num_nodes);
 
+        //[********拓扑优化部分******]
+        void topo_fill_CSR_sparse_mat(data_management &data_cae, elastic_mat &data_mat, vector<double> &pseudo_density);
+
         //[*******非协调部分********]
         // 组装非协调刚度矩阵
         void NCF_assembleStiffness(data_management &data_cae, elastic_mat &data_mat);

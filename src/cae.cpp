@@ -236,10 +236,10 @@ namespace CAE
     void CAE_process::implict_analysis(string result_path, bool is_save_stiffness)
     {
         set_BCs item_bcs;
-         
+
         // 设置边界条件
         item_bcs.build_free_index(data_cae_);
-        
+
         // 建立单载荷向量
         item_bcs.build_single_load(data_cae_);
 
@@ -322,7 +322,7 @@ namespace CAE
         simulation_post post_item;
         post_item.reset_displacement(data_cae_);
         // 计算应力
-        post_item.get_cauchy_stress_3d(data_cae_);
+        // post_item.get_cauchy_stress_3d(data_cae_);
         // 输出物理场
         data_process item_output;
         double scale_dis = 1.0;
@@ -573,4 +573,12 @@ namespace CAE
         data_cae_.save_ref_info_.stiff_ori_.col_data_ = std::move(item_assam.col_data_);
     }
 
+    // 拓扑优化
+    double CAE_process::topo_process(string result_path, double vol, double rmin, double penal)
+    {
+        TopoLinear3D topo_item(vol, rmin, penal, mat_);
+        cout << "start topology optimization iteration !!!" << endl;
+        double comp = topo_item.topo_linear_cycle_3d(data_cae_, result_path);
+        return comp;
+    }
 }

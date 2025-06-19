@@ -17,6 +17,7 @@ namespace CAE
     // 重置全分析位移
     bool simulation_post::reset_displacement(data_management &data_cae)
     {
+        data_cae.single_full_dis_vec_.clear();
         data_cae.single_full_dis_vec_.resize(3 * data_cae.nd_);
         for (int i = 0; i < data_cae.nd_; i++)
         {

@@ -106,4 +106,53 @@ namespace CAE
         }
         outFile.close();
     };
+
+
+    void SpMatrix::build_sp(int n, vector<set<int>> &columns, vector<double> &values)
+    {
+        // 值赋予
+        this->nz_ = values.size();
+        this->nzval_.clear();
+        this->nzval_.resize(this->nz_);
+        this->nzval_.assign(values.begin(), values.end());
+        // 索引建立
+        this->rowind_.clear();
+        this->rowind_.resize(this->nz_);
+        this->colptr_.clear();
+        this->colptr_.resize(n + 1);
+        int indx = 0;
+        for (int j = 0; j < n; j++)
+        {
+            this->colptr_[j] = indx;
+            for (int row : columns[j])
+            {
+                this->rowind_[indx] = row;
+                indx++;
+            }
+        }
+        colptr_[n] = indx;
+        this->nRows_ = n;
+        this->nColumns_ = n;
+    };
+
+    // 与向量做矩阵乘法
+    void SpMatrix::this_dot_vector(vector<double> &vec, vector<double> &answer)
+    {
+        if (this->nColumns_ != vec.size())
+        {
+            cout<<"dimension dismatch!"<<endl;
+            exit(0);
+        }
+        answer.clear();
+        answer.resize(this->nRows_);
+        for (int i = 0; i < this->nRows_; i++)
+        {
+            double sum = 0.;
+            for (int t = this->colptr_[i]; t < this->colptr_[i+1]; t++)
+            {
+                sum += this->nzval_[t] * vec[this->rowind_[t]];
+            }
+            answer[i] = sum;
+        }
+    }
 }

@@ -28,6 +28,7 @@ Description: XXX
 #include "./ca_reanalysis.h"
 #include "./SFEM3D.h"
 #include "./utils.h"
+#include "./topo_linear_3d.h"
 
 using namespace std;
 namespace CAE
@@ -58,19 +59,17 @@ namespace CAE
         // 构造函数，析构函数
         CAE_process() {};
         CAE_process(string path) : path_(path) {};
-        CAE_process(string path, elastic_mat mat) : path_(path), mat_(mat) {option_.ifile_name = path_;};
+        CAE_process(string path, elastic_mat mat) : path_(path), mat_(mat) { option_.ifile_name = path_; };
         // ~CAE_process();
 
-    public: // 初始化
+    public:
+        // 初始化
         void Init(int nargs, char *argv[]);
-
-    public: // 初始化步骤
         void processCmdLine(int nargs, char *argv[]);
         void readFile();
         // 读取计算文件
         void pre_info(string load_set_keyword, string load_value_keyword, string dis_set_keyword, int id_offset);
-
-    public: // 求解
+        // 求解
         void Solve();
 
     public:
@@ -87,5 +86,8 @@ namespace CAE
         // 转存刚度矩阵
         void Save_stiffness(assamble_stiffness &item_assam); // 线性
 
+    public:
+        // 拓扑优化
+        double topo_process(string result_path, double vol, double rmin, double penal);
     };
 }
